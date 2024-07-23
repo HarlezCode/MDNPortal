@@ -94,9 +94,10 @@ export default function Edit(){
         <DefaultWrapper>
         <DefaultTitle>Edit Table</DefaultTitle>
         <div>
-        <table className="table-fixed mx-auto border-separate border-spacing-2 bg-slate-600 hover:bg-slate-700 overflow-y rounded mt-5">
+        <table className="table-fixed mx-auto border-separate border-spacing-2 border-spacing-x-0 p-2 bg-slate-600 hover:bg-slate-700 overflow-y rounded mt-5">
             <thead>
                 <tr>
+                    <th></th>
                     <th>SN</th>
                     { 
                         tableData["Headers"].map((item,i) => {
@@ -111,7 +112,10 @@ export default function Edit(){
                         return;
                     }
                     return (
-                        <tr key={key} className=" hover:bg-slate-500">
+                        <tr key={key + "_r"} className="hover:bg-slate-500">
+                            <td key={key+"_check"}>
+                                <input type="checkbox"/>
+                            </td>
                             <td key="-1">
                                 <h3>{key}</h3>
                             </td>
