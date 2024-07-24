@@ -13,9 +13,6 @@ export function AddVpn(){
                     (event : FormEvent<HTMLFormElement>) => {
                         event.preventDefault();
                         formSubmitProtocol()
-                        // basic assertion here
-                        
-
                         // set local storage
                         localStorage.setItem("RequestType", "Add 4G VPN Profile");
                         localStorage.setItem("SN", event.currentTarget.snDevices.value);
