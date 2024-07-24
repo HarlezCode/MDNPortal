@@ -7,7 +7,8 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
         reqtype == "Add Trial Certificate" ||
         reqtype == "Remove 4G VPN profile" ||
         reqtype == "Add new device record" ||
-        reqtype == "Remove Trial Certificate"){
+        reqtype == "Remove Trial Certificate" ||
+        reqtype == "Retire device"){
 
         return (<div><form onSubmit={
             (event : FormEvent<HTMLFormElement>) => {
@@ -27,18 +28,27 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
                         }
                         newData[arr[i]] = [] as string[];
                         // api calls here
-                        newData[arr[i]].push("CORP");
-                        newData[arr[i]].push("Yes");
+                        // remember add new device record is different
+                        if (reqtype.includes("4G VPN") || reqtype.includes("Trial Certificate")){
+                            newData[arr[i]].push("CORP");
+                            newData[arr[i]].push("Yes");
+                        } else if (reqtype == "Retire device"){
+                            newData[arr[i]].push("CORP");
+                        } else if (reqtype == "Add new device record"){
+                            newData[arr[i]].push("CORP");
+                            newData[arr[i]].push("Yes");
+                        }
                         count.current++;
                     }
                     console.log(newData);
                     settabledata(newData);
                     localStorage.setItem("SN", curString.join("\n"));
+                    close();
                     
                     
                 }
             }
-        }><div className='h-screen w-screen bg-gray-900 opacity-50 absolute bottom-0 left-0'></div><div className="bottom-[0%] left-[38%] top-[20%] w-[25%] mx-[0%] absolute">
+        }><div className='h-screen w-screen bg-gray-900 opacity-50 absolute top-0 bottom-0 left-0'></div><div className="bottom-[0%] left-[38%] top-[20%] w-[25%] mx-[0%] absolute">
             <div className="bg-slate-400 grid p-[10%] content-start justify-items-middle rounded space-y-4">
                 
                 <div className="bg-slate-700 p-2"><span className="text-3xl">Import</span></div>
