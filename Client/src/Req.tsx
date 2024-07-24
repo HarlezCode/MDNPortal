@@ -26,16 +26,16 @@ export default function Req(){
                 event.preventDefault();
                 const val = event.currentTarget.req.value
                 switch (val){
-                    case "Add 4G VPN Profile": nav("add4gvpn"); break;
-                    case "Add new device record": nav("addnewdevice"); break;
-                    case "Add Trial Certificate": nav("addtrialcert"); break;
-                    case "Add Webclip": nav("addwebclip"); break;
-                    case "App Update": nav("appupdate"); break;
-                    case "Change of Device Type": nav("changedevicetype"); break;
-                    case "Look for last location": nav("lookforlastlocation"); break;
-                    case "Remove 4G VPN profile": nav("remove4gvpn"); break;
-                    case "Remove Trial Certificate": nav("removetrialcert"); break;
-                    case "Retire device": nav("retiredevice"); break;
+                    case "Add 4G VPN Profile": localStorage.setItem("RequestType", "Add 4G VPN Profile"); nav("../edit"); break; 
+                    case "Add new device record": localStorage.setItem("RequestType", "Add new device record"); nav("../edit"); break;
+                    case "Add Trial Certificate": localStorage.setItem("RequestType", "Add Trial Certificate"); nav("../edit"); break; 
+                    case "Add Webclip": localStorage.setItem("RequestType", "Add Webclip"); nav("../edit"); break;
+                    case "App Update": localStorage.setItem("RequestType", "App Update"); nav("../edit"); break;
+                    case "Change of Device Type": localStorage.setItem("RequestType", "Change of Device Type"); nav("../edit"); break; 
+                    case "Look for last location": localStorage.setItem("RequestType", "Look for last location"); nav("../edit"); break;
+                    case "Remove 4G VPN profile": localStorage.setItem("RequestType", "Remove 4G VPN profile"); nav("../edit"); break;
+                    case "Remove Trial Certificate": localStorage.setItem("RequestType", "Remove Trial Certificate"); nav("../edit"); break; 
+                    case "Retire device": localStorage.setItem("RequestType", "Retire device"); nav("../edit"); break;
                     default: alert("Please Select a Request Type"); break;
                 }
             }

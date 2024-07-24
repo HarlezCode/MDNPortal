@@ -2,6 +2,8 @@ import { useEffect, useState, FormEvent, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Preview from "./preview";
 import {DefaultTitle, DefaultWrapper } from "./components";
+import Adding from "./Adding";
+import { resetLocalStorage } from "./clientActions";
 
 export default function Edit(){
     const [tableData, setData] = useState({} as {[index : string]: string[]});
@@ -9,10 +11,14 @@ export default function Edit(){
     const nav = useNavigate();
     const buttonClick = useRef("none");
     const [isPreview, setPreview] = useState(false);
+    const [isAdding, setAdding] = useState(false);
+    const reqType = useRef(localStorage.getItem("RequestType"));
+    const numberOfDevices = useRef(0);
     useEffect(()=>{
         if (update == false){
             return;
         }
+        resetLocalStorage();
         const req = localStorage.getItem("RequestType");
         if (req == ""){
             alert("Request Failed!");
@@ -23,85 +29,58 @@ export default function Edit(){
         const temp : {[index : string]: string[]} = {};
         temp["RequestType"] = [req ?? ""];
         temp["Headers"] = [];
-        temp["HasDevices"] = ["false"];
-        let devices = [] as string[];
-        console.log("updating...")
-        if (req == "Add 4G VPN Profile" || req == "Remove 4G VPN profile" || req == "Add new device record"){
-            devices = (localStorage.getItem("SN") ?? "").split("\n");
-            if (devices.length > 0){
-                temp["HasDevices"] = ["true"];
-            }
-        }
         switch (req){
             case "Add 4G VPN Profile": 
                 temp["Headers"].push("Type");
                 temp["Headers"].push("VPN");
-                for (let i = 0; i < devices.length; i++){
-                    temp[devices[i]] = [];
-                    temp[devices[i]].push(localStorage.getItem("Type") ?? "");
-                    temp[devices[i]].push(localStorage.getItem("VPN") ?? "");
-                }
                 setData(temp);
                 break;
             case "Add new device record":
                 temp["Headers"].push("Type");
                 temp["Headers"].push("VPN");
-                for (let i = 0; i < devices.length; i++){
-                    temp[devices[i]].push(localStorage.getItem("Type") ?? "");
-                    temp[devices[i]].push(localStorage.getItem("VPN") ?? "");
-                }
                 setData(temp);
                 break;
             case "Add Trial Certificate":
+                temp["Headers"].push("Type");
+                setData(temp);
                 break;
             case "Add Webclip":
+                temp["Headers"].push("Type");
+                setData(temp);
                 break;
             case "App Update":
+                temp["Headers"].push("Type");
+                setData(temp);
                 break;
             case "Change of Device Type":
+                temp["Headers"].push("Type");
+                setData(temp);
                 break;
             case "Look for last location":
                 break;
             case "Remove 4G VPN profile":
                 temp["Headers"].push("Type");
                 temp["Headers"].push("VPN");
-                for (let i = 0; i < devices.length; i++){
-                    temp[devices[i]].push(localStorage.getItem("Type") ?? "");
-                    temp[devices[i]].push(localStorage.getItem("VPN") ?? "");
-                }
                 setData(temp);
                 break;
             case "Remove Trial Certificate":
+                temp["Headers"].push("Type");
+                setData(temp);
                 break;
         }
         setUpdate(false);
-    }, [update, nav])
+    }, [update, nav]);
     
     
     if (update == true){
         return(<></>)
     }
 
-    if (tableData["HasDevices"].length != 0) {
-        if (tableData["HasDevices"][0] == "false"){
-            alert("No devices")
-            nav("../req");
-            return (<></>)
-        }
-    } else {
-        alert("No devices")
-        nav("../req");
-        return (<></>)
-    }
-
     return(<>
+        
         <DefaultWrapper>
-        <DefaultTitle>Edit Table</DefaultTitle>
-        {
-            isPreview && <Preview previewFunc={setPreview}/>
-        }
-
-
+        <DefaultTitle>{reqType.current}</DefaultTitle>
+                
         <form onSubmit={
             (event : FormEvent<HTMLFormElement>) =>{
                 event.preventDefault();
@@ -111,6 +90,7 @@ export default function Edit(){
                 let tempElement : HTMLInputElement;
                 switch(buttonClick.current){
                     case "Add": 
+                        setAdding(true);
                         break;
                     case "Preview": setPreview(true); break;
                     case "Delete": 
@@ -122,6 +102,7 @@ export default function Edit(){
                             tempElement = boxes[i] as HTMLInputElement;
                             if (tempElement.type == "checkbox"){
                                 if (tempElement.checked){
+                                    numberOfDevices.current = numberOfDevices.current - 1;
                                     delete temp[tempElement.name.slice(0,tempElement.name.length-6)];
                                     localStorageString = localStorageString.filter(function(item) { return item !== (tempElement.name.slice(0, tempElement.name.length-6) as string)})
                                 }
@@ -140,24 +121,34 @@ export default function Edit(){
         <div className="mb-2 flex-1 space-x-2">
             <button onClick={
                 () =>{
-                    buttonClick.current = "Add"
+                    nav("../req");
+                }
+            } className="bg-slate-600 hover:bg-slate-700">Back</button>
+            <button onClick={
+                () =>{
+                    if (!isPreview)
+                        buttonClick.current = "Add"
                 }
             } className="bg-slate-600 hover:bg-slate-700">Add</button>
             
             <button onClick={
                 () =>{
-                    buttonClick.current = "Delete"
+                    if (!isAdding && !isPreview)
+                        buttonClick.current = "Delete"
                 }
             }className="bg-slate-600 hover:bg-slate-700">Delete</button>
 
             <button onClick={
                 () =>{
-                    buttonClick.current = "Preview"
+                    console.log(isAdding, isPreview);
+                    if (!isAdding)
+                        buttonClick.current = "Preview"
                 }
             } className="bg-slate-600 hover:bg-slate-700">Preview</button>
+            <h3 className="text-slate-800 text-left"># Entries: {numberOfDevices.current}</h3>
         </div>
         <div className="grid max-h-96 overflow-y-scroll">
-        <table className="table-auto  mx-auto border-separate border-spacing-2 border-spacing-x-0 p-2 bg-slate-600 hover:bg-slate-700 overflow-y-scroll rounded mt-5">
+        <table className="w-[90%] table-auto mx-auto border-separate border-spacing-2 border-spacing-x-0 p-2 bg-slate-600 hover:bg-slate-700 overflow-y-scroll rounded mt-5">
             <thead className="top-0">
                 <tr className="bg-slate-500 text-xl">
                     <th className="py-6 px-6 border-b-4"></th>
@@ -171,13 +162,13 @@ export default function Edit(){
             </thead>
             <tbody className="overflow-y-scroll max-h-96 h-96">
                  {Object.keys(tableData).map((key) => {
-                    if (key == "RequestType" || key == "Headers" || key == "HasDevices"){
+                    if (key == "RequestType" || key == "Headers"){
                         return;
                     }
                     return (
                         <tr key={key + "_r"} className="hover:bg-slate-500">
                             <td key={key+"_check"}>
-                                <input name={key + "_check"} type="checkbox"/>
+                                <input className="w-[100%] h-[100%]" name={key + "_check"} type="checkbox"/>
                             </td>
                             <td key="-1">
                                 <h3>{key}</h3>
@@ -197,5 +188,12 @@ export default function Edit(){
     </div>    
     </form>
     </DefaultWrapper>
+    {
+        (isPreview && !isAdding) && <Preview previewFunc={setPreview}/>
+    }
+    {
+        (!isPreview && isAdding) && <Adding reqtype={reqType.current ?? ""} close={setAdding} tabledata={tableData}
+        settabledata={setData} count={numberOfDevices}/>
+    }
     </>)
 }
