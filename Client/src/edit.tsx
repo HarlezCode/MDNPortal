@@ -1,22 +1,25 @@
 import { useEffect, useState, FormEvent, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Preview from "./preview";
-import {DefaultTitle, DefaultWrapper } from "./components";
+import {AppSelector, DefaultTitle, DefaultWrapper, WebClipSelector } from "./components";
 import Adding from "./Adding";
 import { resetLocalStorage } from "./clientActions";
 
 export default function Edit(){
     const [tableData, setData] = useState({"Headers" : [] as string[]} as {[index : string]: string[]});
     const [update, setUpdate] = useState(true);
-    const nav = useNavigate();
-    const buttonClick = useRef("none");
     const [isPreview, setPreview] = useState(false);
     const [isAdding, setAdding] = useState(false);
-    const reqType = useRef(localStorage.getItem("RequestType"));
     const [checkboxStates, setCheckboxStates] = useState({} as {[index : string] : boolean});
+    const nav = useNavigate();
+    const buttonClick = useRef("none");
+    const reqType = useRef(localStorage.getItem("RequestType"));
     const numberOfDevices = useRef(0);
     const prevTarget = useRef("");
     const shiftKeyDown = useRef(false);
+    const possibleWC = useRef({} as {[index : string] : string[]});
+    const possibleApps = useRef({} as {[index : string] : string[]});
+
     useEffect(() => {
         const tempCheckboxes = JSON.parse(JSON.stringify(checkboxStates));
         let updated = false;
@@ -68,17 +71,23 @@ export default function Edit(){
                 break;
             case "Add Webclip":
                 temp["Headers"].push("Type");
+                temp["Headers"].push("Webclip");
                 setData(temp);
                 break;
             case "App Update":
                 temp["Headers"].push("Type");
+                temp["Headers"].push("App");
                 setData(temp);
                 break;
             case "Change of Device Type":
                 temp["Headers"].push("Type");
+                temp["Headers"].push("Changing To");
                 setData(temp);
                 break;
             case "Look for last location":
+                temp["Headers"].push("Type");
+                temp["Headers"].push("MAC");
+                setData(temp);
                 break;
             case "Remove 4G VPN profile":
                 temp["Headers"].push("Type");
@@ -107,8 +116,16 @@ export default function Edit(){
         <form onSubmit={
             (event : FormEvent<HTMLFormElement>) =>{
                 event.preventDefault();
+
+                let selected : string = "";
+                if (buttonClick.current == "bulkwebclip"){
+                    selected = event.currentTarget.wcSelector.value;
+                } else if (buttonClick.current == "bulkapps"){
+                    selected = event.currentTarget.appSelector.value;
+                }
+
                 let boxes : HTMLCollection;
-                let temp;
+                let temp : {[index : string] : string[]};
                 let localStorageString : string[];
                 let tempElement : HTMLInputElement;
                 let tempCheckboxes;
@@ -141,23 +158,59 @@ export default function Edit(){
                         setCheckboxStates(tempCheckboxes);
                         
                         break;
+                    case "bulkwebclip":
+                        if (selected != ""){
+                            const temp = JSON.parse(JSON.stringify(tableData));
+                            for (let i=0; i < Object.keys(checkboxStates).length;i++){
+                                const key = Object.keys(checkboxStates)[i];
+                                if (checkboxStates[key]){
+                                    for (let v=0; v < temp[key].length; v++){
+                                        if (temp[key][v].startsWith("wcp_")){
+                                            temp[key][v] = selected;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            setData(temp);
+                        }
+                        break;
+                    case "bulkapps":
+                        if (selected != ""){
+                            const temp = JSON.parse(JSON.stringify(tableData));
+                            for (let i=0; i < Object.keys(checkboxStates).length;i++){
+                                const key = Object.keys(checkboxStates)[i];
+                                if (checkboxStates[key]){
+                                    for (let v=0; v < temp[key].length; v++){
+                                        if (temp[key][v].startsWith("app_")){
+                                            temp[key][v] = selected;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            setData(temp);
+                        }
+                        break;
+                        
                     default:
                         return;
                 }
             }
         }>
-        <div className="mb-2 flex-1 space-x-2">
+        <div className="mb-[2%] flex-1 space-x-2">
             <button onClick={
                 () =>{
                     nav("../req");
                 }
             } className="bg-slate-600 hover:bg-slate-700">Back</button>
+
             <button onClick={
                 () =>{
                     if (!isPreview)
                         buttonClick.current = "Add"
                 }
-            } className="bg-slate-600 hover:bg-slate-700">Add</button>
+            } className="bg-slate-600 hover:bg-slate-700">Import</button>
             
             <button onClick={
                 () =>{
@@ -172,8 +225,125 @@ export default function Edit(){
                         buttonClick.current = "Preview"
                 }
             } className="bg-slate-600 hover:bg-slate-700">Preview</button>
-            <h3 className="text-slate-800 text-left"># Entries: {numberOfDevices.current}</h3>
+            <h3 className="text-slate-800 text-left mt-[1%]"># Entries: {numberOfDevices.current}</h3>
+            {reqType.current =="Add Webclip" && <div>
+                <b className="text-slate-900">Bulk update: </b>
+                <select name="wcSelector" className="w-[25%]"><option value="">
+                Select WebClips
+                </option>
+                {
+                    function () {
+                        const vals = new Set([] as string[]);
+                        const keys = [] as string[];
+                        const options = [] as string[];
+                        for (let i=0; i < Object.keys(checkboxStates).length;i++){
+                            const key = Object.keys(checkboxStates)[i];
+                            if (checkboxStates[key]){
+                                if (possibleWC.current[key] != null){
+                                    if (!keys.includes(key)){
+                                        keys.push(key);
+                                    }
+                                    possibleWC.current[key].forEach((val : string) =>{
+                                        vals.add(val);
+                                    });
+                                }
+                            }
+                        }
+                        
+                        vals.forEach((val : string) =>{
+                            let add = true;
+                            for (let i=0; i < keys.length; i++){
+                                if (!possibleWC.current[keys[i]].includes(val)){
+                                    add = false;
+                                    break;
+                                }
+                            }
+                            if (add)
+                                options.push(val);
+                        });
+                        return (<>{
+                            options.map((val : string) =>{
+                                return (
+                                    <option className="select-none" value={val}>
+                                        {val.slice(4)}
+                                    </option>
+                                )
+                            })
+                        }</>)
+                    }()
+                }
+
+                
+            </select>
+            <button onClick={() =>{
+                if (!isAdding && !isPreview){
+                    buttonClick.current = "bulkwebclip";
+                }
+            }}className="bg-slate-600 ml-[2%] hover:bg-slate-700 py-[0.5%] px-[1%] text-sm">
+                Confirm
+            </button>
+            </div>}
+
+
+            {reqType.current =="App Update" && <div>
+                <b className="text-slate-900">Bulk update: </b>
+                <select name="appSelector" className="w-[25%]"><option value="">
+                Select Apps
+                </option>
+                {
+                    function () {
+                        const vals = new Set([] as string[]);
+                        const keys = [] as string[];
+                        const options = [] as string[];
+                        for (let i=0; i < Object.keys(checkboxStates).length;i++){
+                            const key = Object.keys(checkboxStates)[i];
+                            if (checkboxStates[key]){
+                                if (possibleApps.current[key] != null){
+                                    if (!keys.includes(key)){
+                                        keys.push(key);
+                                    }
+                                    possibleApps.current[key].forEach((val : string) =>{
+                                        vals.add(val);
+                                    });
+                                }
+                            }
+                        }
+                        
+                        vals.forEach((val : string) =>{
+                            let add = true;
+                            for (let i=0; i < keys.length; i++){
+                                if (!possibleApps.current[keys[i]].includes(val)){
+                                    add = false;
+                                    break;
+                                }
+                            }
+                            if (add)
+                                options.push(val);
+                        });
+                        return (<>{
+                            options.map((val : string) =>{
+                                return (
+                                    <option value={val}>
+                                        {val.slice(4)}
+                                    </option>
+                                )
+                            })
+                        }</>)
+                    }()
+                }
+
+                
+            </select>
+            <button onClick={() =>{
+                if (!isAdding && !isPreview){
+                    buttonClick.current = "bulkapps";
+                }
+            }}className="bg-slate-600 ml-[2%] hover:bg-slate-700 py-[0.5%] px-[1%] text-sm">
+                Confirm
+            </button>
+            </div>}
         </div>
+
         <div className="grid max-h-96 overflow-y-scroll">
         <table className="w-[90%] table-auto mx-auto border-separate border-spacing-2 border-spacing-x-0 p-2 bg-slate-600 hover:bg-slate-700 overflow-y-scroll rounded mt-5">
             <thead className="top-0">
@@ -203,7 +373,7 @@ export default function Edit(){
                 } 
                 className="overflow-y-scroll max-h-96 h-96">
                  {Object.keys(tableData).map((key) => {
-                    if (key == "RequestType" || key == "Headers"){
+                    if (key == "RequestType" || key == "Headers" || key.startsWith("data_")){
                         return;
                     }
                     return (
@@ -218,21 +388,18 @@ export default function Edit(){
                             } else {
                                 temp[key] = !temp[key];
                             }
-
-                            
                             
                             if (shiftKeyDown.current){
                                 if (prevTarget.current != ""){
                                     const curIndex = Object.keys(checkboxStates).indexOf(key);
                                     const lastIndex = Object.keys(checkboxStates).indexOf(prevTarget.current);
-                                    if (curIndex != null && lastIndex != null){
+                                    if (curIndex != null && lastIndex != null && curIndex != lastIndex){
                                         if (curIndex > lastIndex){
-                                            
                                             for (let i = lastIndex; i < curIndex; i++){
                                                 temp[Object.keys(checkboxStates)[i]] = true;
                                             }
                                         } else {
-                                            for (let i = curIndex; i < lastIndex; i++){
+                                            for (let i = curIndex; i < lastIndex + 1; i++){
                                                 temp[Object.keys(checkboxStates)[i]] = true;
                                             }
                                         }
@@ -267,6 +434,19 @@ export default function Edit(){
                                 <h3 className="select-none">{key}</h3>
                             </td>
                             {tableData[key].map((item, i) => {
+                                if (item.startsWith("wcp_")){
+                                    return(
+                                        <td className="px-10 py-2" key={String(i)}>
+                                            <WebClipSelector tabledata={tableData} sn={key} possibleWC={possibleWC}/>
+                                        </td>
+                                    )
+                                } else if (item.startsWith("app_")){
+                                    return(
+                                        <td className="px-10 py-2" key={String(i)}>
+                                            <AppSelector tabledata={tableData} sn={key} possibleApps={possibleApps} />
+                                        </td>
+                                    )
+                                }
                                 return(
                                     <td className="px-10 py-2" key={String(i)}>
                                         <h3 className="select-none">{item}</h3>
