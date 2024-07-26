@@ -1,8 +1,12 @@
 import { DefaultTitle } from "./components";
 
-function submitFunc(){
+function submitFunc(data : any){
     //need to do item checks here eg. webclip unselected and give error if some are not selected.
+    //for adding removing vpn, need to check if vpn exists or not and warn the user correspondingly.
+    //for add/remove trial cert, need to check for existence and warn the user correspondingly.
+    // prepare api call here as well
     alert("submitted");
+    console.log(data);
 }
 
 export default function Preview({previewFunc, data} : {previewFunc : any, data : any}){
@@ -46,7 +50,7 @@ export default function Preview({previewFunc, data} : {previewFunc : any, data :
                 </div>
                 <div className="grid content-start grid-cols-5 space-x-[30%] grid-rows-1">
                     <div><button className="bg-slate-700" onClick={()=>previewFunc(false)}>Close</button></div>
-                    <div><button className="bg-slate-700" onClick={()=>submitFunc()}>Submit</button></div>
+                    <div><button className="bg-slate-700" onClick={()=>submitFunc(data)}>Submit</button></div>
                 </div>
             </div>
             </div>
