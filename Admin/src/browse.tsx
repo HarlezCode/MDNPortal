@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import {logout, fetchFromServer} from './serverActions'
 import { FormEvent, useState, useRef } from 'react';
 import { Navbar } from './components';
+import { exportExcel } from './userActions';
 type ResType = {[key :string] : string};
 
 function ScrollableTD({children} : {children : any}){
@@ -10,10 +11,11 @@ function ScrollableTD({children} : {children : any}){
 
 export default function Browse(){
     const nav = useNavigate();
+    const exportOption = useRef("current");
     const [tableData, setData] = useState([] as ResType[]);
     const buttonState = useRef("none");
     return (<>
-    <div className='absolute top-0 left-3 mt-2 bg-gradient-to-r from-red-800 to-rose-900 rounded p-2'>
+    <div className='absolute top-0 left-3 mt-2 bg-gradient-to-r from-red-800 to-rose-900 rounded p-2 text-l'>
         <h1>Admin Portal</h1>
     </div>
     <Navbar />
@@ -29,18 +31,24 @@ export default function Browse(){
     </div>
     <div className='absolute left-0 top-[20%]'>
         <div>
-            <form className='absolute space-x-2 ml-[80%] ' onSubmit={(e : FormEvent<HTMLFormElement>) => { e.preventDefault()}}>
-                <select className='h-8 bg-rose-900'>
-                    <option value="current">Current</option>
-                    <option value="daily">Daily report</option>
-                    <option value="monthy">Monthy report</option>
-                </select>
-                <button className='bg-red-500 hover:bg-rose-500 border-none' onClick={() =>{
-                    alert("exporting")
-                }}>
-                    Export
-                </button>
-            </form>
+            <div className='left-[80%] absolute space-x-2'>
+            <select className='h-8 bg-rose-900' onChange={(e : any) =>{
+                exportOption.current = e.currentTarget.value;
+            }}>
+                <option value="current">Current</option>
+                <option value="daily">Daily report</option>
+                <option value="monthly">Monthy report</option>
+            </select>
+            <button className='bg-red-500 hover:bg-rose-500 border-none' onClick={() =>{
+                if (exportOption.current == "current"){
+                    exportExcel(tableData);
+                } else if (exportOption.current == "monthly"){
+                    
+                }
+            }}>
+                Export
+            </button>
+            </div>
             
             <form onSubmit={async (e : FormEvent<HTMLFormElement>) => {
                 e.preventDefault();
@@ -49,8 +57,7 @@ export default function Browse(){
                     await fetchFromServer(e).then((res) => setData(res));
                 }
             }}>
-                <div className='grid grid-rows-1 grid-cols-2 space-x-2 w-[30%] mx-auto mb-2'>
-            <button className='bg-red-500 hover:bg-rose-500 border-none m-2'>Process</button>
+                <div className='grid grid-rows-1 grid-cols-1 space-x-2 w-[30%] mx-auto mb-2'>
             <button className='bg-red-500 hover:bg-rose-500 border-none m-2' onClick={()=>{buttonState.current="fetch"}}>Fetch</button></div>
                 <table className='table table-auto gap-0 space-x-0 border-spacing-0 border-collapse p-0 mt-8 mb-5 '>
                     <thead>
@@ -113,10 +120,10 @@ export default function Browse(){
                     <td><input name='clusterfilter' className='w-16 bg-rose-800 placeholder-white' placeholder='Match'/></td>
                     <td><select name='statusfilter' className='w-16 bg-rose-800 placeholder-white'>
                         <option value="">All</option>
-                        <option value="pending">Pending</option>
-                        <option value="completed">Completed</option>
-                        <option value="rejected">Rejected</option>
-                        <option value="onhold">On hold</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Onhold">On hold</option>
                     </select></td>
                     <td><input name='uuidfilter' className='w-16 bg-rose-800 placeholder-white' placeholder='uuid'/></td>
                     <td><input name='datefilter' className="bg-rose-800" type='date'/></td>
@@ -137,7 +144,7 @@ export default function Browse(){
                     <td><input name='macfilter' className='bg-rose-800 placeholder-white' placeholder='Match mac address'/></td>
                     <td><input name='appfilter' className='max-w-26 bg-rose-800 placeholder-white' placeholder='Match app update'/></td>
                     <td><input name='webclipfilter' className='max-w-26 bg-rose-800 placeholder-white' placeholder='Match webclip'/></td>
-                    <td><input name='timefilter' className='max-w-26 bg-rose-800 placeholder-white' placeholder='hh:mm'/></td>
+                    <td><input name='timefilter' className='max-w-26 bg-rose-800 placeholder-white' placeholder='hh:mm:ss'/></td>
                     </tr>
                     </tbody>
                 </table>

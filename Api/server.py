@@ -19,8 +19,10 @@ async def addrequests():
         return error
     if not "Fromuser" in request.headers.keys():
         return error
-    if not "Admin" in request.headers["Key"]:
-        return jsonify("key invalid")
+
+    valid = await validateKey(request.headers["Key"])
+    if not valid:
+        return jsonify("Key invalid")
     if len(request.headers["Fromuser"]) == 0:
         return error
 
@@ -42,7 +44,7 @@ async def addrequests():
             entry["from"] = request.headers["Fromuser"]
             entry["date"] = date.today().strftime("%d/%m/%Y")
             entry["time"] = datetime.now().strftime("%H:%M:%S")
-
+            entry["status"] = "Pending"
             if req == "Add 4G VPN Profile" or req == "Remove 4G VPN profile" or req == "Remove Trial Certificate" or req == "Add Trial Certificate": # Type | vpn | uuid
                 if len(data[i]) < 3:
                     skippedEntries = True
@@ -95,13 +97,32 @@ async def addrequests():
     )
     conn.autocommit = True
     cursor = conn.cursor()
+    cursor.execute(
+        '''
+        SELECT * FROM CLUSTERID
+        '''
+    )
+    clusterid = cursor.fetchone()
+    if clusterid == None:
+        clusterid = ''
+    else:
+        clusterid = clusterid[0]
+
     for i in entries:
+        i["cluster"] = clusterid
         cursor.execute(
             '''
             INSERT INTO entries
             Values(%(requestType)s,%(serial)s,%(cluster)s,%(status)s,%(uuid)s,%(date)s,%(device)s,%(change)s,%(from)s,%(mac)s,%(app)s,%(webclip)s,%(time)s)
             '''
         , i)
+    cursor.execute(
+        '''
+        UPDATE CLUSTERID
+        SET
+        val = %(cid)s
+        '''
+    , {"cid": int(clusterid)+1})
     conn.close()
     if skippedEntries:
         return jsonify("skipped entries")
@@ -114,11 +135,14 @@ async def getrequests():
     # get key
     if not "key" in request.headers:
         return error
-    key = request.headers["key"]
+    key = request.headers["Key"]
     # validate session key here
     if len(key) > 0:
-        if not "Admin" in key:
-            return error
+        valid = await validateKey(key)
+        if not valid:
+            return jsonify("Invalid key")
+    else:
+        return error
 
     # parse data
     data = request.args.to_dict()
@@ -131,7 +155,24 @@ async def getrequests():
     )
     conn.autocommit = True
     cursor = conn.cursor()
+    if data["date"] != "":
+        l = data["date"].split("-")
+        newdate = ""
+        for i in reversed(l):
+            newdate += i
+            newdate += "/"
+        newdate = newdate[:len(newdate)-1]
+        data["date"] = newdate
+    print(data["date"])
+    data["date"] = '%' + data["date"] + '%'
 
+    data["time"] = '%' + data["time"] + '%'
+    data["serial"] = '%' + data["serial"] + '%'
+    data['mac'] = '%' + data['mac'] + '%'
+    data["webclip"] = '%' + data["webclip"] + '%'
+    data['app'] = '%' + data['app'] + '%'
+    data['from'] = '%' + data['from'] + '%'
+    data['uuid'] = '%' + data['uuid'] + '%'
     cursor.execute('''
     SELECT
         *
@@ -139,18 +180,18 @@ async def getrequests():
         entries
     WHERE
         (RTYPE = %(requestType)s OR %(requestType)s = '') AND
-        (SN = %(serial)s OR %(serial)s = '') AND
+        (SN LIKE %(serial)s OR %(serial)s = '%%') AND
         (CLUSTERID = %(cluster)s OR %(cluster)s = '') AND
         (STATUS = %(status)s OR %(status)s = '') AND
-        (UID = %(uuid)s OR %(uuid)s = '') AND
-         (CDATE = %(date)s OR %(date)s = '') AND
+        (UID LIKE %(uuid)s OR %(uuid)s = '%%') AND
+         (CDATE LIKE %(date)s OR %(date)s = '%%') AND
         (DTYPE = %(device)s OR %(device)s = '') AND
          (TOTYPE = %(change)s OR %(change)s = '') AND
-        (FUSER = %(from)s OR %(from)s = '') AND
-         (MAC = %(mac)s OR %(mac)s = '') AND
-        (APP = %(app)s OR %(app)s = '') AND
-        (WEBCLIP = %(webclip)s OR %(webclip)s = '') AND
-        (TIMECREATED = %(time)s OR %(time)s = '')''', data)
+        (FUSER LIKE %(from)s OR %(from)s = '%%') AND
+         (MAC LIKE %(mac)s OR %(mac)s = '%%') AND
+        (APP LIKE %(app)s OR %(app)s = '%%') AND
+        (WEBCLIP LIKE %(webclip)s OR %(webclip)s = '%%') AND
+        (TIMECREATED LIKE %(time)s OR %(time)s = '%%')''', data)
     fetch = cursor.fetchone()
     fetched = []
     while fetch:
@@ -163,6 +204,7 @@ async def getrequests():
         items.append(dict())
         for index, key in enumerate(params):
             items[-1][key] = i[index]
+        items[-1]["id"] = i[-1]
     print(items)
     conn.close()
     return jsonify({"data" : items, "response" : "yes"})

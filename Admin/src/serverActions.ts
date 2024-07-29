@@ -13,8 +13,104 @@ export async function logout() : Promise<boolean>{
 
 type ResType = {[key : string] : string};
 
+export async function fetchFromServerDaily(){
+    const date = new Date();
+    const concatDate = date.getFullYear().toString() +"-" + (date.getMonth()+1).toString() + "-" + date.getDate().toString();
+    let queryParams = "?";
+    queryParams += "requestType="+ "&";
+    queryParams += "serial=" + "&";
+    queryParams += "cluster=" + "&";
+    queryParams += "status=" + "Pending"+ "&";
+    queryParams += "uuid=" + "&";
+    queryParams += "date=" + concatDate +"&";
+    queryParams += "device=" + "&";
+    queryParams += "change=" + "&";
+    queryParams += "from=" + "&";
+    queryParams += "mac=" + "&";
+    queryParams += "app=" +  "&";
+    queryParams += "webclip=" + "&";
+    queryParams += "time=";
+    let data : ResType[] = [];
+    const res = await fetch("http://localhost:5000/api/requests" + queryParams, {
+        method : "GET",
+        headers : {
+            "key" : localStorage.getItem("Token") ?? ""
+        }
+    });
+    
+    await res.json().then((res)=>{
+        data = res.data ?? [];
+    });
+
+    return data;
+}
+
+export async function fetchFromServerMonthly(){
+    const date = new Date();
+    const concatDate = date.getFullYear().toString() +"-" + (date.getMonth()+1).toString();
+    let queryParams = "?";
+    queryParams += "requestType="+ "&";
+    queryParams += "serial=" + "&";
+    queryParams += "cluster=" + "&";
+    queryParams += "status=" + "Pending"+ "&";
+    queryParams += "uuid=" + "&";
+    queryParams += "date=" + concatDate +"&";
+    queryParams += "device=" + "&";
+    queryParams += "change=" + "&";
+    queryParams += "from=" + "&";
+    queryParams += "mac=" + "&";
+    queryParams += "app=" +  "&";
+    queryParams += "webclip=" + "&";
+    queryParams += "time=";
+    let data : ResType[] = [];
+    const res = await fetch("http://localhost:5000/api/requests" + queryParams, {
+        method : "GET",
+        headers : {
+            "key" : localStorage.getItem("Token") ?? ""
+        }
+    });
+    
+    await res.json().then((res)=>{
+        data = res.data ?? [];
+    });
+
+    return data;
+}
+
+
+
+export async function fetchFromServerRaw(){
+    let queryParams = "?";
+    queryParams += "requestType="+ "&";
+    queryParams += "serial=" + "&";
+    queryParams += "cluster=" + "&";
+    queryParams += "status=" + "Pending"+ "&";
+    queryParams += "uuid=" + "&";
+    queryParams += "date=" + "&";
+    queryParams += "device=" + "&";
+    queryParams += "change=" + "&";
+    queryParams += "from=" + "&";
+    queryParams += "mac=" + "&";
+    queryParams += "app=" +  "&";
+    queryParams += "webclip=" + "&";
+    queryParams += "time=";
+    let data : ResType[] = [];
+    const res = await fetch("http://localhost:5000/api/requests" + queryParams, {
+        method : "GET",
+        headers : {
+            "key" : localStorage.getItem("Token") ?? ""
+        }
+    });
+    
+    await res.json().then((res)=>{
+        data = res.data ?? [];
+    });
+
+    return data;
+}
+
+
 export async function fetchFromServer(e : FormEvent<HTMLFormElement>){
-    console.log(e.currentTarget);
     let queryParams = "?";
     queryParams += "requestType=" + e.currentTarget.requestfilter.value + "&";
     queryParams += "serial=" + e.currentTarget.snfilter.value + "&";

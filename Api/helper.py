@@ -44,3 +44,7 @@ def checkQueryParams(data):
             return False
     return True
 
+async def validateKey(key):
+    if "Admin" not in key:
+        return False
+    return True
