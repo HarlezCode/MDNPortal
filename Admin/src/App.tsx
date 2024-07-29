@@ -3,6 +3,7 @@ import {createBrowserRouter, Navigate, RouterProvider} from 'react-router-dom'
 import ProtectedRoute from './protected';
 import Login from "./login"
 import Dashboard from "./dashboard"
+import Browse from "./browse"
 const router = createBrowserRouter([
   {
     path : '/',
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
   {
     path : 'dashboard',
     element : <ProtectedRoute><Dashboard/></ProtectedRoute>
+  },
+  {
+    path: 'dashboard/browse',
+    element : <ProtectedRoute><Browse/></ProtectedRoute>
   }
 ]
 );

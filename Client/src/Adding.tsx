@@ -45,6 +45,7 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
                         // pushing data (fetch here)
                         newData[entry[0]].push("CORP");
                         newData[entry[0]].push(entry[1]);
+                        newData[entry[0]].push("uuid_testuuid" + entry[0]);
 
                         count.current++;
                     }
@@ -145,9 +146,11 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
                         newData[arr[i]].push("CORP");
                         newData[arr[i]].push(event.currentTarget.changeType.value);
                     }
+                    if (reqtype != "Add new device record"){
+                        newData[arr[i]].push("uuid_testuuid" + arr[i]);
+                    }
                     count.current++;
                 }
-                console.log(newData);
                 settabledata(newData);
                 localStorage.setItem("SN", curString.join("\n"));
                 close();
@@ -173,7 +176,7 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
 
             }} className="text-slate-800"/>
             <div className="flex-1 col-1 row-1"><b className="text-slate-900">SN of device(s): </b><textarea readOnly={false} style={{resize: "none"}} value={textArea} onChange={(e)=>{setText(e.currentTarget.value)}} className="overflow-y-scroll h-40 text-slate-900 bg-white border-blue-800 border-2 rounded mt-3 align-top" name="snDevices"/></div>
-            {reqtype == "Change of Device Type" && <div>
+            {reqtype == "Change of Device Type" && <div className='flex space-x-4'>
                 <h3><b>Change To: </b></h3>
                 <select name="changeType">
                     <option value="">--Select--</option>

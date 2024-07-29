@@ -9,15 +9,15 @@ def initializeDB():
     cursor.execute("DROP TABLE IF EXISTS ENTRIES")
     sql = '''
 CREATE TABLE ENTRIES(
-    ID INT NOT NULL,
     DTYPE TEXT,
+    STATUS TEXT,
     SN TEXT,
     CLUSTERID TEXT,
     UID TEXT,
     CDATE CHAR(50),
     TOTYPE CHAR(20),
     MAC TEXT,
-    CTYPE CHAR(20),
+    RTYPE CHAR(255),
     FUSER CHAR(255),
     WEBCLIP CHAR(255),
     APP CHAR(255),

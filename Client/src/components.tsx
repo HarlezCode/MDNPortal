@@ -41,7 +41,7 @@ export function WebClipSelector({sn, tabledata, possibleWC} : {sn : string, tabl
     });
 
     return(<>
-        <select className="bg-slate-700 rounded pl-[4%] w-[30%] overflow-x-hidden select-none" value={function(){
+        <select className="bg-slate-700 rounded pl-[4%] w-[60%] overflow-x-hidden select-none" value={function(){
             for (let i =0; i < tabledata[snNumber.current].length; i++){
                 if (tabledata[snNumber.current][i].startsWith("wcp_")){
                     return tabledata[snNumber.current][i];
@@ -94,7 +94,7 @@ export function AppSelector({sn, tabledata, possibleApps} : {sn : string, tabled
     });
 
     return(<>
-        <select className="bg-slate-700 rounded pl-[4%] w-[30%] overflow-x-hidden select-none" value={function(){
+        <select className="bg-slate-700 rounded pl-[4%] w-[60%] overflow-x-hidden select-none" value={function(){
             for (let i =0; i < tabledata[snNumber.current].length; i++){
                 if (tabledata[snNumber.current][i].startsWith("app_")){
                     return tabledata[snNumber.current][i];

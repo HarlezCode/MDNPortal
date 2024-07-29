@@ -446,7 +446,12 @@ export default function Edit(){
                                             <AppSelector tabledata={tableData} sn={key} possibleApps={possibleApps} />
                                         </td>
                                     )
+                                } else if (item.startsWith("uuid_")){
+                                    return;
+                                } else if (item.startsWith("fromuser_")){
+                                    return;
                                 }
+
                                 return(
                                     <td className="px-10 py-2" key={String(i)}>
                                         <h3 className="select-none">{item}</h3>
