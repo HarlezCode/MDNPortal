@@ -4,6 +4,7 @@ import ProtectedRoute from './protected';
 import Login from "./login"
 import Dashboard from "./dashboard"
 import Browse from "./browse"
+import Webclips from './webclips';
 const router = createBrowserRouter([
   {
     path : '/',
@@ -21,6 +22,11 @@ const router = createBrowserRouter([
   {
     path: 'dashboard/browse',
     element : <ProtectedRoute><Browse/></ProtectedRoute>
+  },
+  {
+    path: 'dashboard/webclips',
+    element: <ProtectedRoute><Webclips/></ProtectedRoute>
+
   }
 ]
 );

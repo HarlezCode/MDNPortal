@@ -196,7 +196,6 @@ async def addrequests():
 
     return jsonify({"status" : "good", "error" : "Null", "data": skippedEntries})
 
-
 @app.route('/api/requests', methods=['GET'])
 async def getrequests():
     error = jsonify({"data" : [], "response" : "no"})
@@ -278,6 +277,42 @@ async def getrequests():
     conn.close()
     return jsonify({"data" : items, "response" : "yes"})
 
+
+@app.route('/api/fetchwebclips/', methods=["GET"])
+async def fetchWebclips():
+    if not "Key" in request.headers.keys():
+        return jsonify({"res": "error"})
+    valid = await validateKey(request.headers["Key"])
+    data = request.args.to_dict()
+    if not "active" in data.keys():
+        return jsonify({"res": "error"})
+    if not valid:
+        return jsonify({"res": "error"})
+
+    conn = psycopg2.connect(
+        database="request", user='postgres', password="123", host="127.0.0.1", port="5432"
+    )
+    conn.autocommit = True
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT * FROM webclips WHERE (active=%(active)s OR %(active)s = '')
+    ''', {"active": data["active"]})
+    fetched = cursor.fetchone()
+    listofitems =  []
+    while fetched:
+        item = dict()
+        item['model'] = fetched[0]
+        item['dtype'] = fetched[1]
+        item['platform'] = fetched[2]
+        item['clstr'] = fetched[3]
+        item['os'] = fetched[4]
+        item['webclip'] = fetched[5]
+        item['id'] = fetched[6]
+        item['active'] = fetched[7]
+        listofitems.append(item)
+        fetched = cursor.fetchone()
+    conn.close()
+    return jsonify({"data": listofitems, "res" : "ok"})
 
 if __name__ == "__main__":
     # db.initializeDB()

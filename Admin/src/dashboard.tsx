@@ -1,5 +1,4 @@
-import { useNavigate } from 'react-router-dom';
-import {logout, fetchFromServerRaw, processRequests} from './serverActions'
+import {fetchFromServerRaw, processRequests} from './serverActions'
 import {useState, useRef, useEffect } from 'react';
 import { Navbar } from './components';
 import { exportExcel } from './clientActions';
@@ -11,7 +10,6 @@ function ScrollableTD({children} : {children : any}){
 
 
 export default function Dashboard(){
-    const nav = useNavigate();
     const [tableData, setData] = useState([] as ResType[]);
     const [cbState, setCb] = useState({} as {[index : string] : boolean}); 
     const [refresh, setRefresh] = useState(true);
@@ -47,18 +45,8 @@ export default function Dashboard(){
 
 
     return (<>
-    <div className='absolute top-0 left-3 mt-2 bg-gradient-to-r from-red-800 to-rose-900 rounded p-2 text-l'>
-        <h1>Admin Portal</h1>
-    </div>
+    
     <Navbar />
-    <div className='top-0 absolute right-0 m-2'>
-        <button className='bg-red-500 hover:bg-rose-500 outline-none border-none' onClick={async ()=>{
-            
-            await logout().then((res : boolean)=>{
-                if (res)
-                    nav("../login");})
-            }}>Logout</button>
-    </div>
     
     <div className='absolute left-0 top-[20%]'>
         <div>

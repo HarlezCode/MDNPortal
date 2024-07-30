@@ -5,6 +5,19 @@ export async function authAction(username : string, password : string) : Promise
         res(username+password)});
 }
 
+export async function fetchWebclips(active : string){
+    const res = await fetch("http://localhost:5000/api/fetchwebclips/" + "?active="+active, {
+        method: "GET",
+        headers: {
+            "Key" : localStorage.getItem("Token") ?? ""
+        }
+    })
+    let val;
+    await res.json().then((res) =>{
+        val = res;
+    })
+    return val;
+}
 export async function logout() : Promise<boolean>{
     localStorage.removeItem("Token");
     return new Promise( (res) => {

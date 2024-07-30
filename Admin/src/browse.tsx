@@ -1,5 +1,4 @@
-import { useNavigate } from 'react-router-dom';
-import {logout, fetchFromServer, fetchFromServerRaw} from './serverActions'
+import {fetchFromServer, fetchFromServerRaw} from './serverActions'
 import { FormEvent, useState, useRef } from 'react';
 import { Navbar } from './components';
 import { exportExcel } from './clientActions';
@@ -10,25 +9,11 @@ function ScrollableTD({children} : {children : any}){
 }
 
 export default function Browse(){
-    const nav = useNavigate();
     const exportOption = useRef("current");
     const [tableData, setData] = useState([] as ResType[]);
     const buttonState = useRef("none");
     return (<>
-    <div className='absolute top-0 left-3 mt-2 bg-gradient-to-r from-red-800 to-rose-900 rounded p-2 text-l'>
-        <h1>Admin Portal</h1>
-    </div>
     <Navbar />
-    <div className='top-0 absolute right-0 m-2'>
-        <button className='bg-red-500 hover:bg-rose-500 outline-none border-none' onClick={async ()=>{
-            
-            await logout().then((res : boolean)=>{
-                if (res)
-                    nav("../login");})
-            }}>Logout</button>
-        
-        
-    </div>
     <div className='absolute left-0 top-[20%]'>
         <div>
             <div className='left-[80%] absolute space-x-2'>
