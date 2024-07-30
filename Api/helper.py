@@ -1,5 +1,3 @@
-import re
-
 params = [
     "requestType",
     "serial",
@@ -13,7 +11,25 @@ params = [
     "mac",
     "app",
     "webclip",
-    "time"
+    "time",
+    "processed"
+]
+paramsProcess = [
+    "requestType",
+    "serial",
+    "cluster",
+    "status",
+    "uuid",
+    "date",
+    "device",
+    "change",
+    "from",
+    "mac",
+    "app",
+    "webclip",
+    "time",
+    "id",
+    "processed"
 ]
 requests = [
     "Add 4G VPN Profile",
@@ -33,7 +49,13 @@ def checkRequestType(req):
     if not req in requests:
         return False
     return True
-
+def checkProcessParams(data):
+    for i in params:
+        if not i in data.keys():
+            return False
+    if not "id" in data.keys():
+        return False
+    return True
 
 def checkQueryParams(data):
     for i in params:

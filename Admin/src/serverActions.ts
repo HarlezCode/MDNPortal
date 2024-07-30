@@ -13,87 +13,47 @@ export async function logout() : Promise<boolean>{
 
 type ResType = {[key : string] : string};
 
-export async function fetchFromServerDaily(){
-    const date = new Date();
-    const concatDate = date.getFullYear().toString() +"-" + (date.getMonth()+1).toString() + "-" + date.getDate().toString();
-    let queryParams = "?";
-    queryParams += "requestType="+ "&";
-    queryParams += "serial=" + "&";
-    queryParams += "cluster=" + "&";
-    queryParams += "status=" + "Pending"+ "&";
-    queryParams += "uuid=" + "&";
-    queryParams += "date=" + concatDate +"&";
-    queryParams += "device=" + "&";
-    queryParams += "change=" + "&";
-    queryParams += "from=" + "&";
-    queryParams += "mac=" + "&";
-    queryParams += "app=" +  "&";
-    queryParams += "webclip=" + "&";
-    queryParams += "time=";
-    let data : ResType[] = [];
-    const res = await fetch("http://localhost:5000/api/requests" + queryParams, {
-        method : "GET",
-        headers : {
-            "key" : localStorage.getItem("Token") ?? ""
+export async function processRequests(data : ResType[]){
+    let val;
+    await fetch("http://localhost:5000/api/processrequests", {
+        method: "POST",
+        headers: {
+            "Key": localStorage.getItem("Token") ?? "", // temp val
+            "From": localStorage.getItem("Token") + "_User", // temp val
+            'Accept' : 'application/json', 
+            'Content-Type' : 'application/json'
+        },
+        body: JSON.stringify(data)
+    }).then(async (res : any) =>{
+        await res.json().then((res2 : any) =>{
+            console.log(res2);
+            val = res2;
         }
-    });
-    
-    await res.json().then((res)=>{
-        data = res.data ?? [];
-    });
+        );
+        
+    })
 
-    return data;
-}
-
-export async function fetchFromServerMonthly(){
-    const date = new Date();
-    const concatDate = date.getFullYear().toString() +"-" + (date.getMonth()+1).toString();
-    let queryParams = "?";
-    queryParams += "requestType="+ "&";
-    queryParams += "serial=" + "&";
-    queryParams += "cluster=" + "&";
-    queryParams += "status=" + "Pending"+ "&";
-    queryParams += "uuid=" + "&";
-    queryParams += "date=" + concatDate +"&";
-    queryParams += "device=" + "&";
-    queryParams += "change=" + "&";
-    queryParams += "from=" + "&";
-    queryParams += "mac=" + "&";
-    queryParams += "app=" +  "&";
-    queryParams += "webclip=" + "&";
-    queryParams += "time=";
-    let data : ResType[] = [];
-    const res = await fetch("http://localhost:5000/api/requests" + queryParams, {
-        method : "GET",
-        headers : {
-            "key" : localStorage.getItem("Token") ?? ""
-        }
-    });
-    
-    await res.json().then((res)=>{
-        data = res.data ?? [];
-    });
-
-    return data;
+    return val
 }
 
 
 
-export async function fetchFromServerRaw(){
+export async function fetchFromServerRaw({rtype='',sn='',stat='Pending',uid='', date='',dtype='', ctype='',from='',mac='',app='',wc='' ,tm='',processed=''}){
     let queryParams = "?";
-    queryParams += "requestType="+ "&";
-    queryParams += "serial=" + "&";
+    queryParams += "requestType="+ rtype+"&";
+    queryParams += "serial=" + sn + "&";
     queryParams += "cluster=" + "&";
-    queryParams += "status=" + "Pending"+ "&";
-    queryParams += "uuid=" + "&";
-    queryParams += "date=" + "&";
-    queryParams += "device=" + "&";
-    queryParams += "change=" + "&";
-    queryParams += "from=" + "&";
-    queryParams += "mac=" + "&";
-    queryParams += "app=" +  "&";
-    queryParams += "webclip=" + "&";
-    queryParams += "time=";
+    queryParams += "status=" + stat + "&";
+    queryParams += "uuid=" + uid +"&";
+    queryParams += "date=" + date+"&";
+    queryParams += "device=" +dtype+ "&";
+    queryParams += "change=" +ctype + "&";
+    queryParams += "from=" +from  + "&";
+    queryParams += "mac=" + mac + "&";
+    queryParams += "app=" + app  + "&";
+    queryParams += "webclip=" + wc + "&";
+    queryParams += "time=" + tm + "&";
+    queryParams += "processed=" + processed; 
     let data : ResType[] = [];
     const res = await fetch("http://localhost:5000/api/requests" + queryParams, {
         method : "GET",
@@ -124,12 +84,13 @@ export async function fetchFromServer(e : FormEvent<HTMLFormElement>){
     queryParams += "mac=" + e.currentTarget.macfilter.value + "&";
     queryParams += "app=" + e.currentTarget.appfilter.value + "&";
     queryParams += "webclip=" + e.currentTarget.webclipfilter.value + "&";
-    queryParams += "time=" + e.currentTarget.timefilter.value;
+    queryParams += "time=" + e.currentTarget.timefilter.value + "&";
+    queryParams += "processed=" + e.currentTarget.processfilter.value;
     let data : ResType[] = [];
     const res = await fetch("http://localhost:5000/api/requests" + queryParams, {
         method : "GET",
         headers : {
-            "key" : localStorage.getItem("Token") ?? ""
+            "key" : localStorage.getItem("Token") ?? "" // temp val
         }
     });
     

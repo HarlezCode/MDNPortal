@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import {logout, fetchFromServerRaw, fetchFromServerDaily, fetchFromServerMonthly} from './serverActions'
-import { FormEvent, useState, useRef, useEffect } from 'react';
+import {logout, fetchFromServerRaw, processRequests} from './serverActions'
+import {useState, useRef, useEffect } from 'react';
 import { Navbar } from './components';
 import Loading from './loading'
-import { exportExcel } from './userActions';
-type ResType = {[key :string] : string};
+import { exportExcel } from './clientActions';
+type ResType = {[key : string] : string};
 
 function ScrollableTD({children} : {children : any}){
     return (<td className='hover:overflow-auto max-w-14 h-14 overflow-hidden px-4'>{children}</td>)
@@ -17,8 +17,6 @@ export default function Dashboard(){
     const [cbState, setCb] = useState({} as {[index : string] : boolean}); 
     const [refresh, setRefresh] = useState(true);
     const autoRefresh = useRef(false);
-    const [buttonState, setButtonState] = useState('none');
-    const isExport = useRef(false);
     const isProcess = useRef(false);
     const exportOption = useRef("current");
     useEffect(() =>{
@@ -32,14 +30,13 @@ export default function Dashboard(){
             }
         });
         setCb(temp);
-    }, [tableData])
+    }, [tableData]);
     useEffect(()=>{
         // fetch from db
         if (refresh){
             setRefresh(false);
-            fetchFromServerRaw().then((res)=>{
+            fetchFromServerRaw({}).then((res)=>{
                 setData(res);
-                
             });
             if (autoRefresh.current){
                 setTimeout(()=>{setRefresh(true)}, 10000);
@@ -63,8 +60,6 @@ export default function Dashboard(){
                 if (res)
                     nav("../login");})
             }}>Logout</button>
-        
-        
     </div>
     
     <div className='absolute left-0 top-[20%]'>
@@ -78,18 +73,33 @@ export default function Dashboard(){
                 }>
                     <option value="current">Current</option>
                     <option value="daily">Daily report</option>
-                    <option value="monthly">Monthy report</option>
+                    <option value="monthly">Monthly report</option>
                 </select>
                 <button className='bg-red-500 hover:bg-rose-500 border-none' onClick={() =>{
+                    const params = {
+                        stat : '',
+                        date : ''
+                    }
                     if (!isProcess.current){
                         if (exportOption.current == "current"){
                             exportExcel(tableData);
-                        } else if (exportOption.current == "daily"){
-                            fetchFromServerDaily().then((res : any) =>{
+                        } else if (exportOption.current == "monthly"){
+                            const date = new Date();
+                            const concatDate = date.getFullYear().toString() +"-" + (date.getMonth()+1).toString();
+                            params.date= concatDate;
+                            fetchFromServerRaw(params).then((res : any) =>{
                                 exportExcel(res);
                             });
-                        } else if (exportOption.current == "monthly"){
-                            fetchFromServerMonthly().then((res : any) =>{
+                        } else if (exportOption.current == "daily"){
+                            const date = new Date();
+                            let month = (date.getMonth()+1).toString();
+                            if (month.length ==1){
+                                month = '0' + month;
+                            }
+
+                            const concatDate = date.getFullYear().toString() +"-" + month + "-" + date.getDate().toString();
+                            params.date = concatDate;
+                            fetchFromServerRaw(params).then((res : any) =>{
                                 exportExcel(res);
                             })
                         }
@@ -98,10 +108,25 @@ export default function Dashboard(){
                     Export
                 </button>
                 <button className='bg-red-500 hover:bg-rose-500 border-none text-sm' onClick={()=>{
-                    if (!isExport.current){
-                        setButtonState("process");
-                        alert("processing");
+                    if (isProcess.current){
+                        return;
                     }
+                    const temp = [] as ResType[];
+                    isProcess.current = true;
+                    Object.keys(cbState).forEach((val : string) =>{
+                        if (cbState[val]){
+                            for (let i =0; i<tableData.length;i++){
+                                if (tableData[i].id == val){
+                                    temp.push(JSON.parse(JSON.stringify(tableData[i])));
+                                }
+                            }
+                        }   
+                    });
+                    processRequests(temp).then((res : any) =>{
+                        isProcess.current = false;
+                        alert(res);
+                        setRefresh(true);
+                    })
                 }}>Process Selected</button>
             </div>
             
@@ -154,7 +179,26 @@ export default function Dashboard(){
                                 }
                                 setCb(temp);
                             }}>
-                                <td><button className='bg-rose-600 border-none hover:bg-rose-400'>Process</button></td>
+                                <td><button className='bg-rose-600 border-none hover:bg-rose-400' name={item.id + "_but"} onClick={(e : any)=>{
+                                    if (isProcess.current){
+                                        return;
+                                    }
+                                    isProcess.current = true;
+                                    const key = e.currentTarget.name.slice(0, e.currentTarget.name.length-4);
+                                    for (let i =0; i < tableData.length; i++){
+                                        if (tableData[i].id == key){
+                                            const temp = [] as ResType[];
+                                            temp.push(tableData[i]);
+                                            processRequests(temp).then((res : any)=>{
+                                                alert(res);
+                                                setRefresh(true);
+                                                isProcess.current = false;
+                                            });
+                                            break;
+                                        }
+                                    }
+
+                                }}>Process</button></td>
                                 <td><input type='checkbox' name={item.id + "_check"} checked={cbState[item.id] ?? false} onChange={(e : any) =>{
                                     const key = e.currentTarget.name.slice(0, e.currentTarget.name.length-6) ?? "";
                                     const temp = JSON.parse(JSON.stringify(cbState));

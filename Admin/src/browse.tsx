@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
-import {logout, fetchFromServer} from './serverActions'
+import {logout, fetchFromServer, fetchFromServerRaw} from './serverActions'
 import { FormEvent, useState, useRef } from 'react';
 import { Navbar } from './components';
-import { exportExcel } from './userActions';
+import { exportExcel } from './clientActions';
 type ResType = {[key :string] : string};
 
 function ScrollableTD({children} : {children : any}){
@@ -37,13 +37,34 @@ export default function Browse(){
             }}>
                 <option value="current">Current</option>
                 <option value="daily">Daily report</option>
-                <option value="monthly">Monthy report</option>
+                <option value="monthly">Monthly report</option>
             </select>
             <button className='bg-red-500 hover:bg-rose-500 border-none' onClick={() =>{
+                const params = {
+                    stat : '',
+                    date : ''
+                }
                 if (exportOption.current == "current"){
                     exportExcel(tableData);
                 } else if (exportOption.current == "monthly"){
-                    
+                    const date = new Date();
+                    const concatDate = date.getFullYear().toString() +"-" + (date.getMonth()+1).toString();
+                    params.date= concatDate;
+                    fetchFromServerRaw(params).then((res : any) =>{
+                        exportExcel(res);
+                    });
+                } else if (exportOption.current == "daily"){
+                    const date = new Date();
+                    let month = (date.getMonth()+1).toString();
+                    if (month.length ==1){
+                        month = '0' + month;
+                    }
+
+                    const concatDate = date.getFullYear().toString() +"-" + month + "-" + date.getDate().toString();
+                    params.date = concatDate;
+                    fetchFromServerRaw(params).then((res : any) =>{
+                        exportExcel(res);
+                    })
                 }
             }}>
                 Export
@@ -75,6 +96,7 @@ export default function Browse(){
                             <th>App</th>    
                             <th>Webclip</th>   
                             <th>Time Created</th>      
+                            <th>Processed By</th>
                         </tr>                        
                     </thead>
                     
@@ -145,6 +167,7 @@ export default function Browse(){
                     <td><input name='appfilter' className='max-w-26 bg-rose-800 placeholder-white' placeholder='Match app update'/></td>
                     <td><input name='webclipfilter' className='max-w-26 bg-rose-800 placeholder-white' placeholder='Match webclip'/></td>
                     <td><input name='timefilter' className='max-w-26 bg-rose-800 placeholder-white' placeholder='hh:mm:ss'/></td>
+                    <td><input name='processfilter' className='max-w-26 bg-rose-800 placeholder-white' placeholder='Match processed'/></td>
                     </tr>
                     </tbody>
                 </table>
@@ -167,6 +190,7 @@ export default function Browse(){
                         <th>Webclip</th>   
                         <th>App</th>    
                         <th>Time Created</th>    
+                        <th>Processed By</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -186,6 +210,7 @@ export default function Browse(){
                                 <ScrollableTD>{item.webclip}</ScrollableTD>
                                 <ScrollableTD>{item.app}</ScrollableTD>
                                 <ScrollableTD>{item.time}</ScrollableTD>
+                                <ScrollableTD>{item.processed}</ScrollableTD>
                             </tr>
                         })
                     }
