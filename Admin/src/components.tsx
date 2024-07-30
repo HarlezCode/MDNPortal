@@ -4,10 +4,10 @@ export function Navbar(){
     const nav = useNavigate();
     return (
          <div className="absolute top-0 left-[25%] grid grid-rows-1 grid-cols-2 w-[20%] h-[10%] mt-2">
-            <div className="hover:bg-theme-light text-4xl pt-3" onClick={()=>nav("../dashboard")}>
+            <div className="hover:bg-theme-light hover:cursor-pointer text-4xl pt-3" onClick={()=>nav("../dashboard")}>
                 <h3>Home</h3>
             </div>
-            <div className="hover:bg-theme-light text-4xl pt-3" onClick={()=>nav("../dashboard/browse")}>
+            <div className="hover:bg-theme-light hover:cursor-pointer text-4xl pt-3" onClick={()=>nav("../dashboard/browse")}>
                 <h3>Browse</h3>
             </div>
          </div>

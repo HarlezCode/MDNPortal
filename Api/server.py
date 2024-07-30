@@ -180,8 +180,8 @@ async def addrequests():
             i["cluster"] = clusterid
             cursor.execute(
                 '''
-                INSERT INTO entries
-                Values(%(requestType)s,%(serial)s,%(cluster)s,%(status)s,%(uuid)s,%(date)s,%(device)s,%(change)s,%(from)s,%(mac)s,%(app)s,%(webclip)s,%(time)s)
+                INSERT INTO entries(rtype, sn, clusterid, status, uid, cdate, dtype, totype, fuser, mac, app,webclip,timecreated,processed)
+                Values(%(requestType)s,%(serial)s,%(cluster)s,%(status)s,%(uuid)s,%(date)s,%(device)s,%(change)s,%(from)s,%(mac)s,%(app)s,%(webclip)s,%(time)s,'')
                 '''
             , i)
         cursor.execute(

@@ -14,7 +14,7 @@ export async function logout() : Promise<boolean>{
 type ResType = {[key : string] : string};
 
 export async function processRequests(data : ResType[]){
-    let val;
+    let val : string = "";
     await fetch("http://localhost:5000/api/processrequests", {
         method: "POST",
         headers: {
@@ -25,15 +25,24 @@ export async function processRequests(data : ResType[]){
         },
         body: JSON.stringify(data)
     }).then(async (res : any) =>{
-        await res.json().then((res2 : any) =>{
-            console.log(res2);
-            val = res2;
+        await res.json().then((res : any) =>{
+            if (res.status == "error"){
+                val = res.error ?? "Error has occurred!"
+            } else {
+                if (res.data.length > 0){
+                    val = "Some requests are already processed!";
+                } else {
+                    val = "Successfully processed!"
+                }
+                
+            }
+            
         }
         );
         
     })
 
-    return val
+    return val;
 }
 
 

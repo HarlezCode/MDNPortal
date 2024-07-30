@@ -35,7 +35,7 @@ export default function Browse(){
             <select className='h-8 bg-rose-900' onChange={(e : any) =>{
                 exportOption.current = e.currentTarget.value;
             }}>
-                <option value="current">Current</option>
+                <option value="current">Fetched Result</option>
                 <option value="daily">Daily report</option>
                 <option value="monthly">Monthly report</option>
             </select>

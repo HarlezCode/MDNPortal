@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import {logout, fetchFromServerRaw, processRequests} from './serverActions'
 import {useState, useRef, useEffect } from 'react';
 import { Navbar } from './components';
-import Loading from './loading'
 import { exportExcel } from './clientActions';
 type ResType = {[key : string] : string};
 
@@ -19,6 +18,7 @@ export default function Dashboard(){
     const autoRefresh = useRef(false);
     const isProcess = useRef(false);
     const exportOption = useRef("current");
+
     useEffect(() =>{
         const temp = {} as {[index :string] : boolean};
         tableData.forEach((val : ResType) =>{
@@ -28,6 +28,7 @@ export default function Dashboard(){
                 temp[val.id.toString()] = cbState[val.id.toString()];
                 
             }
+
         });
         setCb(temp);
     }, [tableData]);
@@ -44,9 +45,6 @@ export default function Dashboard(){
         }
     }, [refresh]);
 
-    if (tableData.length == 0){
-        return(<Loading/>);
-    }
 
     return (<>
     <div className='absolute top-0 left-3 mt-2 bg-gradient-to-r from-red-800 to-rose-900 rounded p-2 text-l'>
@@ -64,14 +62,14 @@ export default function Dashboard(){
     
     <div className='absolute left-0 top-[20%]'>
         <div>
-            <div className='absolute space-x-2 flex' style={{left: 950, right: 0, top: -10}}>
+            <div className='absolute space-x-2 flex' style={{left: 950, right: 0, top: -20}}>
                 <select className='h-8 bg-rose-900 mt-5' onChange={
                     (e : any) =>{
                         exportOption.current = e.currentTarget.value;
                     }
 
                 }>
-                    <option value="current">Current</option>
+                    <option value="current">All Pending</option>
                     <option value="daily">Daily report</option>
                     <option value="monthly">Monthly report</option>
                 </select>
@@ -107,7 +105,7 @@ export default function Dashboard(){
                 }}>
                     Export
                 </button>
-                <button className='bg-red-500 hover:bg-rose-500 border-none text-sm' onClick={()=>{
+                <button className='bg-red-500 hover:bg-rose-500 border-none text-xs' onClick={()=>{
                     if (isProcess.current){
                         return;
                     }
@@ -124,8 +122,8 @@ export default function Dashboard(){
                     });
                     processRequests(temp).then((res : any) =>{
                         isProcess.current = false;
-                        alert(res);
                         setRefresh(true);
+                        alert(res);
                     })
                 }}>Process Selected</button>
             </div>
@@ -166,16 +164,12 @@ export default function Dashboard(){
                 <tbody>
                     {
                         tableData.map((item, i) => {
-                            return <tr key={i} id={item.id + "_row"} className={'hover:bg-rose-500'} onClick={(e : any) =>{
+                            return <tr key={i} id={item.id + "_row"} className={'hover:bg-rose-500' + ((cbState[item.id] ?? false) ? 'hover:bg-rose-500 ' + 'bg-rose-500' : '')} onClick={(e : any) =>{
                                 const key = e.currentTarget.id.slice(0, e.currentTarget.id.length-4) ?? ""
                                 const temp = JSON.parse(JSON.stringify(cbState));
+                                console.log(cbState);
                                 if (temp[key] != null){
                                     temp[key] = !temp[key];
-                                    if (temp[key]){
-                                        e.currentTarget.className = 'hover:bg-rose-500 ' + 'bg-rose-500'
-                                    } else {
-                                        e.currentTarget.className = 'hover:bg-rose-500'
-                                    }
                                 }
                                 setCb(temp);
                             }}>
