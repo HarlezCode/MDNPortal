@@ -2,6 +2,7 @@ import { Navbar } from "./components";
 import {useRef, useState, useEffect, act} from 'react';
 import {fetchWebclips, updateWebclip} from "./serverActions"
 import Loading from "./loading";
+import AddWebclips from "./addWebclips";
 type ResType = {[key : string] : string};
 
 function ScrollableTD({children} : {children : any}){
@@ -16,6 +17,7 @@ export default function Webclips(){
     const [cbInactiveState, setInactiveCb] = useState({} as {[index : string] : boolean}); 
     const [refresh, setRefresh] = useState(true);
     const [pageOn, setPage] = useState("active");
+    const [isAdding, setAdding] = useState(false);
     const isProcess = useRef(false);
 
     useEffect(() =>{
@@ -175,12 +177,18 @@ export default function Webclips(){
             }}>
                 Delete Selected
             </button>
+            <button className="bg-rose-600 border-none hover:bg-rose-400" onClick={()=>{
+                if (!isProcess.current)
+                    setAdding(true);
+            }}>
+                Add Webclips
+            </button>
         </div>
     <div className="w-[25%] relative left-[0%] grid grid-rows-1 grid-cols-2">
         <div onClick={()=>{setPage("active");setRefresh(true);}} className={(pageOn=="active" ? " bg-rose-700" : " bg-rose-600 hover:cursor-pointer hover:bg-rose-500")}><h3 className="text-xl">Active webclips</h3></div>
         <div onClick={()=>{setPage("inactive");setRefresh(true);}} className={(pageOn=="inactive" ? " bg-rose-700" : " bg-rose-600 hover:cursor-pointer hover:bg-rose-500")}><h3 className="text-xl">Inactive webclips</h3></div>
     </div>
-    
+    <div className="overflow-y-auto h-[80%]" >
     <table className='flex-1 bg-rose-700 w-full border-separate border-spacing-x-0 overflow-y-auto'>
                 <thead style={{position: 'sticky', top: 0}} className='bg-rose-700'>
                     <tr>
@@ -337,9 +345,15 @@ export default function Webclips(){
                     }
 
                 </tbody>
+                
             </table>
+            </div>
+            
     </div>
     {isProcess.current && <Loading/>
+    }
+    {
+        isAdding  && !isProcess.current && <AddWebclips close={setAdding} setRefresh={setRefresh}/>
     }
     </>);
 }

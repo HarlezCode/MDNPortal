@@ -22,7 +22,7 @@ export function Navbar(){
          </div>
     </div>
     <div className='top-3 absolute right-0 m-2'>
-        <button className='bg-red-500 hover:bg-rose-500 outline-none border-none' onClick={async ()=>{
+        <button className='bg-slate-400 hover:bg-rose-600 outline-none border-none' onClick={async ()=>{
             
             await logout().then((res : boolean)=>{
                 if (res)

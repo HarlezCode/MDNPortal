@@ -89,7 +89,7 @@ async def processrequests():
 async def addrequests():
     Responses = responses()
     data = request.json
-    valid = await validateKey(request.headers["Key"])
+    valid = await validateClientKey(request.headers["Key"])
     if not valid:
         return Responses.keyError
     if len(request.headers["Fromuser"]) == 0:
@@ -320,10 +320,59 @@ async def addWebclips():
     valid = await validateKey(request.headers["Key"])
     if not valid:
         return Responses.keyError
+    data = request.json
+    models = data["models"].split(',')
+    dtypes = data["dtypes"].split(',')
+    platform = data["pt"].split(',')
+    clusters = data['clstr'].split(',')
+    oses = data['oses'].split(',')
+    webclip = [data['webclip']]
 
-
+    # validate data here
+    if len(dtypes) > 3:
+        return Responses.defaultError
+    for i in dtypes:
+        if i.upper() != "CORP" and i.upper() != "OUD" and i.upper() != "COPE":
+            return Responses.defaultError
+    if len(webclip) > 100:
+        return Responses.defaultError
+    # slap into db
+    entries = combinations([models, dtypes,platform,clusters,oses,webclip])
+    cursor, conn = createCursor()
+    for i in entries:
+        cursor.execute('''
+        INSERT INTO  webclips(model, dtype, platform, clstr, os, webclip, active) VALUES(
+            %s,%s,%s,%s,%s,%s,'active'
+        )
+        ''', tuple(i))
     return Responses.ok()
 
+# client api
+@app.route('/api/getwebclips', method=["GET"], endpoint='getWebclips')
+@defaultErrorHandler
+async def getWebclips():
+    Responses = responses()
+    valid = await validateClientKey(request.headers["Key"])
+    if not valid:
+        return Responses.keyError
+
+    data = request.args.to_dict()
+    cursor, conn = createCursor()
+
+    cursor.execute('''
+            SELECT * FROM webclips WHERE (active=%(active)s OR %(active)s = '')
+        ''', data)
+    fetched = cursor.fetchone()
+    listofitems = []
+    while fetched:
+        item = webclipToDict(fetched)
+        listofitems.append(item)
+        fetched = cursor.fetchone()
+
+    return Responses.ok(listofitems)
+
+
+# server api
 @app.route('/api/fetchwebclips/', methods=["GET"], endpoint='fetchWebclips')
 @defaultErrorHandler
 async def fetchWebclips():
@@ -337,7 +386,7 @@ async def fetchWebclips():
 
     cursor.execute('''
         SELECT * FROM webclips WHERE (active=%(active)s OR %(active)s = '')
-    ''', {"active": data["active"]})
+    ''', data)
     fetched = cursor.fetchone()
     listofitems = []
     while fetched:
@@ -355,7 +404,6 @@ def teardown_conn(exception):
         conn.close()
 
 if __name__ == "__main__":
-    # db.initializeDB()
     app.run(port=5000, threaded=True)
 
 

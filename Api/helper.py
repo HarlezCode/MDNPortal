@@ -72,6 +72,10 @@ async def validateKey(key):
     if "Admin" not in key:
         return False
     return True
+async def validateClientKey(key):
+    if "Admin" not in key:
+        return False
+    return True
 def createCursor():
     g.conn = psycopg2.connect(
         database="request", user='postgres', password="123", host="127.0.0.1", port="5432"
@@ -90,6 +94,27 @@ def webclipToDict(fetched):
     item['id'] = fetched[6]
     item['active'] = fetched[7]
     return item
+def combinations(ls):
+    ans = []
+    if len(ls) == 1:
+        for i in ls[0]:
+            ans.append([i])
+        return ans
+    comb = combinations(ls[1:])
+
+    if len(comb) == 0:
+        for i in ls[0]:
+            ans.append([i])
+        return ans
+    elif len(ls[0]) == 0:
+        return comb
+    for i in ls[0]:
+        for v in comb:
+            ans.append([i] + v)
+    return ans
+
+
+
 
 class responses:
     def __init__(self):
@@ -115,3 +140,7 @@ class responses:
             "data": data,
             "error": ""
         })
+
+if __name__ == "__main__":
+    a = [["a","b","c"],[],["1","2","3"],[],['q','w','e']]
+    print(combinations(a))

@@ -5,6 +5,44 @@ export async function authAction(username : string, password : string) : Promise
         res(username+password)});
 }
 
+export async function addWebclips(e : FormEvent<HTMLFormElement>){
+    let dtype = (e.currentTarget.CORP.checked ? "CORP" : "") +  "," + (e.currentTarget.OUD.checked ? "OUD," : "") + (e.currentTarget.COPE.checked ? "COPE" : "")
+    if (dtype.charAt(0) == ","){
+        dtype = dtype.slice(1);
+    }
+    if (dtype.charAt(dtype.length-1) == ","){
+        dtype = dtype.slice(0,dtype.length-1);
+    }
+    if (dtype.length == 0){
+        alert("Please select atleast 1 device type.")
+        return false;
+    }
+
+    const res = await fetch("http://localhost:5000/api/addwebclips/", {
+        method: "POST",
+        headers: {
+            "Key": localStorage.getItem("Token") ?? "", // temp val
+            'Accept' : 'application/json', 
+            'Content-Type' : 'application/json'
+        },
+        body: JSON.stringify({
+            "models" : e.currentTarget.model.value,
+            "dtypes": dtype,
+            "pt": e.currentTarget.platform.value,
+            "clstr": e.currentTarget.cluster.value,
+            "oses": e.currentTarget.os.value,
+            "webclip": e.currentTarget.webclip.value 
+        })
+    }).then((res : any) =>{
+        return res.json()
+    });
+    if (res.status == "error"){
+        alert(JSON.stringify(res["error"]));
+    }
+
+    return true;
+}
+
 
 export async function updateWebclip(item : any, update : string){
     let mode : string = "";
