@@ -1,4 +1,5 @@
-from flask import Flask, jsonify, request
+import flask
+from flask import Flask, jsonify, request, g
 from flask_cors import CORS
 from helper import *
 import psycopg2
@@ -9,27 +10,36 @@ import db
 
 clusterMutex = threading.Lock()
 processMutex = threading.Lock()
+updateMutex = threading.Lock()
 
 app = Flask("Admin Api")
 # enable cross origin resource sharing
 CORS(app)
-@app.route('/api/processrequests', methods=['POST'])
+
+# error wrapper for default errors
+def defaultErrorHandler(f):
+    async def wrapper(*args, **kwargs):
+        try:
+            val = await f(*args, **kwargs)
+            return val
+        except:
+            return jsonify({"res": "error", "error": "An error has occurred"})
+    return wrapper
+
+
+
+@app.route('/api/processrequests', methods=['POST'], endpoint='processrequests')
+@defaultErrorHandler
 async def processrequests():
-    error = jsonify("error")
+    Responses = responses()
     data = request.json
-    if not "Key" in request.headers.keys() or not "From" in request.headers.keys():
-        return error
     valid = await validateKey(request.headers["Key"])
     user = request.headers["From"]
 
     if not valid:
-        return jsonify("Invalid key")
+        return Responses.keyError
 
-    conn = psycopg2.connect(
-        database="request", user='postgres', password="123", host="127.0.0.1", port="5432"
-    )
-    conn.autocommit = True
-    cursor = conn.cursor()
+    cursor, conn = createCursor()
 
     # ensure atomic property
     with processMutex:
@@ -39,7 +49,7 @@ async def processrequests():
         for i in data:
             if not checkProcessParams(i):
                 conn.close()
-                return jsonify({"status" : "error", "error":"Error: Payload incomplete!", "data": i})
+                return Responses.customError("Error: Payload incomplete!", [i])
             cursor.execute('''
                 SELECT * FROM entries WHERE id = %(id)s
             
@@ -47,14 +57,14 @@ async def processrequests():
             entry = cursor.fetchone()
             if entry == None:
                 conn.close()
-                return jsonify({ "status" : "error", "error": "Error: Entry does not exist in database!", "data": [i]})
+                return Responses.customError("Error: Entry does not exist in database!", [i])
             if entry[3] == "Completed":
                 repeatedCounts.append(entry)
             else:
                 for ind, key in enumerate(paramsProcess):
                     if i[key] != entry[ind]:
                         conn.close()
-                        return jsonify({ "status" : "error", "error": "Error: Entry mismatch with database records!", "data": [i]})
+                        return Responses.customError("Error: Entry mismatch with database records!", [i])
                 pending.append(i)
         # based on different request do api calls here
 
@@ -69,33 +79,25 @@ async def processrequests():
                             WHERE 
                                 id=%(id)s
                         ''', {"id": i["id"], "status": "Completed", "processed" : user})
-    conn.close()
-    print("done")
 
-    return jsonify({"status" : "good", "error" : "Null", "data": repeatedCounts})
+    return Responses.ok(repeatedCounts)
 
 
 
-@app.route('/api/addrequests', methods=["POST"])
+@app.route('/api/addrequests', methods=["POST"], endpoint='addrequests')
+@defaultErrorHandler
 async def addrequests():
+    Responses = responses()
     data = request.json
-    error = jsonify("error")
-
-    #validate user here assume to be api call
-    if not "Key" in request.headers.keys():
-        return error
-    if not "Fromuser" in request.headers.keys():
-        return error
-
     valid = await validateKey(request.headers["Key"])
     if not valid:
-        return jsonify({"status" : "error", "error" : "Error: Invalid key!", "data": []})
+        return Responses.keyError
     if len(request.headers["Fromuser"]) == 0:
-        return jsonify({"status" : "error", "error" : "Error: Header missing!", "data": []})
+        return Responses.customError("Error: Header missing!")
 
     #assert request data before putting into database
     if not checkRequestType(data["RequestType"][0]):
-        return jsonify({"status" : "error", "error" : "Error: Request type invalid!", "data": []})
+        return Responses.customError("Error: Request type invalid!")
 
     req = data["RequestType"][0]
     entries = []
@@ -158,11 +160,8 @@ async def addrequests():
                 entry["mac"] = data[i][1]
                 entry["uuid"] = data[i][2]
             entries.append(entry)
-    conn = psycopg2.connect(
-        database="request", user='postgres', password="123", host="127.0.0.1", port="5432"
-    )
-    conn.autocommit = True
-    cursor = conn.cursor()
+
+    cursor, conn = createCursor()
 
     with clusterMutex: # ensure only one thread can acquire new cluster id
         cursor.execute(
@@ -192,36 +191,27 @@ async def addrequests():
             '''
         , {"cid": int(clusterid)+1})
 
-    conn.close()
 
-    return jsonify({"status" : "good", "error" : "Null", "data": skippedEntries})
+    return Responses.ok(skippedEntries)
 
-@app.route('/api/requests', methods=['GET'])
+@app.route('/api/requests', methods=['GET'], endpoint='getrequests')
+@defaultErrorHandler
 async def getrequests():
-    error = jsonify({"data" : [], "response" : "no"})
-    # get key
-    if not "key" in request.headers:
-        return error
+    Responses = responses()
     key = request.headers["Key"]
     # validate session key here
-    if len(key) > 0:
-        valid = await validateKey(key)
-        if not valid:
-            return jsonify("Invalid key")
-    else:
-        return error
+    valid = await validateKey(key)
+    if not valid:
+        return Responses.keyError
 
     # parse data
     data = request.args.to_dict()
     if not checkQueryParams(data):
-        return error
+        return Responses.defaultError
 
     # connect to db
-    conn = psycopg2.connect(
-        database="request", user='postgres', password="123", host="127.0.0.1", port="5432"
-    )
-    conn.autocommit = True
-    cursor = conn.cursor()
+    cursor, conn = createCursor()
+
     if data["date"] != "":
         l = data["date"].split("-")
         newdate = ""
@@ -230,6 +220,7 @@ async def getrequests():
             newdate += "/"
         newdate = newdate[:len(newdate)-1]
         data["date"] = newdate
+
     data["date"] = '%' + data["date"] + '%'
     data["time"] = '%' + data["time"] + '%'
     data["serial"] = '%' + data["serial"] + '%'
@@ -274,47 +265,99 @@ async def getrequests():
         items[-1]["id"] = i[len(i)-2]
         items[-1]["processed"] = i[-1]
     print(items)
-    conn.close()
-    return jsonify({"data" : items, "response" : "yes"})
+    return Responses.ok(items)
 
-
-@app.route('/api/fetchwebclips/', methods=["GET"])
-async def fetchWebclips():
-    if not "Key" in request.headers.keys():
-        return jsonify({"res": "error"})
+@app.route('/api/updatewebclip/', methods=["POST"], endpoint='updateWebclip')
+@defaultErrorHandler
+async def updateWebclip():
+    Responses = responses()
     valid = await validateKey(request.headers["Key"])
-    data = request.args.to_dict()
-    if not "active" in data.keys():
-        return jsonify({"res": "error"})
     if not valid:
-        return jsonify({"res": "error"})
+        return Responses.keyError
 
-    conn = psycopg2.connect(
-        database="request", user='postgres', password="123", host="127.0.0.1", port="5432"
-    )
-    conn.autocommit = True
-    cursor = conn.cursor()
+    data = request.json
+    if data["to"] != "active" and data["to"] != "inactive" and data["to"] != "delete":
+        return Responses.defaultError
+
+    key = data["data"]["id"]
+
+    cursor, conn = createCursor()
+    cursor.execute('''
+    SELECT * FROM webclips
+    WHERE id=%(id)s
+    ''', {"id": key})
+    fetched = cursor.fetchone()
+    if fetched == None:
+        conn.close()
+        return Responses.customError("Entry id does not exist on database!")
+    item = webclipToDict(fetched)
+    for i in item.keys():
+        if data["data"][i] != item[i]:
+            conn.close()
+            return Responses.customError("Item mismatch with entry in database!")
+
+    with updateMutex:
+        if data["to"] == "active":
+            cursor.execute('''
+            UPDATE webclips
+            SET active='active'
+            WHERE id=%s
+            ''', (data['id'],))
+        elif data["to"] == "inactive":
+            cursor.execute('''
+            UPDATE webclips
+            SET active='inactive'
+            WHERE id=%s
+            ''', (data['id'],))
+        else:
+            cursor.execute('''
+            DELETE FROM webclips
+            WHERE id=%s            
+            ''', (data['id'],))
+    return Responses.ok()
+
+@app.route('/api/addwebclips/', methods=["POST"])
+@defaultErrorHandler
+async def addWebclips():
+    Responses = responses()
+    valid = await validateKey(request.headers["Key"])
+    if not valid:
+        return Responses.keyError
+
+    return Responses.ok()
+
+@app.route('/api/fetchwebclips/', methods=["GET"], endpoint='fetchWebclips')
+@defaultErrorHandler
+async def fetchWebclips():
+    Responses = responses()
+    valid = await validateKey(request.headers["Key"])
+    if not valid:
+        return Responses.defaultError
+
+    data = request.args.to_dict()
+    cursor, conn = createCursor()
+
     cursor.execute('''
         SELECT * FROM webclips WHERE (active=%(active)s OR %(active)s = '')
     ''', {"active": data["active"]})
     fetched = cursor.fetchone()
-    listofitems =  []
+    listofitems = []
     while fetched:
-        item = dict()
-        item['model'] = fetched[0]
-        item['dtype'] = fetched[1]
-        item['platform'] = fetched[2]
-        item['clstr'] = fetched[3]
-        item['os'] = fetched[4]
-        item['webclip'] = fetched[5]
-        item['id'] = fetched[6]
-        item['active'] = fetched[7]
+        item = webclipToDict(fetched)
         listofitems.append(item)
         fetched = cursor.fetchone()
-    conn.close()
-    return jsonify({"data": listofitems, "res" : "ok"})
+
+    return Responses.ok(listofitems)
+
+# closes connection automatically, get the connection using getCursor() method
+@app.teardown_appcontext
+def teardown_conn(exception):
+    conn = g.pop('conn', None)
+    if conn is not None:
+        conn.close()
 
 if __name__ == "__main__":
     # db.initializeDB()
     app.run(port=5000, threaded=True)
+
 

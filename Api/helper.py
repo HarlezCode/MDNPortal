@@ -1,3 +1,5 @@
+from flask import jsonify, g
+import psycopg2
 params = [
     "requestType",
     "serial",
@@ -70,3 +72,46 @@ async def validateKey(key):
     if "Admin" not in key:
         return False
     return True
+def createCursor():
+    g.conn = psycopg2.connect(
+        database="request", user='postgres', password="123", host="127.0.0.1", port="5432"
+    )
+    g.conn.autocommit = True
+    g.cursor = g.conn.cursor()
+    return (g.cursor, g.conn)
+def webclipToDict(fetched):
+    item = dict()
+    item['model'] = fetched[0]
+    item['dtype'] = fetched[1]
+    item['platform'] = fetched[2]
+    item['clstr'] = fetched[3]
+    item['os'] = fetched[4]
+    item['webclip'] = fetched[5]
+    item['id'] = fetched[6]
+    item['active'] = fetched[7]
+    return item
+
+class responses:
+    def __init__(self):
+        self.defaultError = jsonify({
+            "res" : "error",
+            "data": [],
+            "error": "Something went wrong"
+        })
+        self.keyError = jsonify({
+            "res" : "error",
+            "data": [],
+            "error": "Invalid key"
+        })
+    def customError(self, msg, data=[]):
+        return jsonify({
+            "res" : "error",
+            "data": data,
+            "error": msg
+        })
+    def ok(self, data=[]):
+        return jsonify({
+            "res": "ok",
+            "data": data,
+            "error": ""
+        })
