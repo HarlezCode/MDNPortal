@@ -288,32 +288,29 @@ async def updateWebclip():
     ''', {"id": key})
     fetched = cursor.fetchone()
     if fetched == None:
-        conn.close()
         return Responses.customError("Entry id does not exist on database!")
     item = webclipToDict(fetched)
     for i in item.keys():
         if data["data"][i] != item[i]:
-            conn.close()
             return Responses.customError("Item mismatch with entry in database!")
-
     with updateMutex:
         if data["to"] == "active":
             cursor.execute('''
             UPDATE webclips
             SET active='active'
             WHERE id=%s
-            ''', (data['id'],))
+            ''', (key,))
         elif data["to"] == "inactive":
             cursor.execute('''
             UPDATE webclips
             SET active='inactive'
             WHERE id=%s
-            ''', (data['id'],))
+            ''', (key,))
         else:
             cursor.execute('''
             DELETE FROM webclips
             WHERE id=%s            
-            ''', (data['id'],))
+            ''', (key,))
     return Responses.ok()
 
 @app.route('/api/addwebclips/', methods=["POST"])
@@ -323,6 +320,7 @@ async def addWebclips():
     valid = await validateKey(request.headers["Key"])
     if not valid:
         return Responses.keyError
+
 
     return Responses.ok()
 

@@ -1,9 +1,44 @@
-import { FormEvent } from "react";
+import { FormEvent, MutableRefObject } from "react";
 
 export async function authAction(username : string, password : string) : Promise<string>{
     return new Promise( (res) => {
         res(username+password)});
 }
+
+
+export async function updateWebclip(item : any, update : string){
+    let mode : string = "";
+    if (update == "delete"){
+        mode = "delete";
+    } else if (update == "active"){
+        mode = "active"
+    } else if (update == "inactive"){
+        mode = "inactive"
+    } else {
+        console.log("?");
+        return {};
+    }
+    
+    const res = await fetch("http://localhost:5000/api/updatewebclip/", {
+        method: "POST",
+        headers: {
+            "Key": localStorage.getItem("Token") ?? "", // temp val
+            'Accept' : 'application/json', 
+            'Content-Type' : 'application/json'
+        },
+        body: JSON.stringify({
+            "data" : item,
+            "to" : mode
+        })
+    }).then((res : any) =>{
+        return res.json()
+    });
+
+
+    return res;
+}
+
+
 
 export async function fetchWebclips(active : string){
     const res = await fetch("http://localhost:5000/api/fetchwebclips/" + "?active="+active, {
@@ -11,12 +46,11 @@ export async function fetchWebclips(active : string){
         headers: {
             "Key" : localStorage.getItem("Token") ?? ""
         }
+    }).then((res : any) =>{
+        return res.json()
     })
-    let val;
-    await res.json().then((res) =>{
-        val = res;
-    })
-    return val;
+    
+    return res;
 }
 export async function logout() : Promise<boolean>{
     localStorage.removeItem("Token");
@@ -76,19 +110,21 @@ export async function fetchFromServerRaw({rtype='',sn='',stat='Pending',uid='', 
     queryParams += "webclip=" + wc + "&";
     queryParams += "time=" + tm + "&";
     queryParams += "processed=" + processed; 
-    let data : ResType[] = [];
+
     const res = await fetch("http://localhost:5000/api/requests" + queryParams, {
         method : "GET",
         headers : {
             "key" : localStorage.getItem("Token") ?? ""
         }
-    });
-    
-    await res.json().then((res)=>{
-        data = res.data ?? [];
+    }).then((res : any) =>{
+        return res.json().then((res : any) =>{
+            return new Promise((resolve : any) =>{
+                resolve(res.data ?? []);
+            })
+        })
     });
 
-    return data;
+    return res;
 }
 
 
@@ -108,18 +144,19 @@ export async function fetchFromServer(e : FormEvent<HTMLFormElement>){
     queryParams += "webclip=" + e.currentTarget.webclipfilter.value + "&";
     queryParams += "time=" + e.currentTarget.timefilter.value + "&";
     queryParams += "processed=" + e.currentTarget.processfilter.value;
-    let data : ResType[] = [];
+
     const res = await fetch("http://localhost:5000/api/requests" + queryParams, {
         method : "GET",
         headers : {
             "key" : localStorage.getItem("Token") ?? "" // temp val
         }
-    });
-    
-    await res.json().then((res)=>{
-        console.log(res?.data);
-        data = res.data ?? [];
+    }).then((res : any) =>{
+        return res.json().then((res : any) =>{
+            return new Promise((resolve : any) =>{
+                resolve(res.data ?? []);
+            })
+        })
     });
 
-    return data;
+    return res;
 }

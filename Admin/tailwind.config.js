@@ -8,7 +8,8 @@ export default {
     extend: {
       colors: {
         'theme-light' : '#be8577',
-      }
+      },
+      
 
     },
   },
