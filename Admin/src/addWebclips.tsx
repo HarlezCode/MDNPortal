@@ -41,7 +41,7 @@ export default function AddWebclips({close, setRefresh} : {close : any, setRefre
                 <h3 className="relative text-white">* Please ensure you have selected atleast 1 device type.</h3>
             </div>
             </form>
-            {   loading &&<Loading/>}
+            {   loading && <Loading/>}
         </div>
     )
 }

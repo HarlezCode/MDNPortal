@@ -76,7 +76,22 @@ export async function updateWebclip(item : any, update : string){
     return res;
 }
 
-
+export async function rejectRequest(data : ResType[]){
+    const res = await fetch("http://localhost:5000/api/rejectrequest", {
+        method: "POST",
+        headers: {
+            "Key": localStorage.getItem("Token") ?? "", // temp val
+            "From": localStorage.getItem("Token") + "_User", // temp val
+            'Accept' : 'application/json', 
+            'Content-Type' : 'application/json'
+        },
+        body: JSON.stringify({"data": data})
+    }).then((res : any) => {return res.json()});
+    if (res["status"] == 'error'){
+        alert(res["error"]);
+    }
+    return res;
+}
 
 export async function fetchWebclips(active : string){
     const res = await fetch("http://localhost:5000/api/fetchwebclips/" + "?active="+active, {

@@ -2,7 +2,7 @@ import flask
 from flask import Flask, jsonify, request, g
 from flask_cors import CORS
 from helper import *
-import psycopg2
+import logging
 from datetime import date, datetime
 import threading
 import db
@@ -11,8 +11,13 @@ import db
 clusterMutex = threading.Lock()
 processMutex = threading.Lock()
 updateMutex = threading.Lock()
-
+updateReqMutex = threading.Lock()
 app = Flask("Admin Api")
+# logging
+app.logger.setLevel(logging.INFO)
+logHandle = logging.FileHandler('server'+'.log')
+app.logger.addHandler(logHandle)
+
 # enable cross origin resource sharing
 CORS(app)
 
@@ -22,10 +27,46 @@ def defaultErrorHandler(f):
         try:
             val = await f(*args, **kwargs)
             return val
-        except:
+        except Exception as e:
+            app.logger.error("Error: "+repr(e))
             return jsonify({"res": "error", "error": "An error has occurred"})
     return wrapper
 
+@app.route('/api/rejectrequest', methods=['POST'], endpoint='updaterequest')
+@defaultErrorHandler
+async def rejectrequest():
+    Responses = responses()
+    data = request.json["data"][0]
+    valid = await validateKey(request.headers["Key"])
+    user = request.headers["From"]
+    if not valid:
+        return Responses.keyError
+
+    cursor, conn = createCursor()
+    cursor.execute(
+        '''
+        SELECT * FROM entries WHERE
+        id=%s
+        '''
+    , (data["id"],))
+    fetched = cursor.fetchone()
+    if fetched == None:
+        return Responses.customError("Request does not exist on db.")
+    fetched = list(fetched)
+    fetched.pop(13) # pop id from result
+
+    with updateReqMutex:
+        for ind, key in enumerate(params):
+            if data[key] != fetched[ind]:
+                return Responses.customError("Request does not match db entry.")
+        cursor.execute('''
+        UPDATE entries 
+        SET 
+        status='Rejected',
+        processed=%s
+        WHERE id=%s
+        ''', (user,data['id']))
+    return Responses.ok()
 
 
 @app.route('/api/processrequests', methods=['POST'], endpoint='processrequests')

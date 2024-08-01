@@ -1,7 +1,8 @@
-import {fetchFromServerRaw, processRequests} from './serverActions'
+import {fetchFromServerRaw, processRequests, rejectRequest} from './serverActions'
 import {useState, useRef, useEffect } from 'react';
 import { Navbar } from './components';
 import { exportExcel } from './clientActions';
+import Loading from './loading';
 type ResType = {[key : string] : string};
 
 function ScrollableTD({children} : {children : any}){
@@ -167,7 +168,21 @@ export default function Dashboard(){
                                     if (isProcess.current){
                                         return;
                                     }
-                                    
+                                    isProcess.current = true;
+                                    const key = e.currentTarget.name.slice(0, e.currentTarget.name.length-7);
+                                    for (let i =0; i < tableData.length; i++){
+                                        if (tableData[i].id == key){
+                                            const temp = [] as ResType[];
+                                            temp.push(tableData[i]);
+                                            rejectRequest(temp).then((res : ResType)=>{
+                                                setRefresh(true);
+                                                isProcess.current = false;
+                                                console.log(res);
+                                            });
+                                            break;
+                                        }
+                                    }
+
 
                                 }}>Reject</button></td>
                                 <td><button className='bg-rose-600 border-none hover:bg-rose-400' name={item.id + "_but"} onClick={(e : any)=>{
@@ -181,7 +196,6 @@ export default function Dashboard(){
                                             const temp = [] as ResType[];
                                             temp.push(tableData[i]);
                                             processRequests(temp).then((res : any)=>{
-                                                alert(res);
                                                 setRefresh(true);
                                                 isProcess.current = false;
                                             });
@@ -219,5 +233,6 @@ export default function Dashboard(){
             </table>
             </div>
     </div>
+    {isProcess.current && <Loading/>}
     </>);
 }
