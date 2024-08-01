@@ -27,8 +27,9 @@ export function WebClipSelector({sn, tabledata, possibleWC} : {sn : string, tabl
 
     const [webClips, setWebClips] = useState([] as string[]);
     const snNumber = useRef(sn);
+    const allowFetch = useRef(true);
     useEffect(() =>{
-        if (sn != "" && webClips.length == 0){
+        if (sn != "" && allowFetch.current){
             snNumber.current  = sn;
             const fetchData = async () =>{
                 await fetchWebClips(sn).then((res)=>{
@@ -37,6 +38,7 @@ export function WebClipSelector({sn, tabledata, possibleWC} : {sn : string, tabl
                 });
             }
             fetchData();
+            allowFetch.current = false;
         }
     });
 

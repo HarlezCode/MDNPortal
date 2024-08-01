@@ -143,4 +143,6 @@ class responses:
 
 if __name__ == "__main__":
     a = [["a","b","c"],[],["1","2","3"],[],['q','w','e']]
+    b = [[],[]]
     print(combinations(a))
+    # print(combinations(b))

@@ -8,11 +8,12 @@ async function submitFunc(data : any, close : any, nav : any){
     // prepare api call here as well
     await fetch("http://localhost:5000/api/addrequests", {headers : {"key" : localStorage.getItem("Token") ?? "", "fromuser" : "user_" + localStorage.getItem("Token"), 'Accept' : 'application/json', 'Content-Type' : 'application/json'}, method : "POST", body : JSON.stringify(data)}).then((res) =>{
         res.json().then((res) =>{
-            if (res == "error"){
+            if (res["res"] == "error"){
                 alert("An error has occured");
-            } else if (res == "skipped entries"){
-                alert("some entries were skipped");
             } else{
+                if (res["data"].length > 0){
+                    alert("Some entries were skipped due to changes in the database or incomplete input");
+                } 
                 nav("../req");
             }
         })
@@ -34,7 +35,6 @@ export default function Preview({previewFunc, data} : {previewFunc : any, data :
                         <tr>
                             <th>SN</th>
                             {data["Headers"].map((v : string) => {
-                                console.log(v);
                                 return (<th>{v}</th>);
                             })}
                         </tr>

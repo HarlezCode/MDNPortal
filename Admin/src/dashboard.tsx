@@ -134,6 +134,7 @@ export default function Dashboard(){
                     <tr>
                         <th></th>
                         <th></th>
+                        <th></th>
                         <th>Request Type</th>
                         <th>Serial #</th>
                         <th>Cluster id</th>
@@ -161,6 +162,14 @@ export default function Dashboard(){
                                 }
                                 setCb(temp);
                             }}>
+                                <td><button className='bg-rose-600 border-none hover:bg-rose-400' name={item.id + "_rejbut"} onClick={(e : any) =>{
+
+                                    if (isProcess.current){
+                                        return;
+                                    }
+                                    
+
+                                }}>Reject</button></td>
                                 <td><button className='bg-rose-600 border-none hover:bg-rose-400' name={item.id + "_but"} onClick={(e : any)=>{
                                     if (isProcess.current){
                                         return;

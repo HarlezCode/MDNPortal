@@ -102,7 +102,7 @@ async def addrequests():
     req = data["RequestType"][0]
     entries = []
     skippedEntries = []
-
+    cursor, conn = createCursor()
     for i in data.keys():
         if i != "RequestType" and i != "Headers":
             entry = dict()
@@ -135,9 +135,18 @@ async def addrequests():
                 if len(data[i]) < 3:
                     skippedEntries.append(data[i])
                     continue
+                cursor.execute('''
+                    SELECT * FROM webclips WHERE webclip=%s
+                ''',(data[i][1],));
+                fetched = cursor.fetchone()
+                print(fetched)
+                if fetched == None:
+                    skippedEntries.append(data[i])
+                    continue
                 entry["device"] = data[i][0]
                 entry["webclip"] = data[i][1]
                 entry["uuid"] = data[i][2]
+
             elif req == "App Update": # type | app | uuid
                 if len(data[i]) < 3:
                     skippedEntries.append(data[i])
@@ -161,7 +170,7 @@ async def addrequests():
                 entry["uuid"] = data[i][2]
             entries.append(entry)
 
-    cursor, conn = createCursor()
+
 
     with clusterMutex: # ensure only one thread can acquire new cluster id
         cursor.execute(
@@ -348,8 +357,8 @@ async def addWebclips():
     return Responses.ok()
 
 # client api
-@app.route('/api/getwebclips', method=["GET"], endpoint='getWebclips')
-@defaultErrorHandler
+@app.route('/api/getwebclips', methods=["GET"], endpoint='getWebclips')
+# @defaultErrorHandler
 async def getWebclips():
     Responses = responses()
     valid = await validateClientKey(request.headers["Key"])
@@ -357,18 +366,28 @@ async def getWebclips():
         return Responses.keyError
 
     data = request.args.to_dict()
-    cursor, conn = createCursor()
+    if (data["model"] == '' or data["dtype"] == '' or data["platform"] == '' or not 'os' in data.keys()):
+        return Responses.defaultError
 
+
+    cursor, conn = createCursor()
+    print(data)
     cursor.execute('''
-            SELECT * FROM webclips WHERE (active=%(active)s OR %(active)s = '')
+            SELECT * FROM webclips 
+            WHERE (active='active') AND
+            (model=%(model)s OR model='')  AND
+            (dtype=%(dtype)s) AND
+            (platform=%(platform)s OR platform='') AND
+            (os=%(os)s OR %(os)s = '' OR os='') AND
+            (clstr=%(clstr)s OR %(clstr)s='' OR clstr='')
         ''', data)
     fetched = cursor.fetchone()
     listofitems = []
     while fetched:
         item = webclipToDict(fetched)
-        listofitems.append(item)
+        listofitems.append("wcp_"+item["webclip"])
         fetched = cursor.fetchone()
-
+    print("fetched: ", listofitems)
     return Responses.ok(listofitems)
 
 

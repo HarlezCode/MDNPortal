@@ -3,15 +3,36 @@ export async function authAction(username : string, password : string) : Promise
         res(username+password)});
 }
 
-export async function fetchWebClips(sn : string) : Promise<string[]>{
+export async function fetchWebClips(sn : string){
     // fetch from mobile iron api
-    return new Promise( (res) =>{
-        if (sn.charAt(0) == "a"){
-            res(["wcp_AClip1aaaaaaaaaaaaaaaaaaaaaa", "wcp_AClip2"] as string[]);
-        } else {
-            res(["wcp_Other1", "wcp_Other2"] as string[]);
-        } 
-    })
+    const fetchParams = {
+        "model" : '',
+        "dtype" : '',
+        "platform" : '',
+        "os": '',
+        "clstr": ''
+    };
+    // temp stuff mobile iron api
+    if (sn.startsWith("ipad")){
+        fetchParams.model = "Apple Ipad Pro";
+        fetchParams.dtype = "CORP";
+        fetchParams.platform = "IOS"    
+    } else{
+        fetchParams.model = "Samsung A3";
+        fetchParams.dtype = "CORP";
+        fetchParams.platform = "ANDROID"
+    }
+    //
+    const res = await fetch("http://localhost:5000/api/getwebclips?" + new URLSearchParams(fetchParams).toString(), {
+        headers: {
+            "Key": localStorage.getItem("Token") ?? ""
+        },
+        method: "GET"
+    }).then((res : any) =>{
+        return res.json();
+    })    
+
+    return res["data"] ?? [];
 }
 
 export async function fetchApps(sn : string) : Promise<string[]>{
