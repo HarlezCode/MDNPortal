@@ -100,6 +100,7 @@ export default function Dashboard(){
                     }
                     const temp = [] as ResType[];
                     isProcess.current = true;
+                    setRefresh(true);
                     Object.keys(cbState).forEach((val : string) =>{
                         if (cbState[val]){
                             for (let i =0; i<tableData.length;i++){
@@ -109,10 +110,10 @@ export default function Dashboard(){
                             }
                         }   
                     });
+                    
                     processRequests(temp).then((res : any) =>{
                         isProcess.current = false;
                         setRefresh(true);
-                        alert(res);
                     })
                 }}>Process Selected</button>
             </div>
