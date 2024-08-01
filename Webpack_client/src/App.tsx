@@ -4,7 +4,6 @@ import ProtectedRoute from './protected';
 import Login from "./login";
 import Req from "./Req"
 import Edit from './edit';
-import "./index.css";
 
 const router = createBrowserRouter([
   {
@@ -29,9 +28,9 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <div id='root'>
+    <>
       <RouterProvider router={router}/>
-    </div>
+    </>
   )
 }
 

@@ -4,7 +4,7 @@
   "scripts": {
     "start": "webpack-dev-server .",
     "build": "Webpack .",
-    "startserve": "webpack serve",
+    "dev": "webpack serve",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
