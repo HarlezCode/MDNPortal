@@ -1,18 +1,19 @@
 import React from 'react'
 import {useEffect, useState, useRef} from 'react';
 import { fetchWebClips, fetchApps } from './serverActions';
+import "./components.css"
 
 export function DefaultWrapper({children} : any){
-    return(<div className="absolute left-[25%] w-[50%] top-[10%] border-solid border-4 mt-[1%] pt-[2%] border-blue-900 flex-1 col-1 bg-slate-300 pb-10 px-10 space-y-[10%] shadow-xl rounded place-item-center">
+    return(<div className="wrapper">
             {children}
         </div>)
 }
 export function DefaultInput({id} : {id : string}){
-    return(<input className="bg-slate-100 text-slate-900 border-blue-800 border-2 rounded"name={id}/>)
+    return(<input className="dinput" name={id}/>)
 }
 
 export function BackButton({nav} : {nav : any}){
-    return(<button className="mt-[4%] bg-slate-700" onClick={
+    return(<button className="backbutton" onClick={
         () =>{
             nav("../req");
         }
@@ -20,7 +21,7 @@ export function BackButton({nav} : {nav : any}){
 }
 
 export function DefaultTitle({children} : any){
-    return(<b><h3 className="text-2xl text-slate-900">{children}</h3></b>)
+    return(<b><h3 style={{fontSize: "1.5rem", lineHeight: "2rem"}}>{children}</h3></b>)
 }
 
 export function WebClipSelector({sn, tabledata, possibleWC} : {sn : string, tabledata : {[index : string] : string[]}, possibleWC : any}){

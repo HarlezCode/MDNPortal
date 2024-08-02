@@ -1,5 +1,6 @@
 import React from 'react'
 import {useState, FormEvent, useRef} from 'react'
+import './components.css'
 export default function Adding({reqtype, close, tabledata, settabledata, count} : {reqtype : string, close : any, tabledata : any, settabledata : any, count : any}){
     const [textArea, setText] = useState("");
     const importing = useRef(false);
@@ -59,11 +60,11 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
                     }
                 }
             }
-        }><div className='h-screen w-screen bg-gray-900 opacity-50 absolute top-0 bottom-0 left-0'></div><div className="bottom-[0%] left-[38%] top-[20%] w-[25%] mx-[0%] absolute">
-            <div className="bg-slate-400 grid p-[10%] content-start justify-items-middle rounded space-y-4">
+        }><div className='addingdiv'></div><div className="addingdiv2">
+            <div className="addingdiv3">
                 
-                <div className="bg-slate-700 p-2"><span className="text-3xl">Import</span></div>
-                <input type="file" accept=".txt" onChange={(e : any)=>{
+                <div className="importheader"><span>Import</span></div>
+                <input type="file" accept=".txt" className="mt" onChange={(e : any)=>{
                     const reader = new FileReader();
                     reader.onload = async (e) =>{
                         const text = (e.target?.result as string);
@@ -83,12 +84,12 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
                     }
                     reader.readAsText(e.target.files[0]);
     
-                }} className="text-slate-800"/>
-                <div className="flex-1"><b className="text-slate-900">SN & MAC of device(s): </b><textarea readOnly={false} style={{resize: "none"}} value={textArea} onChange={(e)=>{setText(e.currentTarget.value)}} className="overflow-y-scroll h-40 w-60 text-slate-900 bg-white border-blue-800 border-2 rounded mt-3 align-top" name="snDevices"/></div>
+                }}/>
+                <div className="flex-1"><b className="text-slate-900">SN & MAC of device(s): </b><textarea readOnly={false} style={{resize: "none"}} value={textArea} onChange={(e)=>{setText(e.currentTarget.value)}} className="sntextarea2" name="snDevices"/></div>
     
-                <div className="space-x-4">
-                    <button className="bg-slate-600" onClick={() =>{importing.current = false; close()}}>Close</button>
-                    <button className="bg-slate-600" onClick={() =>{
+                <div>
+                    <button className="mr2" onClick={() =>{importing.current = false; close()}}>Close</button>
+                    <button className="mr2" onClick={() =>{
                         importing.current = true;
                     }}>import</button>
                 </div>
@@ -157,10 +158,10 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
                 close();
             }
         }
-    }><div className='h-screen w-screen bg-gray-900 opacity-50 absolute top-0 bottom-0 left-0'></div><div className="bottom-[0%] left-[38%] top-[20%] w-[25%] mx-[0%] absolute">
-        <div className="bg-slate-400 grid p-[10%] content-start justify-items-middle rounded space-y-4">
+    }><div className='addingdiv'></div><div className="addingdiv2">
+        <div className="addingdiv3">
             
-            <div className="bg-slate-700 p-2"><span className="text-3xl">Import</span></div>
+            <div className="importheader"><span>Import</span></div>
             <input type="file" accept=".txt" onChange={(e : any)=>{
                 const reader = new FileReader();
                 reader.onload = async (e) =>{
@@ -175,8 +176,8 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
                 }
                 reader.readAsText(e.target.files[0]);
 
-            }} className="text-slate-800"/>
-            <div className="flex-1 col-1 row-1"><b className="text-slate-900">SN of device(s): </b><textarea readOnly={false} style={{resize: "none"}} value={textArea} onChange={(e)=>{setText(e.currentTarget.value)}} className="overflow-y-scroll h-40 text-slate-900 bg-white border-blue-800 border-2 rounded mt-3 align-top" name="snDevices"/></div>
+            }} className="mt"/>
+            <div className="flex-1 mt" style={{color: "black"}}><b>SN of device(s): </b><textarea readOnly={false} style={{resize: "none", color: "black"}} value={textArea} onChange={(e)=>{setText(e.currentTarget.value)}} className="sntextarea" name="snDevices"/></div>
             {reqtype == "Change of Device Type" && <div className='flex space-x-4'>
                 <h3><b>Change To: </b></h3>
                 <select name="changeType">
@@ -186,9 +187,9 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
                     <option value="COPE">COPE</option>
                 </select>
             </div>}
-            <div className="space-x-4">
-                <button className="bg-slate-600" onClick={() =>{importing.current = false; close()}}>Close</button>
-                <button className="bg-slate-600" onClick={() =>{
+            <div className="space-x-4 mt">
+                <button className="mr2" onClick={() =>{importing.current = false; close()}}>Close</button>
+                <button className="mr2" onClick={() =>{
                     importing.current = true;
                 }}>import</button>
             </div>

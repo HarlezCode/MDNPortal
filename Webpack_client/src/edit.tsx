@@ -199,37 +199,37 @@ export default function Edit(){
                 }
             }
         }>
-        <div className="mb-[2%] flex-1 space-x-2">
+        <div style={{marginBottom: "2%"}}>
             <button onClick={
                 () =>{
                     nav("../req");
                 }
-            } className="bg-slate-600 hover:bg-slate-700">Back</button>
+            } className="mr">Back</button>
 
             <button onClick={
                 () =>{
                     if (!isPreview)
                         buttonClick.current = "Add"
                 }
-            } className="bg-slate-600 hover:bg-slate-700">Import</button>
+            } className="mr">Import</button>
             
             <button onClick={
                 () =>{
                     if (!isAdding && !isPreview)
                         buttonClick.current = "Delete"
                 }
-            }className="bg-slate-600 hover:bg-slate-700">Delete</button>
+            } className="mr">Delete</button>
 
             <button onClick={
                 () =>{
                     if (!isAdding)
                         buttonClick.current = "Preview"
                 }
-            } className="bg-slate-600 hover:bg-slate-700">Preview</button>
-            <h3 className="text-slate-800 text-left mt-[1%]"># Entries: {numberOfDevices.current}</h3>
+            } >Preview</button>
+            <h3 style={{textAlign: "left", marginTop: "1%", fontWeight: "400", fontSize:"1rem"}}># Entries: {numberOfDevices.current}</h3>
             {reqType.current =="Add Webclip" && <div>
-                <b className="text-slate-900">Bulk update: </b>
-                <select name="wcSelector" className="w-[25%]"><option value="">
+                <b >Bulk update: </b>
+                <select name="wcSelector" style={{width: "25%", backgroundColor: "white", color: "black"}} className='mr'><option value="">
                 Select WebClips
                 </option>
                 {
@@ -265,7 +265,7 @@ export default function Edit(){
                         return (<>{
                             options.map((val : string) =>{
                                 return (
-                                    <option className="select-none" value={val}>
+                                    <option style={{userSelect: "none"}} value={val}>
                                         {val.slice(4)}
                                     </option>
                                 )
@@ -280,7 +280,7 @@ export default function Edit(){
                 if (!isAdding && !isPreview){
                     buttonClick.current = "bulkwebclip";
                 }
-            }}className="bg-slate-600 ml-[2%] hover:bg-slate-700 py-[0.5%] px-[1%] text-sm">
+            }} style={{fontSize:"0.875rem",lineHeight:"1.25rem", padding: ".3% 2.1%"}}>
                 Confirm
             </button>
             </div>}
@@ -288,7 +288,7 @@ export default function Edit(){
 
             {reqType.current =="App Update" && <div>
                 <b className="text-slate-900">Bulk update: </b>
-                <select name="appSelector" className="w-[25%]"><option value="">
+                <select name="appSelector" style={{width: "25%", backgroundColor: "white", color: "black"}} className='mr'><option value="">
                 Select Apps
                 </option>
                 {
@@ -324,7 +324,7 @@ export default function Edit(){
                         return (<>{
                             options.map((val : string) =>{
                                 return (
-                                    <option value={val}>
+                                    <option style={{userSelect: "none"}}value={val}>
                                         {val.slice(4)}
                                     </option>
                                 )
@@ -339,16 +339,16 @@ export default function Edit(){
                 if (!isAdding && !isPreview){
                     buttonClick.current = "bulkapps";
                 }
-            }}className="bg-slate-600 ml-[2%] hover:bg-slate-700 py-[0.5%] px-[1%] text-sm">
+            }} style={{padding: ".3% 2.1%", fontSize:"0.875rem",lineHeight:"1.25rem"}}>
                 Confirm
             </button>
             </div>}
         </div>
 
-        <div className="grid max-h-96 overflow-y-scroll">
-        <table className="w-[90%] table-auto mx-auto border-separate border-spacing-2 border-spacing-x-0 p-2 bg-slate-600 hover:bg-slate-700 overflow-y-scroll rounded mt-5">
-            <thead className="top-0">
-                <tr className="bg-slate-500 text-xl">
+        <div className="div1">
+        <table className="table1">
+            <thead style={{top: 0}}>
+                <tr style={{fontSize: "1.25rem", backgroundColor: "rgb(67, 81, 102)"}}>
                     <th className="py-6 px-6 border-b-4"></th>
                     <th className="border-b-4">SN</th>
                     { 
@@ -358,7 +358,7 @@ export default function Edit(){
                     }
                 </tr>
             </thead>
-            <tbody tabIndex={-1} style={{outline: "none"}} onKeyDown={(e : any) =>{
+            <tbody tabIndex={-1} style={{outline: "none", height: "24rem", maxHeight: "24rem"}} onKeyDown={(e : any) =>{
                     if (e.key == "Shift"){
                         shiftKeyDown.current = true;
                     }
@@ -371,14 +371,13 @@ export default function Edit(){
                         shiftKeyDown.current = false;
                         prevTarget.current = "";
                     }
-                } 
-                className="overflow-y-scroll max-h-96 h-96">
+                }> 
                  {Object.keys(tableData).map((key) => {
                     if (key == "RequestType" || key == "Headers" || key.startsWith("data_")){
                         return;
                     }
                     return (
-                        <tr id={key + "_r"} key={key + "_r"} className="hover:bg-slate-500"onClick={(e : any)=>{
+                        <tr id={key + "_r"} key={key + "_r"} className="hoverrow" onClick={(e : any)=>{
                             
                             
                             const key = (e.currentTarget.id ?? "").slice(0,e.currentTarget.id.length-2);
@@ -429,21 +428,21 @@ export default function Edit(){
                                         temp[key]= !temp[key];
                                     }
                                     setCheckboxStates(temp);
-                                }} className="w-[100%] h-[100%]" name={key + "_check"} type="checkbox"/>
+                                }} style={{width: "100%", height: "100%"}} name={key + "_check"} type="checkbox"/>
                             </td>
-                            <td key="-1">
-                                <h3 className="select-none">{key}</h3>
+                            <td key="-1" className='tdmax'>
+                                <h3 style={{fontWeight: 400, paddingLeft:10, paddingRight: 10, paddingTop:2, paddingBottom:2, userSelect: 'none'}}>{key}</h3>
                             </td>
                             {tableData[key].map((item, i) => {
                                 if (item.startsWith("wcp_")){
                                     return(
-                                        <td className="px-10 py-2" key={String(i)}>
+                                        <td style={{fontWeight: 400, paddingLeft:10, paddingRight: 10, paddingTop:2, paddingBottom:2, userSelect: 'none'}} key={String(i)}>
                                             <WebClipSelector tabledata={tableData} sn={key} possibleWC={possibleWC}/>
                                         </td>
                                     )
                                 } else if (item.startsWith("app_")){
                                     return(
-                                        <td className="px-10 py-2" key={String(i)}>
+                                        <td style={{fontWeight: 400, paddingLeft:10, paddingRight: 10, paddingTop:2, paddingBottom:2, userSelect: 'none'}} key={String(i)}>
                                             <AppSelector tabledata={tableData} sn={key} possibleApps={possibleApps} />
                                         </td>
                                     )
@@ -454,8 +453,8 @@ export default function Edit(){
                                 }
 
                                 return(
-                                    <td className="px-10 py-2" key={String(i)}>
-                                        <h3 className="select-none">{item}</h3>
+                                    <td key={String(i)} className='tdmax'>
+                                        <h3 style={{fontWeight: 400, paddingLeft:10, paddingRight: 10, paddingTop:2, paddingBottom:2}}>{item}</h3>
                                     </td>
                                 )
                             })}

@@ -1,0 +1,213 @@
+.r1 {
+    padding: 0.5rem; 
+    background-image: linear-gradient(to right, var(--tw-gradient-stops)); 
+    background-color: #2563EB;     
+}
+.r2 {
+    padding: 5rem; 
+    background-color: #1F2937; 
+}
+.r3 {
+    margin-top: 0.5rem; 
+    
+}
+
+
+
+.r4 {
+    padding-top: 4px;
+    padding-bottom: 4px;
+    margin: 0 auto;
+    border-radius: 0.25rem; 
+    font-family:  ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+    font-weight: 400;
+    font-size: 1.875rem;
+    line-height: 2.25rem; 
+    background-color: rgb(51 65 85);
+}
+.r5{
+    background-color: white;
+    padding: 0.5rem; 
+    border-radius: 0.25rem; 
+    font-family: Georgia, Cambria, "Times New Roman", Times, serif; 
+}
+
+.r7{
+    padding-left: 2.5rem;
+    padding-right: 2.5rem; 
+    font-family: Georgia, Cambria, "Times New Roman", Times, serif; 
+    background-color: #3B82F6; 
+}
+
+
+.wrapper{
+    position: absolute; 
+    padding-left: 2.5rem;
+    padding-right: 2.5rem; 
+    padding-bottom: 2.5rem; 
+    flex: 1 1 0%; 
+    border-radius: 0.25rem; 
+    border-width: 4px; 
+    border-color: #1E3A8A; 
+    border-style: solid; 
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); 
+    left: 25%;
+    width: 45%;
+    top: 10%;
+    margin-top: 1%;
+    padding-top: 2%;
+    background-color: rgb(203 213 225);
+    color: black;
+}
+
+.dinput{
+    border-radius: 0.25rem; 
+    border-width: 2px; 
+    border-color: #1E40AF; 
+    background-color: slategray;
+    color: black;
+}
+.backbutton{
+    margin-top: 4%;
+    background-color: rgb(51 65 85);
+}
+.defaultbutton{
+    margin-top: 4%;
+    padding: 1% 6%;
+    background-color: rgb(51 65 85);
+}
+.mt{
+    margin-top: 8%;
+}
+.mr{
+    margin-right: 2%;
+}
+.mr2{
+    margin-right: 5%;
+}
+.selector{
+    padding: 0.5rem; 
+    border-radius: 0.25rem; 
+    background-color: #ffffff; 
+    color: black;
+    font-size: 1rem;
+
+}
+.div1{
+    display: grid;
+    overflow-y: auto; 
+    max-height: 24rem; 
+}
+.table1{
+    overflow-y: scroll; 
+    padding: 0.5rem; 
+    margin-top: 1.25rem; 
+    margin-left: auto;
+    margin-right: auto;
+    color: white;
+    border-radius: 0.25rem; 
+    border-collapse: separate; 
+    table-layout: auto; 
+    width: 90%;
+    background-color: rgb(44, 57, 75);
+    --tw-border-spacing-x: 0px;
+    border-spacing: 0px;
+
+}
+.hoverrow:hover{
+    background-color: rgb(59, 75, 97);
+}
+.addingdiv{
+    position: absolute; 
+    top: 0; 
+    bottom: 0; 
+    left: 0; 
+    width: 100vw; 
+    height: 100vh; 
+    background-color: #111827; 
+    opacity: 0.5; 
+
+}
+.addingdiv2{
+    position: absolute; 
+    bottom: 0%;
+    left: 38%;
+    top: 20%;
+    width: 25%;
+}
+.addingdiv3{
+    display: grid; 
+    margin-top: 1rem; 
+    align-content: flex-start; 
+    border-radius: 0.25rem; 
+    padding: 10%;
+    background-color:rgb(144, 157, 176)
+}
+
+.previewdiv{
+    margin-top: 2rem; 
+    grid-template-rows: repeat(3, minmax(0, 1fr)); 
+    border-radius: 0.25rem; 
+    padding: 10%;
+    height: 60%;
+    width: 100%;
+    background-color:rgb(144, 157, 176)
+}
+
+.previewdiv2{
+    display: grid; 
+    overflow-y: auto; 
+    height: 70%;
+}
+
+.previewbuttondiv{
+    display: grid; 
+    grid-template-columns: repeat(4, minmax(0, 1fr)); 
+    grid-template-rows: repeat(1, minmax(0, 1fr)); 
+    align-content: flex-start; 
+    margin-top: 4%;
+}
+
+.previewtable{
+    position: relative; 
+    top: 0; 
+    background-color: #ffffff; 
+}
+
+.importheader{
+    margin-top: 2%;
+    background-color:rgb(72, 90, 116);
+    padding: 3px;
+    font-size: 2rem;
+}
+.flex-1{
+    flex: 1 1 0%; 
+}
+.tdmax{
+    max-width: 50px;
+    overflow-x: auto;
+}
+.sntextarea{
+    overflow-y: auto; 
+    margin-top: 0.75rem; 
+    border-radius: 0.25rem; 
+    border-width: 2px; 
+    border-color: #1E40AF; 
+    height: 10rem; 
+    font-size: 1rem;
+    vertical-align: top; 
+    background-color: #ffffff; 
+}
+.sntextarea2{
+    overflow-y: auto; 
+    margin-top: 0.75rem; 
+    border-radius: 0.25rem; 
+    border-width: 2px; 
+    border-color: #1E40AF; 
+    height: 10rem; 
+    font-size: 1rem;
+    vertical-align: top; 
+    background-color: #ffffff; 
+    margin-bottom: 0.75rem;
+
+}

@@ -2,7 +2,7 @@ import React from 'react'
 import { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { DefaultWrapper } from "./components";
-
+import "./components.css"
 const requestTypes : string[] = [
     "Add 4G VPN Profile",
     "Add new device record",
@@ -21,8 +21,8 @@ export default function Req(){
     const nav = useNavigate();
     return (<>
     <DefaultWrapper>
-        <h3><b className="text-slate-900 text-2xl">Type of Request</b></h3>
-        <form onSubmit={
+        <h3 ><b style={{fontSize: "1.5rem", lineHeight: "2rem"}} >Type of Request</b></h3>
+        <form className='mt' onSubmit={
             (event : FormEvent<HTMLFormElement>) =>{
                 event.preventDefault();
                 const val = event.currentTarget.req.value
@@ -42,16 +42,16 @@ export default function Req(){
             }
         }>
         <div>
-            <b className="text-slate-900">Type of Request: </b>
-            <select  name="req" className="p-1 rounded bg-white text-slate-900">
+            <b style={{fontSize: "1rem"}}>Type of Request: </b>
+            <select name="req" className="selector">
                 <option value="">-- Select -- </option>
                 {requestTypes.map((v, i)=>{
                     return (<option key={i} value={v} id={v}>{v}</option>)
                 })}
             </select>
         </div>
-        <div className="py-2">
-        <button className="bg-slate-700 px-10 mt-10">Next</button>
+        <div>
+        <button className="defaultbutton">Next</button>
         </div>
         </form>
     </DefaultWrapper>    
