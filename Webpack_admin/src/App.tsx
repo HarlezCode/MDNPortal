@@ -6,6 +6,7 @@ import Dashboard from "./dashboard"
 import Browse from "./browse"
 import Webclips from './webclips';
 import "./components.css"
+import Tools from './tools';
 
 const router = createBrowserRouter([
   {
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
     path: '/dashboard/webclips',
     element: <ProtectedRoute><Webclips/></ProtectedRoute>
 
+  },
+  {
+    path: '/dashboard/mitools',
+    element: <ProtectedRoute><Tools/></ProtectedRoute>
   }
 ]
 );

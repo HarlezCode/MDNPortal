@@ -1,14 +1,17 @@
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const path = require("path");
-
+const mode = "development";
 module.exports={
-    mode: "development", 
+    mode: mode, 
     entry: "./index.tsx", 
     output: {
         path: path.resolve(__dirname, "public"),
         filename: "bundle.js",
         publicPath: '',
     },
-    
+    plugins: [
+        new MiniCssExtractPlugin(),
+    ],
     target: "web",
     devServer: {
         port: "5176",
@@ -29,7 +32,10 @@ module.exports={
             },
             {
                 test: /\.css$/,
-                use: ['style-loader','css-loader']
+                use : [
+                mode == 'production' ? 
+                    MiniCssExtractPlugin.loader : 'style-loader',
+                    ,'css-loader'],
             }
         ]
     }

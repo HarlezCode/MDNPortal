@@ -20,6 +20,9 @@ export function Navbar(){
             <div className="h3div" onClick={()=>nav("../dashboard/webclips")}>
                 <h3 className='h3but'>Webclips</h3>
             </div>
+            <div className='h3div' onClick={()=>nav("../dashboard/mitools")}>
+                <h3 className='h3but'>MI tools</h3>
+            </div>
          </div>
     </div>
     <div className='logoutdiv'>

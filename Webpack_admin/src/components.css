@@ -233,9 +233,9 @@ background-color: rgb(196, 20, 64);
   top: 0; 
   left: 0; 
   margin-top: 0.5rem; 
-  grid-template-columns: repeat(3, minmax(0, 1fr)); 
+  grid-template-columns: repeat(4, minmax(0, 1fr)); 
   grid-template-rows: repeat(1, minmax(0, 1fr)); 
-  width: 40%;
+  width: 50%;
   height: 100%;
 
 }
