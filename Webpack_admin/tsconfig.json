@@ -9,4 +9,4 @@
       "esModuleInterop": true
     },
     "include": ["src/**/*", "main.tsx"]
-  }
+}

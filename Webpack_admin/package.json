@@ -2,6 +2,8 @@
   "name": "webpack_admin",
   "version": "1.0.0",
   "scripts": {
+    "dev": "webpack serve",
+    "build": "Webpack .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
@@ -24,6 +26,7 @@
     "webpack-dev-server": "^5.0.4"
   },
   "dependencies": {
+    "exceljs": "^4.4.0",
     "react-router-dom": "^6.25.1"
   },
   "author": "",
