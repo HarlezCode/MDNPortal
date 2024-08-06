@@ -134,7 +134,7 @@ export default function Browse(){
                         <option value="Onhold">On hold</option>
                     </select></td>
                     <td><input name='uuidfilter' className='w-16 bg-rose-800 defaultinputs' placeholder='uuid'/></td>
-                    <td><input name='datefilter' className="bg-rose-800 defaultinputs" type='date'/></td>
+                    <td><input name='datefilter' className="bg-rose-800 defaultinputs" style={{width: '95%'}} placeholder='dd/mm/yyyy'/></td>
                     <td><select name='devicefilter' style={{width: "100%"}} className='bg-rose-800'>
                         <option value="">All</option>
                         <option value="CORP">CORP</option>

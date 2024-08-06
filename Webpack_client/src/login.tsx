@@ -20,13 +20,13 @@ export default function Login(){
         <div>
             <div>
                 <h3 className="r4">
-                    User Portal
+                    Login
                 </h3>
             </div>
             <div className='r3'>
             <input placeholder="CORP ID" name="username" className="r5"/>
             </div>
-            <div className='r3'>
+            <div className='r3 mb3'>
             <input placeholder="Password" type="password" name="password" className="r5"/>
             </div>
             <div className='r3'>

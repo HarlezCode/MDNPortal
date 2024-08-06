@@ -29,7 +29,6 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
                         }
                     }
                     
-
                     const newData = JSON.parse(JSON.stringify(tabledata))
                     for (let i =0; i<arr.length;i++){
                         const entry = arr[i].split(",");
@@ -64,7 +63,7 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
             <div className="addingdiv3">
                 
                 <div className="importheader"><span>Import</span></div>
-                <input type="file" accept=".txt" className="mt" onChange={(e : any)=>{
+                <input type="file" accept=".txt" className="mt" style={{marginBottom: '20px'}} onChange={(e : any)=>{
                     const reader = new FileReader();
                     reader.onload = async (e) =>{
                         const text = (e.target?.result as string);
@@ -85,13 +84,13 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
                     reader.readAsText(e.target.files[0]);
     
                 }}/>
-                <div className="flex-1"><b className="text-slate-900">SN & MAC of device(s): </b><textarea readOnly={false} style={{resize: "none"}} value={textArea} onChange={(e)=>{setText(e.currentTarget.value)}} className="sntextarea2" name="snDevices"/></div>
+                <div className="flex-1"><b style={{color: "black"}}>SN & MAC of device(s): </b><textarea readOnly={false} style={{resize: "none", color: "black"}} placeholder='Eg. 123,snxxx1111' value={textArea} onChange={(e)=>{setText(e.currentTarget.value)}} className="sntextarea2" name="snDevices"/></div>
     
                 <div>
                     <button className="mr2" onClick={() =>{importing.current = false; close()}}>Close</button>
                     <button className="mr2" onClick={() =>{
                         importing.current = true;
-                    }}>import</button>
+                    }}>Import</button>
                 </div>
                 
                 </div>
@@ -115,15 +114,18 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
             if (importing.current){
                 // we do checks here
                 const curString = (localStorage.getItem("SN") ?? "").split("\n");
-                const arr = textArea.split("\n");
+                let arr = textArea.split("\n");
                 for (let i =0; i<arr.length;i++){
                     arr[i] = arr[i].trim();
-                    if (!curString.includes(arr[i])){
+                    if (!curString.includes(arr[i]) && arr[i].length > 0){
                         curString.push(arr[i]);
                     }
                 }
                 const newData = JSON.parse(JSON.stringify(tabledata))
                 for (let i =0; i<arr.length;i++){
+                    if (arr[i] == ''){
+                        continue;
+                    }
                     if (newData[arr[i]] != null && newData[arr[i]] != ([] as string[])){
                         continue;
                     }
@@ -177,21 +179,21 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
                 reader.readAsText(e.target.files[0]);
 
             }} className="mt"/>
-            <div className="flex-1 mt" style={{color: "black"}}><b>SN of device(s): </b><textarea readOnly={false} style={{resize: "none", color: "black"}} value={textArea} onChange={(e)=>{setText(e.currentTarget.value)}} className="sntextarea" name="snDevices"/></div>
-            {reqtype == "Change of Device Type" && <div className='flex space-x-4'>
-                <h3><b>Change To: </b></h3>
-                <select name="changeType">
-                    <option value="">--Select--</option>
+            <div className="griddy mt" style={{color: "black"}}><b>SN of device(s)</b><textarea readOnly={false} style={{resize: "none", color: "black"}} value={textArea} onChange={(e)=>{setText(e.currentTarget.value)}} className="sntextarea" name="snDevices"/></div>
+            {reqtype == "Change of Device Type" && <div className='flex mb3'>
+                <h3><b style={{color: 'black'}}>Change To </b></h3>
+                <select name="changeType" className='typeselect'>
+                    <option value="">--  Select  --</option>
                     <option value="CORP">CORP</option>
                     <option value="OUD">OUD</option>
                     <option value="COPE">COPE</option>
                 </select>
             </div>}
-            <div className="space-x-4 mt">
+            <div className="mt">
                 <button className="mr2" onClick={() =>{importing.current = false; close()}}>Close</button>
                 <button className="mr2" onClick={() =>{
                     importing.current = true;
-                }}>import</button>
+                }}>Import</button>
             </div>
             
             </div>

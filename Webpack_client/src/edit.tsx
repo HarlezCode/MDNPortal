@@ -112,8 +112,9 @@ export default function Edit(){
     return(<>
         
         <DefaultWrapper>
-        <DefaultTitle>{reqType.current}</DefaultTitle>
-                
+        <div style={{borderTopRightRadius: "1rem", borderTopLeftRadius: "1rem",marginBottom: "20px", paddingTop: 10, paddingBottom: 10, backgroundColor: "#f5eaff"}}>
+            <DefaultTitle>{reqType.current}</DefaultTitle>
+        </div>    
         <form onSubmit={
             (event : FormEvent<HTMLFormElement>) =>{
                 event.preventDefault();
@@ -199,7 +200,7 @@ export default function Edit(){
                 }
             }
         }>
-        <div style={{marginBottom: "2%"}}>
+        <div>
             <button onClick={
                 () =>{
                     nav("../req");
@@ -226,10 +227,10 @@ export default function Edit(){
                         buttonClick.current = "Preview"
                 }
             } >Preview</button>
-            <h3 style={{textAlign: "left", marginTop: "1%", fontWeight: "400", fontSize:"1rem"}}># Entries: {numberOfDevices.current}</h3>
-            {reqType.current =="Add Webclip" && <div>
+            <h3 style={{marginBottom: '5px',textAlign: "left",  marginLeft: '10px', marginTop: "1%", fontWeight: "400", fontSize:"1rem"}}># Entries: {numberOfDevices.current}</h3>
+            {reqType.current =="Add Webclip" && <div style={{marginBottom:'20px'}}>
                 <b >Bulk update: </b>
-                <select name="wcSelector" style={{width: "25%", backgroundColor: "white", color: "black"}} className='mr'><option value="">
+                <select name="wcSelector" style={{width: "17%",paddingTop:"4px", paddingBottom: "4px", backgroundColor: "white", color: "black"}} className='mr'><option value="">
                 Select WebClips
                 </option>
                 {
@@ -280,15 +281,15 @@ export default function Edit(){
                 if (!isAdding && !isPreview){
                     buttonClick.current = "bulkwebclip";
                 }
-            }} style={{fontSize:"0.875rem",lineHeight:"1.25rem", padding: ".3% 2.1%"}}>
+            }} style={{fontSize:"0.875rem",lineHeight:"1.25rem", padding: ".5% 2.1%"}}>
                 Confirm
             </button>
             </div>}
 
 
-            {reqType.current =="App Update" && <div>
+            {reqType.current =="App Update" && <div style={{marginBottom:'20px'}}>
                 <b className="text-slate-900">Bulk update: </b>
-                <select name="appSelector" style={{width: "25%", backgroundColor: "white", color: "black"}} className='mr'><option value="">
+                <select name="appSelector" style={{width: "17%",paddingTop:"4px", paddingBottom: "4px", backgroundColor: "white", color: "black"}} className='mr'><option value="">
                 Select Apps
                 </option>
                 {
@@ -339,7 +340,7 @@ export default function Edit(){
                 if (!isAdding && !isPreview){
                     buttonClick.current = "bulkapps";
                 }
-            }} style={{padding: ".3% 2.1%", fontSize:"0.875rem",lineHeight:"1.25rem"}}>
+            }} style={{padding: ".5% 2.1%", fontSize:"0.875rem",lineHeight:"1.25rem"}}>
                 Confirm
             </button>
             </div>}
@@ -347,13 +348,13 @@ export default function Edit(){
 
         <div className="div1">
         <table className="table1">
-            <thead style={{top: 0}}>
-                <tr style={{fontSize: "1.25rem", backgroundColor: "rgb(67, 81, 102)"}}>
-                    <th className="py-6 px-6 border-b-4"></th>
-                    <th className="border-b-4">SN</th>
+            <thead style={{top: 0, height: '3rem'}}>
+                <tr style={{fontSize: "1.5rem"}} className='trheader'>
+                    <th className='fweight600'></th>
+                    <th className='fweight600'>Serial #</th>
                     { 
                         tableData["Headers"].map((item,i) => {
-                            return (<th className="border-b-4" key={i}>{item}</th>)
+                            return (<th className="fweight600" key={i}>{item}</th>)
                         })
                     }
                 </tr>
@@ -428,7 +429,7 @@ export default function Edit(){
                                         temp[key]= !temp[key];
                                     }
                                     setCheckboxStates(temp);
-                                }} style={{width: "100%", height: "100%"}} name={key + "_check"} type="checkbox"/>
+                                }} style={{width: "120%", height: "120%"}} name={key + "_check"} type="checkbox"/>
                             </td>
                             <td key="-1" className='tdmax'>
                                 <h3 style={{fontWeight: 400, paddingLeft:10, paddingRight: 10, paddingTop:2, paddingBottom:2, userSelect: 'none'}}>{key}</h3>
@@ -454,7 +455,7 @@ export default function Edit(){
 
                                 return(
                                     <td key={String(i)} className='tdmax'>
-                                        <h3 style={{fontWeight: 400, paddingLeft:10, paddingRight: 10, paddingTop:2, paddingBottom:2}}>{item}</h3>
+                                        <h3 style={{fontWeight: 400, paddingLeft:10, paddingRight: 10, paddingTop:2, paddingBottom:2, userSelect: "none"}}>{item}</h3>
                                     </td>
                                 )
                             })}

@@ -27,7 +27,7 @@ async function submitFunc(data : any, close : any, nav : any){
 export default function Preview({previewFunc, data} : {previewFunc : any, data : any}){
     const nav = useNavigate();
     return(<>
-        <div><div className='addingdiv'></div><div className="addingdiv2">
+        <div><div className='addingdiv'></div><div className="previewdiv3">
             <div className="flex-1 previewdiv">
                 <div>
                     <DefaultTitle>Preview</DefaultTitle>
@@ -38,7 +38,7 @@ export default function Preview({previewFunc, data} : {previewFunc : any, data :
                         <tr style={{color: "black"}}>
                             <th>SN</th>
                             {data["Headers"].map((v : string) => {
-                                return (<th>{v}</th>);
+                                return (<th key={v+"_header"}>{v}</th>);
                             })}
                         </tr>
                     </thead>
@@ -51,6 +51,9 @@ export default function Preview({previewFunc, data} : {previewFunc : any, data :
                                 {data[k].map((val : string)=>{
                                     if (val.startsWith("uuid_")){
                                         return;
+                                    }
+                                    if (val.startsWith("wcp_") || val.startsWith("app_")){
+                                        return (<td style={{color: "black"}}>{val.substring(4)}</td>)
                                     }
                                     return (<td style={{color: "black"}}>{val}</td>)
                                 })}

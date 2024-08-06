@@ -1,7 +1,7 @@
 import React from 'react'
 import { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { DefaultWrapper } from "./components";
+import { DefaultWrapper, Wrapper } from "./components";
 import "./components.css"
 const requestTypes : string[] = [
     "Add 4G VPN Profile",
@@ -20,8 +20,10 @@ const requestTypes : string[] = [
 export default function Req(){
     const nav = useNavigate();
     return (<>
-    <DefaultWrapper>
-        <h3 ><b style={{fontSize: "1.5rem", lineHeight: "2rem"}} >Type of Request</b></h3>
+    <Wrapper>
+        <div style={{borderTopRightRadius: "1rem", borderTopLeftRadius: "1rem",marginBottom: "10%", paddingTop: 10, paddingBottom: 10, backgroundColor: "#f5eaff"}}>
+        <h3><b style={{fontSize: "2rem", lineHeight: "2rem", fontWeight: 450}} >Select Request</b></h3>
+        </div>
         <form className='mt' onSubmit={
             (event : FormEvent<HTMLFormElement>) =>{
                 event.preventDefault();
@@ -41,8 +43,8 @@ export default function Req(){
                 }
             }
         }>
-        <div>
-            <b style={{fontSize: "1rem"}}>Type of Request: </b>
+        <div style={{marginBottom: "10%"}}>
+            <b style={{fontSize: "1.5rem", fontWeight: "500"}}>Type of Request: </b>
             <select name="req" className="selector">
                 <option value="">-- Select -- </option>
                 {requestTypes.map((v, i)=>{
@@ -54,6 +56,6 @@ export default function Req(){
         <button className="defaultbutton">Next</button>
         </div>
         </form>
-    </DefaultWrapper>    
+    </Wrapper>    
     </>)
 }

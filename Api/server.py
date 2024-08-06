@@ -76,7 +76,6 @@ async def processrequests():
     data = request.json
     valid = await validateKey(request.headers["Key"])
     user = request.headers["From"]
-
     if not valid:
         return Responses.keyError
 
@@ -130,6 +129,7 @@ async def processrequests():
 async def addrequests():
     Responses = responses()
     data = request.json
+    print(data)
     valid = await validateClientKey(request.headers["Key"])
     if not valid:
         return Responses.keyError
@@ -176,6 +176,8 @@ async def addrequests():
                 if len(data[i]) < 3:
                     skippedEntries.append(data[i])
                     continue
+                
+                data[i][1] = data[i][1][4:]
                 cursor.execute('''
                     SELECT * FROM webclips WHERE webclip=%s
                 ''',(data[i][1],));
@@ -456,7 +458,7 @@ async def fetchWebclips():
 
     return Responses.ok(listofitems)
 
-# closes connection automatically, get the connection using getCursor() method
+# closes connection automatically, get the connection using createCursor() method
 @app.teardown_appcontext
 def teardown_conn(exception):
     conn = g.pop('conn', None)

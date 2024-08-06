@@ -8,6 +8,11 @@ export function DefaultWrapper({children} : any){
             {children}
         </div>)
 }
+export function Wrapper({children} : any){
+    return(<div className="wrapper2">
+            {children}
+        </div>)
+}
 export function DefaultInput({id} : {id : string}){
     return(<input className="dinput" name={id}/>)
 }
@@ -21,7 +26,7 @@ export function BackButton({nav} : {nav : any}){
 }
 
 export function DefaultTitle({children} : any){
-    return(<b><h3 style={{fontSize: "1.5rem", lineHeight: "2rem"}}>{children}</h3></b>)
+    return(<b><h3 style={{fontSize: "2.5rem", fontWeight: 400, lineHeight: "2rem", color:"black"}}>{children}</h3></b>)
 }
 
 export function WebClipSelector({sn, tabledata, possibleWC} : {sn : string, tabledata : {[index : string] : string[]}, possibleWC : any}){
@@ -45,7 +50,7 @@ export function WebClipSelector({sn, tabledata, possibleWC} : {sn : string, tabl
     });
 
     return(<>
-        <select className="bg-slate-700 rounded pl-[4%] w-[60%] overflow-x-hidden select-none" value={function(){
+        <select className="webclipselector" value={function(){
             for (let i =0; i < tabledata[snNumber.current].length; i++){
                 if (tabledata[snNumber.current][i].startsWith("wcp_")){
                     return tabledata[snNumber.current][i];
@@ -98,7 +103,7 @@ export function AppSelector({sn, tabledata, possibleApps} : {sn : string, tabled
     });
 
     return(<>
-        <select className="bg-slate-700 rounded pl-[4%] w-[60%] overflow-x-hidden select-none" value={function(){
+        <select className="appselector" value={function(){
             for (let i =0; i < tabledata[snNumber.current].length; i++){
                 if (tabledata[snNumber.current][i].startsWith("app_")){
                     return tabledata[snNumber.current][i];
