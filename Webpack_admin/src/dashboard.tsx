@@ -49,7 +49,7 @@ export default function Dashboard(){
 
     return (<>
     
-    <Navbar />
+    
     
     <div className='dashboarddiv'>
         <div>
@@ -237,5 +237,6 @@ export default function Dashboard(){
             </div>
     </div>
     {isProcess.current && <Loading/>}
+    <Navbar />
     </>);
 }

@@ -66,7 +66,7 @@ export default function Webclips(){
 
 
     return (<>
-    <Navbar/>
+    
     
     <div className="webclipdiv">
         <div className="webclipdiv2">
@@ -356,5 +356,6 @@ export default function Webclips(){
     {
         isAdding  && !isProcess.current && <AddWebclips close={setAdding} setRefresh={setRefresh}/>
     }
+    <Navbar/>
     </>);
 }

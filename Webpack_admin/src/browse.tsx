@@ -14,7 +14,7 @@ export default function Browse(){
     const [tableData, setData] = useState([] as ResType[]);
     const buttonState = useRef("none");
     return (<>
-    <Navbar />
+    
     <div className='browsediv'>
         <div>
             <div className='browsediv2'>
@@ -206,5 +206,6 @@ export default function Browse(){
             </div>
         </div>
     </div>
+    <Navbar />
     </>);
 }
