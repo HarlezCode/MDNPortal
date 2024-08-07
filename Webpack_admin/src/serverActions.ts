@@ -55,7 +55,7 @@ export async function updateWebclip(item : any, update : string){
         mode = "inactive"
     } else {
         console.log("?");
-        return {};
+        return {res : "error"};
     }
     
     const res = await fetch("http://localhost:5000/api/updatewebclip/", {
@@ -74,7 +74,7 @@ export async function updateWebclip(item : any, update : string){
     }).catch((error : any)=>console.log(error));;
 
     if (!res){
-        return {};
+        return {res : "error"};
     }
 
     return res;
@@ -121,7 +121,7 @@ export async function logout() : Promise<boolean>{
 type ResType = {[key : string] : string};
 
 export async function processRequests(data : ResType[]){
-    let val : string = "";
+    let val;
     await fetch("http://localhost:5000/api/processrequests", {
         method: "POST",
         headers: {
@@ -133,17 +133,7 @@ export async function processRequests(data : ResType[]){
         body: JSON.stringify(data)
     }).then(async (res : any) =>{
         await res.json().then((res : any) =>{
-            if (res.status == "error"){
-                val = res.error ?? "Error has occurred!"
-            } else {
-                if (res.data.length > 0){
-                    val = "Some requests are already processed!";
-                } else {
-                    val = "Successfully processed!"
-                }
-                
-            }
-            
+            val = res;
         }
         );
         

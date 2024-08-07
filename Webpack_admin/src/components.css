@@ -342,6 +342,20 @@ background-color: rgb(196, 20, 64);
 .mbdiv{
   margin-bottom: 6px;
 }
+.toastbutton{
+  border-style: none; 
+  outline-style: none; 
+  background-color: #c1a9fa;
+}
+.toastbutton:hover{
+  background-color: #dacbff;;
+}
+.toastheadercolor{
+  background-color: #c1a9fa;
+}
+.toastbodycolor{
+  background-color: #c9738da9;
+}
 .logininput{
   font-weight: 400;
   background-color: #c0434e;

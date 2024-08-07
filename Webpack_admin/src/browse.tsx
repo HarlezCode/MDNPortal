@@ -1,7 +1,7 @@
 import React from 'react';
 import {fetchFromServer, fetchFromServerRaw} from './serverActions'
 import { FormEvent, useState, useRef } from 'react';
-import { Navbar } from './components';
+import { Navbar, Toaster } from './components';
 import { exportExcel } from './clientActions';
 type ResType = {[key :string] : string};
 
@@ -13,8 +13,9 @@ export default function Browse(){
     const exportOption = useRef("current");
     const [tableData, setData] = useState([] as ResType[]);
     const buttonState = useRef("none");
+    const [toastMsg, setToast] = useState("");
     return (<>
-    
+    <Toaster show={toastMsg != ""} msg={toastMsg}/>
     <div className='browsediv'>
         <div>
             <div className='browsediv2'>
@@ -61,7 +62,15 @@ export default function Browse(){
                 e.preventDefault();
                 // set filters params and make request
                 if (buttonState.current == "fetch"){
-                    await fetchFromServer(e).then((res) => setData(res));
+                    await fetchFromServer(e).then((res) => {
+                        setData(res);
+                        if (res.length == 0){
+                            setToast("No data found.");
+                        } else {
+                            setToast("Successfully fetched data.")
+                        }
+                        setTimeout(()=>{setToast("")}, 3000);
+                    });
                 }
             }}>
                 <div className='browsetablediv'>

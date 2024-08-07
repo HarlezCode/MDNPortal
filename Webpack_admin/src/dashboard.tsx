@@ -1,10 +1,11 @@
 import React from 'react';
 import {fetchFromServerRaw, processRequests, rejectRequest} from './serverActions'
 import {useState, useRef, useEffect } from 'react';
-import { Navbar } from './components';
+import { Navbar, Toaster } from './components';
 import { exportExcel } from './clientActions';
 import Loading from './loading';
-import './components.css'
+import './components.css';
+
 type ResType = {[key : string] : string};
 
 function ScrollableTD({children} : {children : any}){
@@ -16,6 +17,7 @@ export default function Dashboard(){
     const [tableData, setData] = useState([] as ResType[]);
     const [cbState, setCb] = useState({} as {[index : string] : boolean}); 
     const [refresh, setRefresh] = useState(true);
+    const [toastMsg, setToast] = useState("");
     const autoRefresh = useRef(false);
     const isProcess = useRef(false);
     const exportOption = useRef("current");
@@ -49,11 +51,11 @@ export default function Dashboard(){
 
     return (<>
     
-    
+    <Toaster show={toastMsg != ""} msg={toastMsg}/>
     
     <div className='dashboarddiv'>
         <div>
-            <div className='dashboarddiv2' style={{left: "95%", right: 0, top: -20}}>
+            <div className='dashboarddiv2' style={{left: "90%", right: 0, top: -40}}>
                 <select style={{height: "2rem", fontSize:"1rem", marginTop:"25px"}} className='bg-rose-900 mrdiv' onChange={
                     (e : any) =>{
                         exportOption.current = e.currentTarget.value;
@@ -116,6 +118,12 @@ export default function Dashboard(){
                     processRequests(temp).then((res : any) =>{
                         isProcess.current = false;
                         setRefresh(true);
+                        if (res.res == "error"){
+                            setToast(res.error);
+                        } else if (res.res == "ok"){
+                            setToast("Requests were successfully processed.");
+                        }
+                        setTimeout(()=>{setToast("")}, 3000);
                     })
                 }}>Process Selected</button>
             </div>
@@ -180,7 +188,12 @@ export default function Dashboard(){
                                             rejectRequest(temp).then((res : ResType)=>{
                                                 setRefresh(true);
                                                 isProcess.current = false;
-                                                console.log(res);
+                                                if (res.res == "error"){
+                                                    setToast(res.error ?? "error");
+                                                } else if (res.res == "ok"){
+                                                    setToast("Request was successfully rejected.");
+                                                }
+                                                setTimeout(()=>{setToast("")}, 3000);
                                             });
                                             break;
                                         }
@@ -201,6 +214,13 @@ export default function Dashboard(){
                                             processRequests(temp).then((res : any)=>{
                                                 setRefresh(true);
                                                 isProcess.current = false;
+                                                console.log(res);
+                                                if (res.res == "error"){
+                                                    setToast(res.error);
+                                                } else if (res.res == "ok"){
+                                                    setToast("Request was successfully processed.");
+                                                }
+                                                setTimeout(()=>{setToast("")}, 3000);
                                             });
                                             break;
                                         }

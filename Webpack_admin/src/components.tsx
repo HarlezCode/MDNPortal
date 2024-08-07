@@ -1,19 +1,38 @@
-import React from 'react';
+import React, { useEffect, useRef, RefObject } from 'react';
 import { useNavigate } from "react-router-dom";
 import { logout } from "./serverActions";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import {Toast} from 'bootstrap';
 
-export function Toaster({show} : {show : boolean}){
+export function Toaster({show, msg} : {show : boolean, msg : string}){
+    const toastRef = useRef<HTMLDivElement>(null);
+    useEffect(()=>{
+        var myToast = toastRef.current;
+        var bsToast = Toast.getInstance(myToast as Element);
+        if (!bsToast){
+            bsToast = new Toast(myToast as Element);
+        } 
+        if (bsToast.isShown() && show){
+            return;
+        }
+        console.log("updating");
+        show ? bsToast.show() : bsToast.hide();
+    })
     return (
-        <div className="toast" style={{position: "absolute", top: 0, right: 0, zIndex: 1000, width: "100%"}}>
-            <div className="toast-header">
-                <strong className="mr-auto">Error</strong>
-                <button type="button" className="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+        <div className="toast toastbodycolor" ref={toastRef} style={{position: "absolute", top: '80%', right: 10, zIndex: 1000}}>
+            <div className="toast-header toastheadercolor" style={{height: "50%"}}>
+                <button className="ml-2 mb-1 toastbutton" onClick={()=>{
+                    var myToast = toastRef.current;
+                    var bsToast = Toast.getInstance(myToast as Element);
+                    if (bsToast){
+                        bsToast.hide();
+                    }
+                }}>
                     X
                 </button>
             </div>
-            <div className="toast-body">
-                {show ? "Error" : ""}
+            <div className="toast-body" style={{color: "white"}}>
+                <h3 style={{fontSize: "1.2rem"}}>{msg}</h3>
             </div>
         </div>
     )

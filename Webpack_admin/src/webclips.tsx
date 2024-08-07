@@ -1,6 +1,6 @@
 import React from "react";
-import { Navbar } from "./components";
-import {useRef, useState, useEffect, act} from 'react';
+import { Navbar, Toaster} from "./components";
+import {useRef, useState, useEffect} from 'react';
 import {fetchWebclips, updateWebclip} from "./serverActions"
 import Loading from "./loading";
 import AddWebclips from "./addWebclips";
@@ -20,6 +20,7 @@ export default function Webclips(){
     const [pageOn, setPage] = useState("active");
     const [isAdding, setAdding] = useState(false);
     const isProcess = useRef(false);
+    const [toastMsg, setToast] = useState("");
 
     useEffect(() =>{
         const temp = {} as {[index :string] : boolean};
@@ -67,7 +68,7 @@ export default function Webclips(){
 
     return (<>
     
-    
+    <Toaster show={toastMsg != ""} msg={toastMsg}/>
     <div className="webclipdiv">
         <div className="webclipdiv2">
             <button className="bg-rose-600 selectbutton mrdiv" onClick={() =>{
@@ -89,7 +90,14 @@ export default function Webclips(){
                                 }
                             }
                             if (index != -1){
-                                await updateWebclip(activeWc[index], "inactive");
+                                await updateWebclip(activeWc[index], "inactive").then((res : any)=>{
+                                    if ((res.res ?? "error") == "error"){
+                                        setToast("An error has occured.");
+                                    } else {
+                                        setToast("Webclips deactivated.");
+                                    }
+                                    setTimeout(()=>{setToast("")}, 3000);
+                                });
                             }
                         }
                     }}
@@ -110,7 +118,14 @@ export default function Webclips(){
                                     }
                                 }
                                 if (index != -1){
-                                    await updateWebclip(inactiveWc[index], "active");
+                                    await updateWebclip(inactiveWc[index], "active").then((res : any) =>{
+                                        if ((res.res ?? "error") == "error"){
+                                            setToast("An error has occured.");
+                                        } else {
+                                            setToast("Webclips activated.");
+                                        }
+                                        setTimeout(()=>{setToast("")}, 3000);
+                                    });
                                 }
                             }
                         }}
@@ -143,7 +158,14 @@ export default function Webclips(){
                                 }
                             }
                             if (index != -1){
-                                await updateWebclip(activeWc[index], "delete");
+                                await updateWebclip(activeWc[index], "delete").then((res : any)=>{
+                                    if ((res.res ?? "error") == "error"){
+                                        setToast("An error has occured.");
+                                    } else {
+                                        setToast("Webclips deleted.");
+                                    }
+                                    setTimeout(()=>{setToast("")}, 3000);
+                                });
                             }
                         }
                     }}
@@ -164,7 +186,14 @@ export default function Webclips(){
                                     }
                                 }
                                 if (index != -1){
-                                    await updateWebclip(inactiveWc[index], "delete");
+                                    await updateWebclip(inactiveWc[index], "delete").then((res : any) =>{
+                                        if ((res.res ?? "error") == "error"){
+                                            setToast("An error has occured.");
+                                        } else {
+                                            setToast("Webclips deleted.");
+                                        }
+                                        setTimeout(()=>{setToast("")}, 3000);  
+                                    });
                                 }
                             }
                         }}
@@ -234,9 +263,15 @@ export default function Webclips(){
                                     for (let i=0;i<activeWc.length;i++){
                                         if (activeWc[i].id == key){
                                             found = true;
-                                            updateWebclip(activeWc[i], "delete").then(()=>{
+                                            updateWebclip(activeWc[i], "delete").then((res : any)=>{
                                                 isProcess.current = false;
                                                 setRefresh(true);
+                                                if ((res.res ?? "error") == "error"){
+                                                    setToast("An error has occured.");
+                                                } else {
+                                                    setToast("Webclip deleted.");
+                                                }
+                                                setTimeout(()=>{setToast("")}, 3000);
                                             });
                                             break;
                                         }
@@ -254,7 +289,16 @@ export default function Webclips(){
                                     const key = e.currentTarget.name.slice(0,e.currentTarget.name.length-7);
                                     for (let i=0;i<activeWc.length;i++){
                                         if (activeWc[i].id == key){
-                                            updateWebclip(activeWc[i], "inactive").then(()=>{isProcess.current=false;setRefresh(true);});
+                                            updateWebclip(activeWc[i], "inactive").then((res : any)=>{
+                                                isProcess.current=false;
+                                                setRefresh(true);
+                                                if ((res.res ?? "error") == "error"){
+                                                    setToast("An error has occured.");
+                                                } else {
+                                                    setToast("Webclip deactivated.");
+                                                }
+                                                setTimeout(()=>{setToast("")}, 3000);
+                                            });
                                             found = true;
                                             break;
                                         }
@@ -303,7 +347,16 @@ export default function Webclips(){
                                         let found = false;
                                         for (let i=0;i<inactiveWc.length;i++){
                                             if (inactiveWc[i].id == key){
-                                                updateWebclip(inactiveWc[i], "delete").then(()=>{isProcess.current=false; setRefresh(true);})
+                                                updateWebclip(inactiveWc[i], "delete").then((res : any)=>{
+                                                    isProcess.current=false; 
+                                                    setRefresh(true);
+                                                    if ((res.res ?? "error") == "error"){
+                                                        setToast("An error has occured.");
+                                                    } else {
+                                                        setToast("Webclip deleted.");
+                                                    }
+                                                    setTimeout(()=>{setToast("")}, 3000);
+                                                })
                                                 found = true;
                                                 break;
                                             }
@@ -322,7 +375,16 @@ export default function Webclips(){
                                     for (let i=0;i<inactiveWc.length;i++){
                                         if (inactiveWc[i].id == key){
                                             found = true;
-                                            updateWebclip(inactiveWc[i], "active").then(()=>{isProcess.current = false;setRefresh(true);})
+                                            updateWebclip(inactiveWc[i], "active").then((res : any)=>{
+                                                isProcess.current = false;
+                                                setRefresh(true);
+                                                if ((res.res ?? "error") == "error"){
+                                                    setToast("An error has occured.");
+                                                } else {
+                                                    setToast("Webclip activated.");
+                                                }
+                                                setTimeout(()=>{setToast("")}, 3000);
+                                            })
                                             break;
                                         }
                             
