@@ -176,7 +176,7 @@ async def addrequests():
                 if len(data[i]) < 3:
                     skippedEntries.append(data[i])
                     continue
-                
+
                 data[i][1] = data[i][1][4:]
                 cursor.execute('''
                     SELECT * FROM webclips WHERE webclip=%s

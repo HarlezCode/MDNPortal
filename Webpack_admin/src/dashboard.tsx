@@ -53,7 +53,7 @@ export default function Dashboard(){
     
     <div className='dashboarddiv'>
         <div>
-            <div className='dashboarddiv2' style={{left: 950, right: 0, top: -20}}>
+            <div className='dashboarddiv2' style={{left: "95%", right: 0, top: -20}}>
                 <select style={{height: "2rem", fontSize:"1rem", marginTop:"25px"}} className='bg-rose-900 mrdiv' onChange={
                     (e : any) =>{
                         exportOption.current = e.currentTarget.value;
