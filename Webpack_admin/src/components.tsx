@@ -44,7 +44,7 @@ export function Navbar(){
     const nav = useNavigate();
     return (<div>
     
-    <div className='navsidebar d-flex flex-column flex-shrink-0 py-3 text-white bg-dark' style={{top:0, position: 'absolute', height: '100%', paddingRight: '40px', paddingLeft:'10px'}}>
+    <div className='navsidebar d-flex flex-column flex-shrink-0 py-3 text-white' style={{top:0, position: 'absolute', height: '100%', paddingRight: '40px', paddingLeft:'10px'}}>
         <div className='adminlabel mr'>
             <h1 className='adminlabeltext'>Admin Portal</h1>
         </div>
@@ -72,7 +72,7 @@ export function Navbar(){
         </ul>
         <hr/>
         <div>
-            <div style={{marginTop: "20px", marginBottom: "20px"}}><h3 style={{fontSize: "1.2rem"}}>User: {localStorage.getItem("Token")}</h3></div>
+            <div style={{marginTop: "20px", marginBottom: "20px"}}><h3 style={{fontSize: "1.2rem"}}>{localStorage.getItem("Token")}</h3></div>
         <button className='logoutbut' onClick={async ()=>{
             
             await logout().then((res : boolean)=>{

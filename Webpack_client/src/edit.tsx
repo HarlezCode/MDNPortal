@@ -112,7 +112,7 @@ export default function Edit(){
     return(<>
         
         <DefaultWrapper>
-        <div style={{borderTopRightRadius: "1rem", borderTopLeftRadius: "1rem",marginBottom: "20px", paddingTop: 10, paddingBottom: 10, backgroundColor: "#f5eaff"}}>
+        <div style={{borderTopRightRadius: "0.3rem", borderTopLeftRadius: "0.3rem",marginBottom: "20px", paddingTop: 10, paddingBottom: 10, backgroundColor: "#f5eaff"}}>
             <DefaultTitle>{reqType.current}</DefaultTitle>
         </div>    
         <form onSubmit={

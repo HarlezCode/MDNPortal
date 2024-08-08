@@ -290,15 +290,19 @@ background-color: rgb(196, 20, 64);
   background-color: rgb(196, 20, 64)
 }
 .h3div:hover{
-  background-color: rgb(120, 137, 161);
+  background-color: rgb(95, 82, 142);
   cursor: pointer;
 
+}
+.colorchoose{
+  background-color: rgb(91, 91, 112);
 }
 
 .navsidebar{
   left: -215px;
   transition: 0.5s;
   overflow-x: hidden;
+  background-color: #43273d;
 }
 .navsidebar:hover{
   left: 0;
@@ -308,10 +312,10 @@ background-color: rgb(196, 20, 64);
 .logoutbut{
   border-style: none; 
   outline-style: none; 
-  background-color: rgb(120, 137, 161);
+  background-color: #8d6eea;
 }
 .logoutbut:hover{
-  background-color: rgb(17, 45, 185);
+  background-color: #5292f8;
 }
 .adminlabel{
   position: relative; 
@@ -461,8 +465,21 @@ background-color: rgb(196, 20, 64);
   height: 100vh; 
   background-color: #111827; 
   opacity: 0.5; 
+}
+.inputfilebutton::file-selector-button{
+  background-color: #8d6eea;
+  border: none;
+  border-radius: 0.2rem;
+  padding: 0.5rem;
 
 }
+.inputfilebutton{
+  color: white;
+}
+.inputfilebutton::file-selector-button:hover{
+  background-color: #5292f8;
+  cursor: pointer;
+} 
 
 
 :root {
