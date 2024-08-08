@@ -12,12 +12,13 @@ async function submitFunc(data : any, close : any, nav : any){
     await fetch("http://localhost:5000/api/addrequests", {headers : {"key" : localStorage.getItem("Token") ?? "", "fromuser" : "user_" + localStorage.getItem("Token"), 'Accept' : 'application/json', 'Content-Type' : 'application/json'}, method : "POST", body : JSON.stringify(data)}).then((res) =>{
         res.json().then((res) =>{
             if (res["res"] == "error"){
-                alert("An error has occured");
+                nav("../response?res=error&data="+res["error"])
             } else{
                 if (res["data"].length > 0){
-                    alert("Some entries were skipped due to changes in the database or incomplete input");
+                    nav("../response?res=ok&data=" + JSON.stringify(res["data"]));
+                    return;
                 } 
-                nav("../req");
+                nav("../response?res=ok");
             }
         })
         close();

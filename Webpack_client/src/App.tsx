@@ -4,6 +4,7 @@ import ProtectedRoute from './protected';
 import Login from "./login";
 import Req from "./Req"
 import Edit from './edit';
+import Responses from './Responses';
 
 const router = createBrowserRouter([
   {
@@ -22,6 +23,10 @@ const router = createBrowserRouter([
   {
     path : 'edit',
     element : <ProtectedRoute><Edit/></ProtectedRoute>
+  },
+  {
+    path : 'response',
+    element: <ProtectedRoute><Responses/></ProtectedRoute>
   }
 ]
 );

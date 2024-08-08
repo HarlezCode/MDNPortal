@@ -1,15 +1,18 @@
 import React, { useState } from "react";
 import "./components.css"
-import { Navbar } from "./components";
+import { Navbar, Toaster } from "./components";
 
 export default function Tools(){
     const [mode, setMode] = useState('none');
     const [attributes, setAttributes] = useState([['','']] as string[][]);
     const [inputs, setInputs] = useState([] as any);
+    const [isPreview, setPreview] = useState(true);
+    const [toastMsg, setToast] = useState("");
     return (<div>
+            <Toaster show={toastMsg != ""} msg={toastMsg}/>
             <Navbar/>
             <div className="flex" style={{position: "absolute", top: "10%", left: "20%"}}>
-                <div style={{backgroundColor:"rgb(91, 91, 112)", boxShadow:"10px 5px 5px rgb(100, 80, 105)", borderRadius:"0.5rem",padding: 20, marginRight: "100px"}}>
+                <div style={{backgroundColor:"rgb(91, 91, 112)", boxShadow:"10px 5px 5px rgb(100, 80, 105)", borderRadius:"0.5rem",padding: 20, marginRight: "50px"}}>
                     <div className="mbdiv" style={{marginBottom: "20px"}}><h3>Input</h3><input className="inputfilebutton" type="file" accept=".txt" onChange={(e : any)=>{
                         const reader = new FileReader();
                         reader.onload = async (e) =>{
@@ -27,10 +30,12 @@ export default function Tools(){
                         <h3>Select request</h3>
                         <select className="mrdiv mbdiv" style={{backgroundColor: "white", color: "black", border: "none"}} onChange={(e : any)=>{
                             setMode(e.currentTarget.value);
+                            setPreview(true);
                         }}>
-                        <option value="" >-- Select -- </option>
+                        <option value="none">-- Select -- </option>
                         <option value="SCAttr">Set Custom Attributes</option>
                         <option value="GCAttr">Get Custom Attributes</option>
+                        <option value="GUUID">Get UUIDs</option>
                     </select></div>
                     <div className="mrdiv">
                         <hr/>
@@ -105,7 +110,8 @@ export default function Tools(){
                         }
                     </div>
                 </div>
-                <div style={{backgroundColor: "rgb(91, 91, 112)", padding: 20, minWidth: "400px", borderRadius: 7, boxShadow: "10px 5px 5px rgb(90, 80, 105)"}}>
+                {isPreview &&
+                <div style={{backgroundColor: "rgb(91, 91, 112)", padding: 20, minWidth: "400px", borderRadius: 7,marginRight:"50px", boxShadow: "10px 5px 5px rgb(90, 80, 105)"}}>
                     <h3>Preview</h3>
                     <hr/>
                     {
@@ -149,8 +155,24 @@ export default function Tools(){
                     }
                     <button className="logoutbut" style={{marginTop:"10px"}} onClick={()=>{
                         // api calls here for every req & check params here
+                        if (mode == "none"){
+                            setToast("Please Select a Request Type!");
+                            setTimeout(()=>{setToast("")}, 3000);
+                            
+                            return;
+                        }
+                        setPreview(false);
                     }}>Process</button>
-                </div>
+                </div>}
+                {!isPreview &&
+                <div style={{backgroundColor: "rgb(91, 91, 112)", padding: 20, minWidth: "400px", borderRadius: 7, boxShadow: "10px 5px 5px rgb(90, 80, 105)"}}>
+                    <div style={{display: 'flex'}}>
+                        <button className="logoutbut" onClick={()=>{setPreview(true);}}>Back</button>
+                        <h3 style={{margin: 'auto'}}>Response</h3>
+                    </div>
+                    <hr/>
+
+                </div>}
             </div>
     </div>);
 }
