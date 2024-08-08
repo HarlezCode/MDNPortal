@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import "./components.css"
 import { Navbar, Toaster } from "./components";
 
@@ -8,6 +8,7 @@ export default function Tools(){
     const [inputs, setInputs] = useState([] as any);
     const [isPreview, setPreview] = useState(true);
     const [toastMsg, setToast] = useState("");
+    const [inputValue, setInputValue] = useState("");
     return (<div>
             <Toaster show={toastMsg != ""} msg={toastMsg}/>
             <Navbar/>
@@ -105,8 +106,29 @@ export default function Tools(){
                         {
                             mode == "GCAttr" &&
                             <div>
-                                some stuff
+                                N/A
                             </div>
+                        }
+                        {
+                            mode == "GUUID" &&
+                            <div>
+                                <h3>Add Search fields</h3>
+                                <select style={{color: "black", backgroundColor : "white", marginRight: "5px"}} onChange={(e : any)=>{
+                                    if ((e.currentTarget.value ?? "").length > 0){
+                                        setInputValue(e.currentTarget.value);
+                                    }
+                                }}>
+                                    <option value="">-- select --</option>
+                                    <option value="c_apnscapable">apns_capable</option>
+                                </select>
+                                <input value={inputValue} placeholder="Key" style={{width:"100px", marginRight: "10px",border:"none",color: "black", backgroundColor:"white"}} onChange={(e : any)=>{
+                                    setInputValue(e.currentTarget.value);
+                                }
+                                }/>
+                                <input placeholder="Value" style={{width:"100px",marginRight: "10px",border:"none",color: "black", backgroundColor:"white"}} />
+                                <button className="logoutbut">Add</button>
+                            </div>
+                            
                         }
                     </div>
                 </div>
