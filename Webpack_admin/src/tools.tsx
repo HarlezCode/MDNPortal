@@ -9,12 +9,13 @@ export default function Tools(){
     const [isPreview, setPreview] = useState(true);
     const [toastMsg, setToast] = useState("");
     const [inputValue, setInputValue] = useState("");
+    const value = useRef("");
     return (<div>
             <Toaster show={toastMsg != ""} msg={toastMsg}/>
             <Navbar/>
             <div className="flex" style={{position: "absolute", top: "10%", left: "20%"}}>
                 <div style={{backgroundColor:"rgb(91, 91, 112)", boxShadow:"10px 5px 5px rgb(100, 80, 105)", borderRadius:"0.5rem",padding: 20, marginRight: "50px"}}>
-                    <div className="mbdiv" style={{marginBottom: "20px"}}><h3>Input</h3><input className="inputfilebutton" type="file" accept=".txt" onChange={(e : any)=>{
+                    {mode != "GUUID" && <div className="mbdiv" style={{marginBottom: "20px"}}><h3>Input</h3><input className="inputfilebutton" type="file" accept=".txt" onChange={(e : any)=>{
                         const reader = new FileReader();
                         reader.onload = async (e) =>{
                             const text = (e.target?.result as string);
@@ -26,10 +27,13 @@ export default function Tools(){
                             setInputs(arr);
                         }
                         reader.readAsText(e.target.files[0]);
-                    }}/></div>
+                    }}/></div>}
                     <div style={{marginBottom: "20px"}}>
                         <h3>Select request</h3>
                         <select className="mrdiv mbdiv" style={{backgroundColor: "white", color: "black", border: "none"}} onChange={(e : any)=>{
+                            setInputs([]);
+                            value.current = "";
+                            setInputValue("");
                             setMode(e.currentTarget.value);
                             setPreview(true);
                         }}>
@@ -45,7 +49,6 @@ export default function Tools(){
                         {mode =="SCAttr" &&
                             <div>
                                 <div> 
-                                
                                     <div style={{display:"flex", marginLeft: 20, marginBottom: 20}}><h3 style={{marginTop: 10}}>Attributes</h3>
                                         <button className="logoutbut" style={{
                                             marginLeft: 20,
@@ -78,7 +81,7 @@ export default function Tools(){
                                                 attributes.map((value : string[], index : any) =>{
                                                     return(
                                                         <tr key={index}>
-                                                            <td style={{paddingRight:20,paddingBottom: "10px"}}>
+                                                            <td style={{paddingRight: 20, paddingBottom: "10px"}}>
                                                                 <input name={"trattk"+index} style={{backgroundColor: "white", color: "black", border: "none"}} value={value[0] ?? ""} onChange={(e : any)=>{
                                                                     const temp = JSON.parse(JSON.stringify(attributes));
                                                                     temp[parseInt((e.currentTarget.name as string).slice(6))] = [e.currentTarget.value, temp[parseInt(e.currentTarget.name.slice(6))][1]];
@@ -119,15 +122,51 @@ export default function Tools(){
                                     }
                                 }}>
                                     <option value="">-- select --</option>
-                                    <option value="c_apnscapable">apns_capable</option>
+                                    <option value="apns_capable">apns_capable</option>
+                                    <option value="background_status">background_status</option>
+                                    <option value="battery_level">battery_level</option>
+                                    
+
+
                                 </select>
-                                <input value={inputValue} placeholder="Key" style={{width:"100px", marginRight: "10px",border:"none",color: "black", backgroundColor:"white"}} onChange={(e : any)=>{
+                                <input value={inputValue} placeholder="Key" style={{maxWidth: "150px", marginRight: "10px",border:"none",color: "black", backgroundColor:"white"}} onChange={(e : any)=>{
                                     setInputValue(e.currentTarget.value);
                                 }
                                 }/>
-                                <input placeholder="Value" style={{width:"100px",marginRight: "10px",border:"none",color: "black", backgroundColor:"white"}} />
-                                <button className="logoutbut">Add</button>
+                                <input placeholder="Value" style={{width:"100px",marginRight: "10px",border:"none",color: "black", backgroundColor:"white"}} onChange={(e : any)=>{
+                                    value.current = e.currentTarget.value;
+                                }} />
+                                <button className="logoutbut" onClick={()=>{
+                                    setInputs([...inputs, [inputValue, value.current]]);
+                                }}>Add</button>
+                                {inputs.length > 0  && <div style={{width:"100%"}}>
+                                    <table style={{marginRight:"auto", marginLeft: "auto"}}>
+                                        <thead>
+                                            <tr>
+                                                <th/>
+                                                <th>Key</th>
+                                                <th>Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {inputs.map((val : any, index : number) =>{
+                                                return(
+                                                    <tr key={index}>
+                                                        <td style={{paddingLeft: '15px', paddingRight:'15px'}}><button className="logoutbut" style={{fontSize: "0.8rem"}} onClick={(e : any)=>{
+                                                            const temp = JSON.parse(JSON.stringify(inputs));
+                                                            temp.splice(index, 1);
+                                                            setInputs(temp);
+                                                        }}>Remove</button></td>
+                                                        <td style={{paddingLeft: '15px', paddingRight:'15px'}}>{val[0]}</td>
+                                                        <td style={{paddingLeft: '15px', paddingRight:'15px'}}>{val[1]}</td>
+                                                    </tr>
+                                                )
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>}
                             </div>
+                            
                             
                         }
                     </div>

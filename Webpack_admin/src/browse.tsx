@@ -143,7 +143,7 @@ export default function Browse(){
                         <option value="Onhold">On hold</option>
                     </select></td>
                     <td><input name='uuidfilter' className='w-16 bg-rose-800 defaultinputs' placeholder='uuid'/></td>
-                    <td><input name='datefilter' className="bg-rose-800 defaultinputs" style={{width: '95%'}} placeholder='dd/mm/yyyy'/></td>
+                    <td><input name='datefilter' className="bg-rose-800 defaultinputs" style={{width: '90%'}} placeholder='dd/mm/yyyy'/></td>
                     <td><select name='devicefilter' style={{width: "100%"}} className='bg-rose-800'>
                         <option value="">All</option>
                         <option value="CORP">CORP</option>
@@ -161,7 +161,7 @@ export default function Browse(){
                     <td><input name='macfilter' className='bg-rose-800 defaultinputs' placeholder='Match mac address'/></td>
                     <td><input name='appfilter' className='bg-rose-800 defaultinputs' placeholder='Match app update'/></td>
                     <td><input name='webclipfilter' className='bg-rose-800 defaultinputs' placeholder='Match webclip'/></td>
-                    <td><input name='timefilter' className='bg-rose-800 defaultinputs' placeholder='hh:mm:ss'/></td>
+                    <td><input name='timefilter' className='bg-rose-800 defaultinputs' style={{width: "95%"}} placeholder='hh:mm:ss'/></td>
                     <td><input name='processfilter' className='bg-rose-800 defaultinputs' placeholder='Match processed'/></td>
                     </tr>
                     </tbody>
