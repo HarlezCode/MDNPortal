@@ -522,6 +522,9 @@ background-color: rgb(196, 20, 64);
     font-size: 3.2em;
     line-height: 1.1;
   }
+  select{
+    color: white;
+  }
   
   button {
     border-radius: 8px;
@@ -533,6 +536,7 @@ background-color: rgb(196, 20, 64);
     background-color: rgb(51 65 85);
     cursor: pointer;
     transition: border-color 0.25s;
+    color: white;
   }
   button:hover {
     background-color: rgb(69, 87, 113);;
@@ -540,18 +544,5 @@ background-color: rgb(196, 20, 64);
   button:focus,
   button:focus-visible {
     outline: 4px auto -webkit-focus-ring-color;
-  }
-  
-  @media (prefers-color-scheme: light) {
-    :root {
-      color: #213547;
-      background-color: #ffffff;
-    }
-    a:hover {
-      color: #747bff;
-    }
-    button {
-      background-color: #f9f9f9;
-    }
   }
   

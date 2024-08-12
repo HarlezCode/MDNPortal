@@ -1,5 +1,6 @@
 from flask import jsonify, g
 import psycopg2
+from keys import user, password
 params = [
     "requestType",
     "serial",
@@ -78,7 +79,7 @@ async def validateClientKey(key):
     return True
 def createCursor():
     g.conn = psycopg2.connect(
-        database="request", user='postgres', password="123", host="127.0.0.1", port="5432"
+        database="request", user=user, password=password, host="127.0.0.1", port="5432"
     )
     g.conn.autocommit = True
     g.cursor = g.conn.cursor()
