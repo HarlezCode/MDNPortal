@@ -53,7 +53,7 @@ export default function Req(){
             </select>
         </div>
         <div>
-        <button className="defaultbutton">Next</button>
+        <button className="defaultbutton" style={{color: "white"}}>Next</button>
         </div>
         </form>
     </Wrapper>    
