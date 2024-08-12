@@ -10,7 +10,7 @@ def initializeDB():
     cursor.execute("DROP TABLE IF EXISTS webclips")
     cursor.execute("DROP TABLE IF EXISTS clusterid")
     cursor.execute('''
-CREATE TABLE TEST(
+CREATE TABLE entries(
     RTYPE VARCHAR(255),
     SN TEXT,
     CLUSTERID TEXT,
@@ -24,26 +24,27 @@ CREATE TABLE TEST(
     APP VARCHAR(255),
     WEBCLIP VARCHAR(255),
     TIMECREATED VARCHAR(255),
-    ID INT PRIMARY KEY,
-    PROCESSED TEXT
+    ID SERIAL PRIMARY KEY,
+    PROCESSED TEXT  
     );
     ''')
     cursor.execute('''
-    CREATE TABLE test1(
+    CREATE TABLE webclips(
     MODEL text,
     dtype varchar(255),
     platform text,
     clstr text,
     os varchar(255),
     webclip text,
-    id int primary key,
+    id SERIAL primary key,
     active varchar(12)
     );
     ''')
     cursor.execute('''
-    CREATE TABLE test2(
+    CREATE TABLE clusterid(
     VAL INT
-    )
+    );
+    INSERT INTO clusterid values(0);
     ''')
 
     conn.close()

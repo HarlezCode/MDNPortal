@@ -1,4 +1,3 @@
-import flask
 from flask import Flask, jsonify, request, g
 from flask_cors import CORS
 from helper import *
@@ -212,7 +211,6 @@ async def addrequests():
                 entry["mac"] = data[i][1]
                 entry["uuid"] = data[i][2]
             entries.append(entry)
-
 
 
     with clusterMutex: # ensure only one thread can acquire new cluster id
