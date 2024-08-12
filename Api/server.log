@@ -65,3 +65,5 @@ RuntimeError: Install Flask with the 'async' extra in order to use async views.
 Error: NotNullViolation('null value in column "id" of relation "entries" violates not-null constraint\nDETAIL:  Failing row contains (Add 4G VPN Profile, 1234, , Pending, uuid_testuuid1234, 12/08/2024, CORP, , user_AdminAdmin, , , , 14:48:29, null, ).\n')
 Error: ValueError("invalid literal for int() with base 10: ''")
 Error: ValueError("invalid literal for int() with base 10: ''")
+Error: UndefinedTable('relation "entries" does not exist\nLINE 5:         entries\n                ^\n')
+Error: UndefinedTable('relation "entries" does not exist\nLINE 5:         entries\n                ^\n')

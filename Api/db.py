@@ -1,8 +1,8 @@
 import psycopg2
-
+from keys import user, password
 def initializeDB():
     conn = psycopg2.connect(
-        database="request", user='postgres', password="123", host="127.0.0.1", port="5432"
+        database="request", user=user, password=password, host="127.0.0.1", port="5432"
     )
     conn.autocommit = True
     cursor = conn.cursor()
