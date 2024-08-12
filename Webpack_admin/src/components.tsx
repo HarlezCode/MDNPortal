@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, RefObject } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from "react-router-dom";
 import { logout } from "./serverActions";
 import 'bootstrap/dist/css/bootstrap.min.css';

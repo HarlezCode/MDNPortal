@@ -1,4 +1,4 @@
-import { FormEvent, MutableRefObject } from "react";
+import { FormEvent } from "react";
 
 export async function authAction(username : string, password : string) : Promise<string>{
     return new Promise( (res) => {

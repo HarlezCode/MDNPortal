@@ -3,14 +3,15 @@ const path = require("path");
 const mode = "development";
 module.exports={
     mode: mode, 
-    entry: "./index.tsx", 
+    entry: "./index.tsx"
+    ,
     output: {
         path: path.resolve(__dirname, "public"),
         filename: "bundle.js",
         publicPath: '',
     },
     plugins: [
-        new MiniCssExtractPlugin(),
+        new MiniCssExtractPlugin()
     ],
     target: "web",
     devServer: {
@@ -22,6 +23,12 @@ module.exports={
     },
     resolve: {
         extensions: ['.js','.ts','.tsx', '.json']
+    },
+    
+    performance: {
+        hints: false,
+        maxEntrypointSize: 512000,
+        maxAssetSize: 512000
     },
     module:{
         rules: [

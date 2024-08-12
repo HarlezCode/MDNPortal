@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
-import "./components.css"
 import { Navbar, Toaster } from "./components";
+import "./components.css"
 
 export default function Tools(){
     const [mode, setMode] = useState('none');

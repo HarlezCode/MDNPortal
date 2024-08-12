@@ -1,6 +1,6 @@
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const path = require("path");
-const mode = "production";
+const mode = "development";
 module.exports={
     mode: mode, 
     entry: "./index.tsx", 
@@ -38,5 +38,10 @@ module.exports={
                     ,'css-loader'],
             }
         ]
+    },
+    performance: {
+        hints: false,
+        maxEntrypointSize: 512000,
+        maxAssetSize: 512000
     }
 }

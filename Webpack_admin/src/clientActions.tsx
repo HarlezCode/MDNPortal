@@ -1,13 +1,13 @@
-import * as XLSX from 'exceljs'
+import {Workbook, Column} from 'exceljs'
 
 export function exportExcel(data : any){
     if (data.length == 0){
         return;
     }
-    const workbook = new XLSX.Workbook();
+    const workbook = new Workbook();
     const sheet = workbook.addWorksheet("Sheet 1");
     sheet.columns = Object.keys(data[0]).map((val : string) =>{
-        return {header: val, key: val} as Partial<XLSX.Column>;
+        return {header: val, key: val} as Partial<Column>;
     });
     sheet.addRows(data);
 
