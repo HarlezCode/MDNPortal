@@ -6,24 +6,47 @@ def initializeDB():
     )
     conn.autocommit = True
     cursor = conn.cursor()
-    cursor.execute("DROP TABLE IF EXISTS ENTRIES")
-    sql = '''
-CREATE TABLE ENTRIES(
-    DTYPE TEXT,
-    STATUS TEXT,
+    cursor.execute("DROP TABLE IF EXISTS entries")
+    cursor.execute("DROP TABLE IF EXISTS webclips")
+    cursor.execute("DROP TABLE IF EXISTS clusterid")
+    cursor.execute('''
+CREATE TABLE TEST(
+    RTYPE VARCHAR(255),
     SN TEXT,
     CLUSTERID TEXT,
+    STATUS TEXT,
     UID TEXT,
-    CDATE CHAR(50),
-    TOTYPE CHAR(20),
+    CDATE VARCHAR(50),
+    DTYPE TEXT,
+    TOTYPE VARCHAR(20),
+    FUSER VARCHAR(255),
     MAC TEXT,
-    RTYPE CHAR(255),
-    FUSER CHAR(255),
-    WEBCLIP CHAR(255),
-    APP CHAR(255),
-    TIMECREATED CHAR(255)
+    APP VARCHAR(255),
+    WEBCLIP VARCHAR(255),
+    TIMECREATED VARCHAR(255),
+    ID INT PRIMARY KEY,
+    PROCESSED TEXT
+    );
+    ''')
+    cursor.execute('''
+    CREATE TABLE test1(
+    MODEL text,
+    dtype varchar(255),
+    platform text,
+    clstr text,
+    os varchar(255),
+    webclip text,
+    id int primary key,
+    active varchar(12)
+    );
+    ''')
+    cursor.execute('''
+    CREATE TABLE test2(
+    VAL INT
     )
-    '''
+    ''')
 
-    cursor.execute(sql)
     conn.close()
+
+if __name__ == "__main__":
+    initializeDB()
