@@ -15,9 +15,9 @@ export default function Tools(){
             <Navbar/>
             <div className="flex" style={{position: "absolute", top: "10%", left: "20%"}}>
                 <div style={{backgroundColor:"rgb(91, 91, 112)", boxShadow:"10px 5px 5px rgb(100, 80, 105)", borderRadius:"0.5rem",padding: 20, marginRight: "50px"}}>
-                    {mode != "GUUID" && <div className="mbdiv" style={{marginBottom: "20px"}}><h3>Input</h3><input className="inputfilebutton" type="file" accept=".txt" onChange={(e : any)=>{
+                    {mode != "GUUID" && <div className="mbdiv" style={{marginBottom: "20px"}}><h3>Input</h3>{mode != "none" && <input className="inputfilebutton" type="file" accept=".txt" onChange={(e : React.ChangeEvent<HTMLInputElement>)=>{
                         const reader = new FileReader();
-                        reader.onload = async (e) =>{
+                        reader.onload = async (e : ProgressEvent<FileReader>) =>{
                             const text = (e.target?.result as string);
                             
                             const arr = text.split("\r\n");
@@ -26,8 +26,16 @@ export default function Tools(){
                             }
                             setInputs(arr);
                         }
-                        reader.readAsText(e.target.files[0]);
-                    }}/></div>}
+                        const targets = e.target.files ?? null;
+                        if (targets == null) return;
+                        const target = targets[0];
+
+                        if (target.name.endsWith(".txt")){
+                            reader.readAsText(target);
+                        } else {
+                            alert("This is not a txt file.");
+                        }
+                    }}/>}</div>}
                     <div style={{marginBottom: "20px"}}>
                         <h3>Select request</h3>
                         <select className="mrdiv mbdiv" style={{backgroundColor: "white", color: "black", border: "none"}} onChange={(e : any)=>{
@@ -78,7 +86,7 @@ export default function Tools(){
                                         <tbody>
                                             
                                             {
-                                                attributes.map((value : string[], index : any) =>{
+                                                attributes.map((value : string[], index : number) =>{
                                                     return(
                                                         <tr key={index}>
                                                             <td style={{paddingRight: 20, paddingBottom: "10px"}}>

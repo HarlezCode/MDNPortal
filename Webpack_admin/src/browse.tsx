@@ -19,7 +19,7 @@ export default function Browse(){
     <div className='browsediv'>
         <div>
             <div className='browsediv2'>
-            <select style={{height: "2rem", marginRight: "15px"}}className='bg-rose-900' onChange={(e : any) =>{
+            <select style={{height: "2rem", marginRight: "15px"}}className='bg-rose-900' onChange={(e : React.ChangeEvent<HTMLSelectElement>) =>{
                 exportOption.current = e.currentTarget.value;
             }}>
                 <option value="current">Fetched Result</option>
@@ -37,7 +37,7 @@ export default function Browse(){
                     const date = new Date();
                     const concatDate = date.getFullYear().toString() +"-" + (date.getMonth()+1).toString();
                     params.date= concatDate;
-                    fetchFromServerRaw(params).then((res : any) =>{
+                    fetchFromServerRaw(params).then((res : ResType[]) =>{
                         exportExcel(res);
                     });
                 } else if (exportOption.current == "daily"){
@@ -49,7 +49,7 @@ export default function Browse(){
 
                     const concatDate = date.getFullYear().toString() +"-" + month + "-" + date.getDate().toString();
                     params.date = concatDate;
-                    fetchFromServerRaw(params).then((res : any) =>{
+                    fetchFromServerRaw(params).then((res : ResType[]) =>{
                         exportExcel(res);
                     })
                 }
@@ -62,7 +62,7 @@ export default function Browse(){
                 e.preventDefault();
                 // set filters params and make request
                 if (buttonState.current == "fetch"){
-                    await fetchFromServer(e).then((res) => {
+                    await fetchFromServer(e).then((res : ResType[]) => {
                         setData(res);
                         if (res.length == 0){
                             setToast("No data found.");
@@ -190,7 +190,7 @@ export default function Browse(){
                 </thead>
                 <tbody>
                     {
-                        tableData.map((item, i) => {
+                        tableData.map((item : ResType, i : number) => {
                             return <tr key={i}>
                                 <ScrollableTD>{item.requestType}</ScrollableTD>
                                 <ScrollableTD>{item.serial}</ScrollableTD>

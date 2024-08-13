@@ -48,7 +48,7 @@ export default function Webclips(){
         });
         setInactiveCb(temp);
     }, [inactiveWc]);
-    useEffect(()=>{
+    useEffect(() => {
         // fetch from db
         if (refresh){
             setRefresh(false);

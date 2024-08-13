@@ -1,5 +1,6 @@
 import { FormEvent } from "react";
 
+type ResType = {[key : string] : string};
 export async function authAction(username : string, password : string) : Promise<string>{
     return new Promise( (res) => {
         res(username+password)});
@@ -33,7 +34,7 @@ export async function addWebclips(e : FormEvent<HTMLFormElement>){
             "oses": e.currentTarget.os.value,
             "webclip": e.currentTarget.webclip.value 
         })
-    }).then((res : any) =>{
+    }).then((res : Response) =>{
         return res.json()
     }).catch((error : any)=>console.log(error));
 
@@ -45,7 +46,7 @@ export async function addWebclips(e : FormEvent<HTMLFormElement>){
 }
 
 
-export async function updateWebclip(item : any, update : string){
+export async function updateWebclip(item : ResType, update : string){
     let mode : string = "";
     if (update == "delete"){
         mode = "delete";
@@ -69,7 +70,7 @@ export async function updateWebclip(item : any, update : string){
             "data" : item,
             "to" : mode
         })
-    }).then((res : any) =>{
+    }).then((res : Response) =>{
         return res.json()
     }).catch((error : any)=>console.log(error));;
 
@@ -90,9 +91,11 @@ export async function rejectRequest(data : ResType[]){
             'Content-Type' : 'application/json'
         },
         body: JSON.stringify({"data": data})
-    }).then((res : any) => {return res.json()});
+    }).then((res : Response) => {return res.json()}).catch(()=>{
+        alert("Server Not Responding!");
+    });
     if (res["status"] == 'error'){
-        alert(res["error"]);
+        alert("ERROR! " + res["error"]);
     }
     return res;
 }
@@ -103,7 +106,7 @@ export async function fetchWebclips(active : string){
         headers: {
             "Key" : localStorage.getItem("Token") ?? ""
         }
-    }).then((res : any) =>{
+    }).then((res : Response) =>{
         return res.json()
     }).catch((error : any)=>console.log(error));
     
@@ -118,7 +121,7 @@ export async function logout() : Promise<boolean>{
         res(true)});
 }
 
-type ResType = {[key : string] : string};
+
 
 export async function processRequests(data : ResType[]){
     let val;
@@ -144,7 +147,7 @@ export async function processRequests(data : ResType[]){
 
 
 
-export async function fetchFromServerRaw({rtype='',sn='',stat='Pending',uid='', date='',dtype='', ctype='',from='',mac='',app='',wc='' ,tm='',processed=''}){
+export async function fetchFromServerRaw({rtype='',sn='',stat='Pending',uid='', date='',dtype='', ctype='',from='',mac='',app='',wc='' ,tm='',processed=''}) : Promise<ResType[]>{
     let queryParams = "?";
     queryParams += "requestType="+ rtype+"&";
     queryParams += "serial=" + sn + "&";
@@ -166,17 +169,18 @@ export async function fetchFromServerRaw({rtype='',sn='',stat='Pending',uid='', 
         headers : {
             "key" : localStorage.getItem("Token") ?? ""
         }
-    }).then((res : any) =>{
+    }).then((res : Response) =>{
         return res.json().then((res : any) =>{
             return new Promise((resolve : any) =>{
-                resolve(res.data ?? []);
+                resolve(res.data ?? [] as ResType[]);
             })
         })
-    }).catch((error : any)=>console.log(error));;
+    }).catch((error : any)=>console.log(error));
+
     if (!res){
-        return [];
+        return [] as ResType[];
     }
-    return res;
+    return res as ResType[];
 }
 
 
@@ -202,7 +206,7 @@ export async function fetchFromServer(e : FormEvent<HTMLFormElement>){
         headers : {
             "key" : localStorage.getItem("Token") ?? "" // temp val
         }
-    }).then((res : any) =>{
+    }).then((res : Response) =>{
         return res.json().then((res : any) =>{
             return new Promise((resolve : any) =>{
                 resolve(res.data ?? []);
@@ -210,7 +214,7 @@ export async function fetchFromServer(e : FormEvent<HTMLFormElement>){
         })
     }).catch((error : any)=>console.log(error));;
     if (!res){
-        return [];
+        return [] as ResType[];
     }
-    return res;
+    return res as ResType[];
 }

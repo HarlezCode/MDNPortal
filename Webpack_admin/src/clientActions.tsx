@@ -1,6 +1,6 @@
 import {Workbook, Column} from 'exceljs'
-
-export function exportExcel(data : any){
+type ResType = {[key : string] : string};
+export function exportExcel(data : ResType[]){
     if (data.length == 0){
         return;
     }

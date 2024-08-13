@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { BaseSyntheticEvent } from 'react';
 import {fetchFromServerRaw, processRequests, rejectRequest} from './serverActions'
 import {useState, useRef, useEffect } from 'react';
 import { Navbar, Toaster } from './components';
@@ -78,7 +78,7 @@ export default function Dashboard(){
                             const date = new Date();
                             const concatDate = date.getFullYear().toString() +"-" + (date.getMonth()+1).toString();
                             params.date= concatDate;
-                            fetchFromServerRaw(params).then((res : any) =>{
+                            fetchFromServerRaw(params).then((res : ResType[]) =>{
                                 exportExcel(res);
                             });
                         } else if (exportOption.current == "daily"){
@@ -90,7 +90,7 @@ export default function Dashboard(){
 
                             const concatDate = date.getFullYear().toString() +"-" + month + "-" + date.getDate().toString();
                             params.date = concatDate;
-                            fetchFromServerRaw(params).then((res : any) =>{
+                            fetchFromServerRaw(params).then((res : ResType[]) =>{
                                 exportExcel(res);
                             })
                         }
@@ -118,9 +118,9 @@ export default function Dashboard(){
                     processRequests(temp).then((res : any) =>{
                         isProcess.current = false;
                         setRefresh(true);
-                        if (res.res == "error"){
+                        if (res?.res == "error"){
                             setToast(res.error);
-                        } else if (res.res == "ok"){
+                        } else if (res?.res == "ok"){
                             setToast("Requests were successfully processed.");
                         }
                         setTimeout(()=>{setToast("")}, 3000);
@@ -164,7 +164,7 @@ export default function Dashboard(){
                 </thead>
                 <tbody>
                     {
-                        tableData.map((item, i) => {
+                        tableData.map((item : ResType, i : number) => {
                             return <tr key={i} id={item.id + "_row"} className={'trhove ' + ((cbState[item.id] ?? false) ? 'trhover': '')} onClick={(e : any) =>{
                                 const key = e.currentTarget.id.slice(0, e.currentTarget.id.length-4) ?? ""
                                 const temp = JSON.parse(JSON.stringify(cbState));
@@ -201,7 +201,7 @@ export default function Dashboard(){
 
 
                                 }}>Reject</button></td>
-                                <td><button className='bg-rose-600 bg-rose-600 border-none trhovexl' name={item.id + "_but"} onClick={(e : any)=>{
+                                <td><button className='bg-rose-600 bg-rose-600 border-none trhovexl' name={item.id + "_but"} onClick={(e : React.MouseEvent<HTMLButtonElement>)=>{
                                     if (isProcess.current){
                                         return;
                                     }
@@ -215,9 +215,9 @@ export default function Dashboard(){
                                                 setRefresh(true);
                                                 isProcess.current = false;
                                                 console.log(res);
-                                                if (res.res == "error"){
-                                                    setToast(res.error);
-                                                } else if (res.res == "ok"){
+                                                if (res?.res == "error"){
+                                                    setToast(res?.error);
+                                                } else if (res?.res == "ok"){
                                                     setToast("Request was successfully processed.");
                                                 }
                                                 setTimeout(()=>{setToast("")}, 3000);

@@ -8,13 +8,15 @@ export default function Login(){
 
      return (<div className="logindiv" style={{padding: 6}}>
      <div className="bg-rose-900" style={{padding: 60}}>
-     <form onSubmit={async (event) =>{
+     <form onSubmit={async (event : React.FormEvent<HTMLFormElement>) =>{
         event.preventDefault();
         await authAction(event.currentTarget.username.value, event.currentTarget.password.value)
         .then((res) =>{
             localStorage.setItem("Token", res);
+            navigate("../dashboard");
+        }).catch(()=>{
+            alert("An error has occurred. Server not Responding.")
         });
-        navigate("../dashboard");
      }}>
         <div>
             <div className='mbdiv'>
