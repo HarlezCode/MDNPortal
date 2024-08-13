@@ -9,7 +9,7 @@ export default function Login(){
 
      return (<div className="r1">
      <div className="r2">
-     <form onSubmit={async (event) =>{
+     <form onSubmit={async (event : React.FormEvent<HTMLFormElement>) =>{
         event.preventDefault();
         await authAction(event.currentTarget.username.value, event.currentTarget.password.value)
         .then((res) =>{

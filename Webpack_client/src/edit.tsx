@@ -354,32 +354,32 @@ export default function Edit(){
                     <th className='fweight600'></th>
                     <th className='fweight600'>Serial #</th>
                     { 
-                        tableData["Headers"].map((item,i) => {
+                        tableData["Headers"].map((item : string, i : number) => {
                             return (<th className="fweight600" key={i}>{item}</th>)
                         })
                     }
                 </tr>
             </thead>
-            <tbody tabIndex={-1} style={{outline: "none", height: "24rem", maxHeight: "24rem"}} onKeyDown={(e : any) =>{
+            <tbody tabIndex={-1} style={{outline: "none", height: "24rem", maxHeight: "24rem"}} onKeyDown={(e : React.KeyboardEvent) =>{
                     if (e.key == "Shift"){
                         shiftKeyDown.current = true;
                     }
-                }} onKeyUp={(e : any) =>{
+                }} onKeyUp={(e : React.KeyboardEvent) =>{
                     if (e.key == "Shift"){
                         shiftKeyDown.current = false;
                     }
                 }} onBlur={
-                    (e : any) =>{
+                    () =>{
                         shiftKeyDown.current = false;
                         prevTarget.current = "";
                     }
                 }> 
-                 {Object.keys(tableData).map((key) => {
+                 {Object.keys(tableData).map((key : string) => {
                     if (key == "RequestType" || key == "Headers" || key.startsWith("data_")){
                         return;
                     }
                     return (
-                        <tr id={key + "_r"} key={key + "_r"} className="hoverrow" onClick={(e : any)=>{
+                        <tr id={key + "_r"} key={key + "_r"} className="hoverrow" onClick={(e : React.MouseEvent<HTMLTableRowElement>)=>{
                             
                             
                             const key = (e.currentTarget.id ?? "").slice(0,e.currentTarget.id.length-2);
@@ -414,14 +414,14 @@ export default function Edit(){
                         }} 
                     >
                             <td key={key+"_check"}>
-                                <input onLoad={(e : any)=>{
+                                <input onLoad={(e : React.SyntheticEvent<HTMLInputElement>)=>{
                                     const key = e.currentTarget.name.slice(0, e.currentTarget.name.length-6) ?? "";
                                     const temp = JSON.parse(JSON.stringify(checkboxStates));
                                     if (temp[key] == null && key != ""){
                                         temp[key] = false;
                                     }
                                     
-                                }}checked={checkboxStates[key] ?? ""} onChange={(e : any)=>{
+                                }} checked={checkboxStates[key] ?? ""} onChange={(e : React.ChangeEvent<HTMLInputElement>)=>{
                                     const key = e.currentTarget.name.slice(0, e.currentTarget.name.length-6) ?? "";
                                     const temp = JSON.parse(JSON.stringify(checkboxStates));
                                     if (temp[key] == null && key != ""){
@@ -472,7 +472,7 @@ export default function Edit(){
         (isPreview && !isAdding) && <Preview previewFunc={setPreview} data={tableData}/>
     }
     {
-        (!isPreview && isAdding) && <Adding reqtype={reqType.current ?? ""} close={setAdding} tabledata={tableData}
+        (!isPreview && isAdding) && <Adding reqtype={reqType.current ?? ""} close={()=>{setAdding(false)}} tabledata={tableData}
         settabledata={setData} count={numberOfDevices}/>
     }
     </>)

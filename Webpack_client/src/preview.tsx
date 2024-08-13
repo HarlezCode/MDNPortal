@@ -4,7 +4,7 @@ import { DefaultTitle } from "./components";
 import "./components.css"
 
 
-async function submitFunc(data : any, close : any, nav : any){
+async function submitFunc(data : {[index : string]: string[]}, close : () => void, nav : (addr : string) => void){
     //need to do item checks here eg. webclip unselected and give error if some are not selected.
     //for adding removing vpn, need to check if vpn exists or not and warn the user correspondingly.
     //for add/remove trial cert, need to check for existence and warn the user correspondingly.
@@ -20,15 +20,19 @@ async function submitFunc(data : any, close : any, nav : any){
                 } 
                 nav("../response?res=ok");
             } else if (res["res"] == "invalid"){
+                // need to test this
                 console.log("invalid data");
                 console.log(res);
             }
         })
         close();
+    }).catch(()=>{
+        nav("../response?res=error&data="+"The+server+is+not+responsive.");
+        close();        
     });
 }
 
-export default function Preview({previewFunc, data} : {previewFunc : any, data : any}){
+export default function Preview({previewFunc, data} : {previewFunc : (val : boolean) => void, data : {[index : string] : string[]}}){
     const nav = useNavigate();
     return(<>
         <div><div className='addingdiv'></div><div className="previewdiv3">
@@ -48,7 +52,7 @@ export default function Preview({previewFunc, data} : {previewFunc : any, data :
                     </thead>
                     <tbody className="bg-white">
                     {
-                        Object.keys(data).map((k) =>{
+                        Object.keys(data).map((k : string) =>{
                             if (k != "Headers" && k != "RequestType" && !k.startsWith("data_")){
                             return (<tr key={k+"preview"}>
                                 <td style={{color: "black"}}>{k}</td>
@@ -75,7 +79,7 @@ export default function Preview({previewFunc, data} : {previewFunc : any, data :
                 </div>
                 <div className="previewbuttondiv">
                     <div><button onClick={()=>previewFunc(false)}>Close</button></div>
-                    <div><button onClick={()=>submitFunc(data, previewFunc, nav)}>Submit</button></div>
+                    <div><button onClick={()=>submitFunc(data, ()=>{previewFunc(false)}, nav)}>Submit</button></div>
                 </div>
             </div>
             </div>

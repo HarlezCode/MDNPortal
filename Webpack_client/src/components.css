@@ -256,6 +256,7 @@ input[type="file"]::file-selector-button{
     border: none;
     border-radius: 0.2rem;
     padding: 0.5rem;
+    color: white;
 }
 input[type="file"]::file-selector-button:hover{
     background-color: #5292f8;

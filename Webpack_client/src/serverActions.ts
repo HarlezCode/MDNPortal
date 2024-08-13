@@ -28,9 +28,11 @@ export async function fetchWebClips(sn : string){
             "Key": localStorage.getItem("Token") ?? ""
         },
         method: "GET"
-    }).then((res : any) =>{
+    }).then((res : Response) =>{
         return res.json();
-    })    
+    }).catch(()=>{
+        return new Promise<string[]>((res)=>{res([] as string[])});
+    }); 
 
     return res["data"] ?? [];
 }
@@ -43,5 +45,5 @@ export async function fetchApps(sn : string) : Promise<string[]>{
         } else {
             res(["app_Googling","app_Valorant", "app_Appstoreaaaaaaaaaaaaaaaaaaaaaaa"] as string[]);
         }
-    })
+    }) 
 }

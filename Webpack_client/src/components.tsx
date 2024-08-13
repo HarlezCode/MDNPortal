@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { ChangeEvent } from 'react'
 import {useEffect, useState, useRef} from 'react';
 import { fetchWebClips, fetchApps } from './serverActions';
 import "./components.css"
@@ -17,7 +17,7 @@ export function DefaultInput({id} : {id : string}){
     return(<input className="dinput" name={id}/>)
 }
 
-export function BackButton({nav} : {nav : any}){
+export function BackButton({nav} : {nav : (addr : string) => void }){
     return(<button className="backbutton" onClick={
         () =>{
             nav("../req");
@@ -29,7 +29,7 @@ export function DefaultTitle({children} : any){
     return(<b><h3 style={{fontSize: "2.5rem", fontWeight: 400, lineHeight: "2rem", color:"black"}}>{children}</h3></b>)
 }
 
-export function WebClipSelector({sn, tabledata, possibleWC} : {sn : string, tabledata : {[index : string] : string[]}, possibleWC : any}){
+export function WebClipSelector({sn, tabledata, possibleWC} : {sn : string, tabledata : {[index : string] : string[]}, possibleWC : React.MutableRefObject<{[index : string] : string[]}>}){
     //fetch from mobileiron here for each sn using a server action
 
     const [webClips, setWebClips] = useState([] as string[]);
@@ -51,14 +51,14 @@ export function WebClipSelector({sn, tabledata, possibleWC} : {sn : string, tabl
 
     return(<>
         <select className="webclipselector" value={function(){
-            for (let i =0; i < tabledata[snNumber.current].length; i++){
+            for (let i = 0; i < tabledata[snNumber.current].length; i++){
                 if (tabledata[snNumber.current][i].startsWith("wcp_")){
                     return tabledata[snNumber.current][i];
                 }
             }
-        }()} onChange={(e : any) =>{
+        }()} onChange={(e : React.ChangeEvent<HTMLSelectElement>) =>{
             if (e.currentTarget.value != "" && tabledata[snNumber.current] != null){
-                for (let i =0; i < tabledata[snNumber.current].length; i++){
+                for (let i = 0; i < tabledata[snNumber.current].length; i++){
                     if (tabledata[snNumber.current][i].startsWith("wcp_")){
                         tabledata[snNumber.current][i] = e.currentTarget.value;
                     }
@@ -67,7 +67,7 @@ export function WebClipSelector({sn, tabledata, possibleWC} : {sn : string, tabl
             }
         }}>
             <option value="" >select</option>
-            {webClips.map((item) =>{
+            {webClips.map((item : string) =>{
                 if (item.length >= 4){
                     return(
                         <option className="bg-slate-700 select-none" value={item} key={sn +" "+item}>
@@ -84,7 +84,7 @@ export function WebClipSelector({sn, tabledata, possibleWC} : {sn : string, tabl
 }
 
 
-export function AppSelector({sn, tabledata, possibleApps} : {sn : string, tabledata : {[index : string] : string[]}, possibleApps : any}){
+export function AppSelector({sn, tabledata, possibleApps} : {sn : string, tabledata : {[index : string] : string[]}, possibleApps : React.MutableRefObject<{[index : string] : string[]}>}){
     //fetch from mobileiron here for each sn using a server action
 
     const [apps, setApps] = useState([] as string[]);
@@ -109,7 +109,7 @@ export function AppSelector({sn, tabledata, possibleApps} : {sn : string, tabled
                     return tabledata[snNumber.current][i];
                 }
             }
-        }()} onChange={(e : any) =>{
+        }()} onChange={(e : React.ChangeEvent<HTMLSelectElement>) =>{
             if (e.currentTarget.value != "" && tabledata[snNumber.current] != null){
                 for (let i =0; i < tabledata[snNumber.current].length; i++){
                     if (tabledata[snNumber.current][i].startsWith("app_")){
@@ -120,7 +120,7 @@ export function AppSelector({sn, tabledata, possibleApps} : {sn : string, tabled
             }
         }}>
             <option value="" >select</option>
-            {apps.map((item) =>{
+            {apps.map((item : string) =>{
                 if (item.length >= 4){
                     return(
                         <option className="bg-slate-700" value={item} key={sn +" "+item}>

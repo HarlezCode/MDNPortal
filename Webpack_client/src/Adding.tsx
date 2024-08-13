@@ -1,10 +1,9 @@
 import React from 'react'
 import {useState, FormEvent, useRef} from 'react'
 import './components.css'
-export default function Adding({reqtype, close, tabledata, settabledata, count} : {reqtype : string, close : any, tabledata : any, settabledata : any, count : any}){
+export default function Adding({reqtype, close, tabledata, settabledata, count} : {reqtype : string, close : () => void, tabledata : {[index : string] : string[]}, settabledata : (data : {[index : string] : string[]}) => void, count : React.MutableRefObject<number>}){
     const [textArea, setText] = useState("");
     const importing = useRef(false);
-
 
     if (reqtype == "Look for last location"){
         return (<div><form onSubmit={
@@ -63,11 +62,10 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
             <div className="addingdiv3">
                 
                 <div className="importheader"><span>Import</span></div>
-                <input type="file" accept=".txt" className="mt" style={{marginBottom: '20px'}} onChange={(e : any)=>{
+                <input type="file" accept=".txt" className="mt" style={{marginBottom: '20px'}} onChange={(e : React.ChangeEvent<HTMLInputElement>)=>{
                     const reader = new FileReader();
-                    reader.onload = async (e) =>{
+                    reader.onload = async (e : ProgressEvent<FileReader>) =>{
                         const text = (e.target?.result as string);
-                        
                         const arr = text.split("\r\n");
                         const finalArr = [] as string[];
                         for (let i =0; i < arr.length; i++){
@@ -81,7 +79,15 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
                         setText(finalArr.join("\n"));
     
                     }
-                    reader.readAsText(e.target.files[0]);
+                    const targets = e.target.files ?? null;
+                    if (targets == null) return;
+                    const target = targets[0];
+
+                    if (target.name.endsWith(".txt")){
+                        reader.readAsText(target);
+                    } else {
+                        alert("This is not a txt file.");
+                    }
     
                 }}/>
                 <div className="flex-1"><b style={{color: "black"}}>SN & MAC of device(s): </b><textarea readOnly={false} style={{resize: "none", color: "black"}} placeholder='Eg. 123,snxxx1111' value={textArea} onChange={(e)=>{setText(e.currentTarget.value)}} className="sntextarea2" name="snDevices"/></div>
@@ -164,9 +170,9 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
         <div className="addingdiv3">
             
             <div className="importheader"><span>Import</span></div>
-            <input type="file" accept=".txt" onChange={(e : any)=>{
+            <input type="file" accept=".txt" onChange={(e : React.ChangeEvent<HTMLInputElement>)=>{
                 const reader = new FileReader();
-                reader.onload = async (e) =>{
+                reader.onload = async (e : ProgressEvent<FileReader>) =>{
                     const text = (e.target?.result as string);
                     
                     const arr = text.split("\r\n");
@@ -176,7 +182,16 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
                     setText(arr.join("\n"));
 
                 }
-                reader.readAsText(e.target.files[0]);
+
+                const targets = e.target.files ?? null;
+                if (targets == null) return;
+                const target = targets[0];
+
+                if (target.name.endsWith(".txt")){
+                    reader.readAsText(target);
+                } else {
+                    alert("This is not a txt file.");
+                }
 
             }} className="mt"/>
             <div className="griddy mt" style={{color: "black"}}><b>SN of device(s)</b><textarea readOnly={false} style={{resize: "none", color: "black"}} value={textArea} onChange={(e)=>{setText(e.currentTarget.value)}} className="sntextarea" name="snDevices"/></div>

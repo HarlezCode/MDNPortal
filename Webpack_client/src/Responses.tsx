@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { DefaultWrapper } from "./components";
 
 export default function Responses(){
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const nav = useNavigate();
     return (<>
         <DefaultWrapper>
@@ -14,7 +14,7 @@ export default function Responses(){
                     An error has occurred! 
                 </h3>
                 <h3 style={{fontSize: "2rem"}}>
-                    Error: {searchParams.get("error")}
+                    Error: {searchParams.get("data")}
                 </h3>
                 <h3 style={{fontSize: "2rem"}}>
                     Please retry or contact us @email.

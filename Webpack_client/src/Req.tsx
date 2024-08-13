@@ -1,7 +1,7 @@
 import React from 'react'
 import { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { DefaultWrapper, Wrapper } from "./components";
+import { Wrapper } from "./components";
 import "./components.css"
 const requestTypes : string[] = [
     "Add 4G VPN Profile",
