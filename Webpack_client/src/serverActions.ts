@@ -4,7 +4,6 @@ export async function authAction(username : string, password : string) : Promise
 }
 
 export async function fetchWebClips(sn : string){
-    // fetch from mobile iron api
     const fetchParams = {
         "model" : '',
         "dtype" : '',
@@ -12,7 +11,8 @@ export async function fetchWebClips(sn : string){
         "os": '',
         "clstr": ''
     };
-    // temp stuff mobile iron api
+    // fetch from mobile iron api
+    // temp testing params
     if (sn.startsWith("ipad")){
         fetchParams.model = "Apple Ipad Pro";
         fetchParams.dtype = "CORP";
@@ -36,6 +36,7 @@ export async function fetchWebClips(sn : string){
 }
 
 export async function fetchApps(sn : string) : Promise<string[]>{
+    // temp testing data
     return new Promise( (res) =>{
         if (sn.charAt(0) == "a"){
             res(["app_Googling", "app_Chrome?", "app_Duckduckgo"] as string[]);

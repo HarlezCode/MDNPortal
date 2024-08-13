@@ -13,12 +13,15 @@ async function submitFunc(data : any, close : any, nav : any){
         res.json().then((res) =>{
             if (res["res"] == "error"){
                 nav("../response?res=error&data="+res["error"])
-            } else{
+            } else if (res["res"] == "ok"){
                 if (res["data"].length > 0){
                     nav("../response?res=ok&data=" + JSON.stringify(res["data"]));
                     return;
                 } 
                 nav("../response?res=ok");
+            } else if (res["res"] == "invalid"){
+                console.log("invalid data");
+                console.log(res);
             }
         })
         close();

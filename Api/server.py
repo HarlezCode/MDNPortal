@@ -456,6 +456,14 @@ async def fetchWebclips():
 
     return Responses.ok(listofitems)
 
+@app.route('/api/fetchmi/', methods=["GET"], endpoint='fetchMi')
+@defaultErrorHandler
+async def fetchMi():
+    Responses = responses()
+    
+    return Responses.ok()
+
+
 # closes connection automatically, get the connection using createCursor() method
 @app.teardown_appcontext
 def teardown_conn(exception):

@@ -50,6 +50,7 @@ export default function Edit(){
         const temp : {[index : string]: string[]} = {};
         temp["RequestType"] = [req ?? ""];
         temp["Headers"] = [];
+        // Setting up headers for each type of request
         switch (req){
             case "Retire device":
                 temp["Headers"].push("Type");
@@ -325,7 +326,7 @@ export default function Edit(){
                         return (<>{
                             options.map((val : string) =>{
                                 return (
-                                    <option style={{userSelect: "none"}}value={val}>
+                                    <option style={{userSelect: "none"}} value={val}>
                                         {val.slice(4)}
                                     </option>
                                 )

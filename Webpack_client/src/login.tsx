@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from "react-router-dom";
-import {authAction} from "./serverActions"
+import { authAction } from "./serverActions"
 import './components.css'
 
 export default function Login(){
@@ -24,16 +24,16 @@ export default function Login(){
                 </h3>
             </div>
             <div className='r3'>
-            <input placeholder="CORP ID" name="username" className="r5"/>
+                <input placeholder="CORP ID" name="username" className="r5"/>
             </div>
             <div className='r3 mb3'>
-            <input placeholder="Password" type="password" name="password" className="r5"/>
+                <input placeholder="Password" type="password" name="password" className="r5"/>
             </div>
             <div className='r3'>
-            <button type="submit" className="r7">Login</button>
+                <button type="submit" className="r7">Login</button>
             </div>
         </div>
      </form>
      </div>
-     </div>)
+    </div>)
 }
