@@ -4,7 +4,7 @@ from helper import *
 import logging
 from datetime import date, datetime
 import threading
-import db
+import requests
 
 
 clusterMutex = threading.Lock()
@@ -412,7 +412,6 @@ async def getWebclips():
 
 
     cursor, conn = createCursor()
-    print(data)
     cursor.execute('''
             SELECT * FROM webclips 
             WHERE (active='active') AND
@@ -428,7 +427,6 @@ async def getWebclips():
         item = webclipToDict(fetched)
         listofitems.append("wcp_"+item["webclip"])
         fetched = cursor.fetchone()
-    print("fetched: ", listofitems)
     return Responses.ok(listofitems)
 
 
@@ -439,7 +437,7 @@ async def fetchWebclips():
     Responses = responses()
     valid = await validateKey(request.headers["Key"])
     if not valid:
-        return Responses.defaultError
+        return Responses.keyError
 
     data = request.args.to_dict()
     cursor, conn = createCursor()
@@ -460,9 +458,20 @@ async def fetchWebclips():
 @defaultErrorHandler
 async def fetchMi():
     Responses = responses()
-    
-    return Responses.ok()
+    valid = await validateKey(request.headers["Key"])
+    if not valid:
+        return Responses.keyError
 
+    sn = request.args.to_dict()["sn"]
+    # set your mi link here
+    milink = "<micore>"
+    spaceID = loadEnv()["adminDeviceSpaceId"]
+    r = requests.get('http://'+milink+'/api/v2/devices', params={"adminDeviceSpaceId" : spaceID, "query" : "SerialNumber=" + sn}).json()["results"]
+
+    if len(r) != 1:
+        return Responses.customError("Multiple or no devices found.", [sn])
+
+    return Responses.ok(r)
 
 # closes connection automatically, get the connection using createCursor() method
 @app.teardown_appcontext

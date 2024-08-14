@@ -3,7 +3,7 @@ Run `npm i` inside both webpack folders
 Install **postgresql**  
 Install python dependencies with `pip install -r requirements.txt`  
 Create a database in postgresql named `request` with either through pgadmin or pgcli using `CREATE DATABASE request`  
-Set db key and password in keys.py  
+Set db key, password & admin space key in .env  
 Run `db.py`
 
 ## Running Development Server
