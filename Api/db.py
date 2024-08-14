@@ -1,7 +1,19 @@
 import psycopg2
-
+import os
 def initializeDB():
     env = dict()
+    if not os.path.exists("./.env"):
+        # create .env file here
+        print("Creating env file...")
+        user = input("Enter database username: ")
+        password = input("Enter database password: ")
+        id = input("Enter admin space id: ")
+        with open(".env", "x") as file:
+            file.write("dbUser="+user+"\n")
+            file.write("dbPassword="+password+"\n")
+            file.write("adminDeviceSpaceId="+id+"\n")
+            file.close()
+
     with open(".env", "r") as file:
         lines = file.readlines()
         for line in lines:
@@ -9,7 +21,7 @@ def initializeDB():
             if len(kv) == 2:
                 env[kv[0]] = kv[1].strip()
         file.close()
-
+    return
     conn = psycopg2.connect(
         database="request", user=env["dbUser"], password=env["dbPassword"], host="127.0.0.1", port="5432"
     )

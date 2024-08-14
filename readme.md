@@ -1,16 +1,22 @@
 ## Installation & Setup
-Run `npm i` inside both webpack folders  
-Install **postgresql**  
-Install python dependencies with `pip install -r requirements.txt`  
-Create a database in postgresql named `request` with either through pgadmin or pgcli using `CREATE DATABASE request`  
-Set db key, password & admin space key in .env  
-Run `db.py`
+1. Run `npm i` inside both webpack folders  
+2. Install **postgresql**  
+3. Install python dependencies with `pip install -r requirements.txt`  
+4. Create a database in postgresql named `request` with either through pgadmin or pgcli using `CREATE DATABASE request`  
+5. Run `db.py` to setup database & `.env` file  
+
+`.env` file template
+```
+dbUser=admin
+dbPassword=admin
+adminDeviceSpaceId=something
+```
 
 ## Running Development Server
-Run `npm run dev` inside both webpack folders within separate terminals  
-Run `server.py`  
-Request Page hosted on port 5175, eg. localhost:5175  
-Admin Page hosted on port 5176, eg. localhost:5176  
+1. Run `npm run dev` inside both webpack folders within separate terminals  
+2. Run `server.py`  
+3. Request Page hosted on port 5175, eg. localhost:5175  
+4. Admin Page hosted on port 5176, eg. localhost:5176  
 
 ## Building
 **instruction applies to both webpack folders*  
