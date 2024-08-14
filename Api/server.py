@@ -454,24 +454,121 @@ async def fetchWebclips():
 
     return Responses.ok(listofitems)
 
-@app.route('/api/fetchmi/', methods=["GET"], endpoint='fetchMi')
+@app.route('/api/mi/fetchapps/', methods=["GET"], endpoint='fetchMiApps')
+@defaultErrorHandler
+async def fetchMiApps():
+    Responses = responses()
+    settings = apiSettings()
+    # valid = await validateKey(request.headers["Key"])
+    # if not valid:
+    #     return Responses.keyError
+    uuid = request.args.to_dict()["uuid"]
+
+    if len(uuid) == 0:
+        return Responses.customError("Please enter a uuid.")
+
+    env = loadEnv()
+    spaceID = env["adminDeviceSpaceId"]
+    user = env["apiUsername"]
+    password = env["apiPassword"]
+    r = requests.get(settings.domain+"api/v2/devices/appinventory",auth=(user,password), params={"adminDeviceSpaceId" : spaceID, 'deviceUuids' : uuid}).json()
+
+    return Responses.ok(r["results"])
+
+
+
+@app.route('/api/mi/fetchdevice/', methods=["GET"], endpoint='fetchMi')
 @defaultErrorHandler
 async def fetchMi():
     Responses = responses()
-    valid = await validateKey(request.headers["Key"])
-    if not valid:
-        return Responses.keyError
+    settings = apiSettings()
+    # valid = await validateKey(request.headers["Key"])
+    # if not valid:
+    #     return Responses.keyError
 
     sn = request.args.to_dict()["sn"]
-    # set your mi link here
-    milink = "<micore>"
-    spaceID = loadEnv()["adminDeviceSpaceId"]
-    r = requests.get('http://'+milink+'/api/v2/devices', params={"adminDeviceSpaceId" : spaceID, "query" : "SerialNumber=" + sn}).json()["results"]
+    env = loadEnv()
+    spaceID = env["adminDeviceSpaceId"]
+    user = env["apiUsername"]
+    password = env["apiPassword"]
+    r = requests.get(settings.domain + 'api/v2/devices', auth=(user, password),params={"adminDeviceSpaceId" : spaceID, "fields": "common.uuid" ,"query" : 'common.SerialNumber="' + sn + '"'}).json()["results"]
+    return Responses.ok(r)
 
-    if len(r) != 1:
-        return Responses.customError("Multiple or no devices found.", [sn])
+@app.route('/api/mi/removelabel/', methods=["GET"], endpoint='removeLabelMi')
+async def removeLabelMi():
+    settings = apiSettings()
+    Responses = responses()
+    # valid = await validateKey(request.headers["Key"])
+    # if not valid:
+    #     return Responses.keyError
+    args = request.args.to_dict()
+    uuid = args["uuid"]
+    labelid = args["labelid"]
+    labelname = args["labelname"]
+    env = loadEnv()
+    spaceID = env["adminDeviceSpaceId"]
+    user = env["apiUsername"]
+    password = env["apiPassword"]
+    labelid = int(labelid)  # throws error if id is not int
+    r = requests.get(settings.domain + "api/v2/labels/" + str(labelid), auth=(user, password),
+                     params={"adminDeviceSpaceId": spaceID}).json()["results"]
+    if r["name"] != labelname:
+        return Responses.customError("Label id does not match label name!")
+
+    r = requests.get(settings.domain + "api/v2/devices", auth=(user, password),
+                     params={"adminDeviceSpaceId": spaceID, "fields": "common.uuid",
+                             "query": 'common.uuid="' + uuid + '"'}).json()["results"]
+    if len(r) == 0:
+        return Responses.customError("The uuid is not in the records.")
+
+    r = requests.get(settings.domain + "api/v2/devices/" + uuid + "/labels", params={"adminDeviceSpaceId" : spaceID})["results"]
+    found = False
+    for i in r:
+        if i["name"] == labelname and i["id"] == str(labelid):
+            found = True
+            break
+    if not found:
+        return Responses.customError("The label does not exists on device with this uuid.", [labelname, uuid])
+
+    r = requests.put(settings.domain + "api/v2/devices/labels/" + labelname + "/remove", params={"adminDeviceSpaceId" : spaceID}, data={
+        "deviceUuids" : [uuid]
+    }).json()
+    if (not r["successful"]):
+        return Responses.customError("Failed to remove label for this uuid.", [labelname, uuid])
 
     return Responses.ok(r)
+
+@app.route('/api/mi/addlabel/', methods=["GET"], endpoint='addLabelMi')
+async def addLabelMi():
+    settings = apiSettings()
+    Responses = responses()
+    # valid = await validateKey(request.headers["Key"])
+    # if not valid:
+    #     return Responses.keyError
+    args = request.args.to_dict()
+    uuid = args["uuid"]
+    labelid = args["labelid"]
+    labelname = args["labelname"]
+    env = loadEnv()
+    spaceID = env["adminDeviceSpaceId"]
+    user = env["apiUsername"]
+    password = env["apiPassword"]
+    labelid = int(labelid) # throws error if id is not int
+    r = requests.get(settings.domain + "api/v2/labels/" + str(labelid), auth=(user, password), params={"adminDeviceSpaceId": spaceID}).json()["results"]
+    if r["name"] != labelname:
+        return Responses.customError("Label id does not match label name!")
+
+    r = requests.get(settings.domain + "api/v2/devices", auth=(user, password),params={"adminDeviceSpaceId" : spaceID, "fields": "common.uuid" ,"query" : 'common.uuid="' + uuid + '"'}).json()["results"]
+    if len(r) == 0:
+        return Responses.customError("The uuid is not in the records.")
+
+    # appying label here
+    r = requests.put(settings.domain+"api/v2/devices/labels/" + labelname + "/add",params={"adminDeviceSpaceId" : spaceID}, data={"deviceUuids" : [uuid]}).json()
+    if not r["successful"]:
+        return Responses.customError("Error in updating this label on this uuid.", [labelname, uuid])
+
+    return Responses.ok(r)
+
 
 # closes connection automatically, get the connection using createCursor() method
 @app.teardown_appcontext

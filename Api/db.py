@@ -8,10 +8,15 @@ def initializeDB():
         user = input("Enter database username: ")
         password = input("Enter database password: ")
         id = input("Enter admin space id: ")
+        apiu = input("Enter MI API username: ")
+        apip = input("Enter MI API password: ")
         with open(".env", "x") as file:
             file.write("dbUser="+user+"\n")
             file.write("dbPassword="+password+"\n")
             file.write("adminDeviceSpaceId="+id+"\n")
+            file.write("apiUsername=" + apiu + "\n")
+            file.write("apiPassword=" + apip + "\n")
+
             file.close()
 
     with open(".env", "r") as file:

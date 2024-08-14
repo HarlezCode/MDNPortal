@@ -125,8 +125,9 @@ def combinations(ls):
             ans.append([i] + v)
     return ans
 
-
-
+class apiSettings:
+    def __init__(self):
+        self.domain = 'https://emmdev2.ha.org.hk/'
 
 class responses:
     def __init__(self):

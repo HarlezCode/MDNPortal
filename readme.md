@@ -10,6 +10,8 @@
 dbUser=admin
 dbPassword=admin
 adminDeviceSpaceId=something
+apiUsername=something
+apiPassword=something
 ```
 
 ## Running Development Server
@@ -26,5 +28,12 @@ adminDeviceSpaceId=something
 
 
 
-## to do
+## Todo
 - add invalid data response during crsvalidation with mi
+- add enroll device export into excel/csv, check time of request and latest enrollment time if there is two records
+if so, warn the user that it will take the latest record. After export, clicking process will prompt the user to apply
+labels to new device record if there is one that fits the restrictions. Adding new devices CANNOT be bulk.
+- retire device api
+- Look for last location
+- Authentication
+- App update -> update msg
