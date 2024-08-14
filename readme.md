@@ -20,9 +20,9 @@ adminDeviceSpaceId=something
 
 ## Building
 **instruction applies to both webpack folders*  
-Change mode in `webpack.config.js` to `production`  
-Run `npm run build`  
-Uncomment Styling for `main.css` in `public/index.html`  
+1. Change mode in `webpack.config.js` to `production`  
+2. Run `npm run build`  
+3. Uncomment Styling for `main.css` in `public/index.html`  
 
 
 
