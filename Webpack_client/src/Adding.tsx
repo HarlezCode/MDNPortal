@@ -1,13 +1,89 @@
 import React from 'react'
 import {useState, FormEvent, useRef} from 'react'
 import './components.css'
-export default function Adding({reqtype, close, tabledata, settabledata, count} : {reqtype : string, close : () => void, tabledata : {[index : string] : string[]}, settabledata : (data : {[index : string] : string[]}) => void, count : React.MutableRefObject<number>}){
+import { getDeviceInfo, getDeviceType } from './serverActions';
+
+async function llfetch(count : number[],entries : string, errors : string[], newData : {[index : string]: string[]}, newMetaData : {[index : string] : {[index : string] : string}}){
+    const entry = entries.split(",");
+    if (entry.length != 2){
+        return;
+    }
+    if (entry[0].length == 0 || entry[1].length == 0){
+        return;
+    }
+
+    if (newData[entry[0]] != null && newData[entry[0]] != ([] as string[])){
+        return;
+    }
+
+    const res = await getDeviceInfo(entry[0]);
+    if (res["error"] != ""){
+        errors.push(res["error"]);
+        return;
+    }
+
+    const devicetype = await getDeviceType(res["data"][0]["common.uuid"]);
+    if (devicetype == "error"){
+        errors.push("Could not get identify device type for " + entry[0]);
+        return;
+    }
+    newData[entry[0]] = [] as string[];
+    newData[entry[0]].push(devicetype);
+    // validate mac address somehow
+    newData[entry[0]].push(entry[1]);
+    newData[entry[0]].push("uuid_" + res["data"][0]["common.uuid"]);
+    newMetaData[entries] = res["data"][0];
+    count[0]++;
+}
+
+async function nmfetch(reqtype : string, count : number[],entry : string, errors : string[], newData : {[index : string]: string[]}, newMetaData : {[index : string] : {[index : string] : string}}, changeType : string = ''){
+    if (entry == ''){
+        return;
+    }
+    if (newData[entry] != null && newData[entry] != ([] as string[])){
+        return;
+    }
+   
+    // api calls here                    
+    const res = await getDeviceInfo(entry);
+    if (res["error"] != ""){
+        errors.push(res["error"]);
+        return;
+    }
+
+    const devicetype = await getDeviceType(res["data"][0]["common.uuid"]);
+    if (devicetype == "error"){
+        errors.push("Could not get identify device type for " + entry);
+        return;
+    }
+
+    newData[entry] = [] as string[];
+    newData[entry].push(devicetype);
+    newMetaData[entry] = res["data"][0];
+
+    if (reqtype == "Add Webclip"){
+        newData[entry].push("wcp_Webclip"); // default value 
+    } else if (reqtype == "App Update"){
+        newData[entry].push("app_App"); // default value
+    } else if (reqtype == "Change of Device Type"){
+        newData[entry].push(changeType);
+    }
+    if (reqtype != "Add new device record"){
+        newData[entry].push("uuid_" + res["data"][0]["common.uuid"]);
+    }
+
+    count[0]++;
+}
+
+
+
+export default function Adding({reqtype, close, tabledata, settabledata, count, metadata, setmetadata} : {reqtype : string, close : () => void, tabledata : {[index : string] : string[]}, settabledata : (data : {[index : string] : string[]}) => void, count : React.MutableRefObject<number>, metadata : {[index : string] : {[index : string] : string}}, setmetadata : (data : {[index : string] : {[index : string] : string}})=>void}){
     const [textArea, setText] = useState("");
     const importing = useRef(false);
 
     if (reqtype == "Look for last location"){
         return (<div><form onSubmit={
-            (event : FormEvent<HTMLFormElement>) => {
+            async (event : FormEvent<HTMLFormElement>) => {
                 event.preventDefault();
                 if (importing.current){
                     // we do checks here
@@ -24,34 +100,30 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
                                 discardedCount++;
                             }
                         } else {
+                            if (temp.length == 1){
+                                if (temp[0] == ''){
+                                    continue;
+                                }
+                            }
                             discardedCount++;
                         }
                     }
-                    
+                    const errors = [] as string[];
+                    const newMetaData = JSON.parse(JSON.stringify(metadata));
                     const newData = JSON.parse(JSON.stringify(tabledata))
-                    for (let i =0; i<arr.length;i++){
-                        const entry = arr[i].split(",");
-                        if (entry.length != 2){
-                            continue;
-                        }
-                        if (entry[0].length == 0 || entry[1].length == 0){
-                            continue;
-                        }
+                    const newCounts = [0];
+                    const promises = arr.map( async (val : string) =>
+                        llfetch(newCounts,val,errors,newData,newMetaData)
+                    );
 
-                        if (newData[entry[0]] != null && newData[entry[0]] != ([] as string[])){
-                            continue;
-                        }
-                        newData[entry[0]] = [] as string[];
-                        // pushing data (fetch here)
-                        newData[entry[0]].push("CORP");
-                        newData[entry[0]].push(entry[1]);
-                        newData[entry[0]].push("uuid_testuuid" + entry[0]);
-
-                        count.current++;
-                    }
-                    console.log(newData);
+                    await Promise.all(promises);
+                    setmetadata(newMetaData);
                     settabledata(newData);
+                    count.current += newCounts[0];
                     localStorage.setItem("SN", curString.join("\n"));
+                    if (errors.length > 0){
+                        alert(errors.join("\n"));
+                    }
                     close();
                     if (discardedCount > 0){
                         alert("Some entries were discarded due to input format error or already in the table.");
@@ -105,8 +177,8 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
         </div>);
     }
 
-    return (<div><form onSubmit={
-        (event : FormEvent<HTMLFormElement>) => {
+    return (<div><form onSubmit={  
+        async (event : FormEvent<HTMLFormElement>) => {
             event.preventDefault();
             // err check here
             if (reqtype == "Change of Device Type" && importing.current){
@@ -116,11 +188,12 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
                 }
             }
 
-
+             
             if (importing.current){
                 // we do checks here
                 const curString = (localStorage.getItem("SN") ?? "").split("\n");
                 let arr = textArea.split("\n");
+                const errors = [] as string [];
                 for (let i =0; i<arr.length;i++){
                     arr[i] = arr[i].trim();
                     if (!curString.includes(arr[i]) && arr[i].length > 0){
@@ -128,41 +201,29 @@ export default function Adding({reqtype, close, tabledata, settabledata, count} 
                     }
                 }
                 const newData = JSON.parse(JSON.stringify(tabledata))
-                for (let i =0; i<arr.length;i++){
-                    if (arr[i] == ''){
-                        continue;
+                const newMetaData = JSON.parse(JSON.stringify(metadata));
+                const newCounts = [0];
+                const st = performance.now();
+                const promises = arr.map(async (val : string) =>{
+                    if (reqtype == "Change of Device Type"){
+                        await nmfetch(reqtype, newCounts,val,errors,newData,newMetaData,event.currentTarget.changeType.value);
+                    } else {
+                        await nmfetch(reqtype, newCounts,val,errors,newData,newMetaData);
                     }
-                    if (newData[arr[i]] != null && newData[arr[i]] != ([] as string[])){
-                        continue;
-                    }
-                    newData[arr[i]] = [] as string[];
-                    // api calls here
-                    // remember add new device record is different
-                    if (reqtype.includes("4G VPN") || reqtype.includes("Trial Certificate")){
-                        newData[arr[i]].push("CORP");
-                        newData[arr[i]].push("Yes");
-                    } else if (reqtype == "Retire device"){
-                        newData[arr[i]].push("CORP");
-                    } else if (reqtype == "Add new device record"){
-                        newData[arr[i]].push("CORP");
-                        newData[arr[i]].push("Yes");
-                    } else if (reqtype == "Add Webclip"){
-                        newData[arr[i]].push("CORP");
-                        newData[arr[i]].push("wcp_Webclip"); // default value 
-                    } else if (reqtype == "App Update"){
-                        newData[arr[i]].push("CORP");
-                        newData[arr[i]].push("app_App"); // default value
-                    } else if (reqtype == "Change of Device Type"){
-                        newData[arr[i]].push("CORP");
-                        newData[arr[i]].push(event.currentTarget.changeType.value);
-                    }
-                    if (reqtype != "Add new device record"){
-                        newData[arr[i]].push("uuid_testuuid" + arr[i]);
-                    }
-                    count.current++;
-                }
+                });
+                await Promise.all(promises).then(()=>console.log("complete"));
+
+                console.log(performance.now()-st);
+                count.current += newCounts[0];
+
+                setmetadata(newMetaData);
                 settabledata(newData);
+                
+
                 localStorage.setItem("SN", curString.join("\n"));
+                if (errors.length  > 0){
+                    alert(errors.join("\n"));
+                }
                 close();
             }
         }

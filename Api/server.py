@@ -31,7 +31,7 @@ def defaultErrorHandler(f):
             return jsonify({"res": "error", "error": "An error has occurred"})
     return wrapper
 
-@app.route('/api/rejectrequest', methods=['POST'], endpoint='updaterequest')
+@app.route('/api/rejectrequest/', methods=['POST'], endpoint='updaterequest')
 @defaultErrorHandler
 async def rejectrequest():
     Responses = responses()
@@ -68,7 +68,7 @@ async def rejectrequest():
     return Responses.ok()
 
 
-@app.route('/api/processrequests', methods=['POST'], endpoint='processrequests')
+@app.route('/api/processrequests/', methods=['POST'], endpoint='processrequests')
 @defaultErrorHandler
 async def processrequests():
     Responses = responses()
@@ -123,7 +123,7 @@ async def processrequests():
 
 
 
-@app.route('/api/addrequests', methods=["POST"], endpoint='addrequests')
+@app.route('/api/addrequests/', methods=["POST"], endpoint='addrequests')
 @defaultErrorHandler
 async def addrequests():
     Responses = responses()
@@ -154,13 +154,7 @@ async def addrequests():
             entry["date"] = date.today().strftime("%d/%m/%Y")
             entry["time"] = datetime.now().strftime("%H:%M:%S")
             entry["status"] = "Pending"
-            if req == "Add 4G VPN Profile" or req == "Remove 4G VPN profile" or req == "Remove Trial Certificate" or req == "Add Trial Certificate": # Type | vpn | uuid
-                if len(data[i]) < 3:
-                    skippedEntries.append(data[i])
-                    continue
-                entry["device"] = data[i][0]
-                entry["uuid"] = data[i][2]
-            elif req == "Retire device": # type | uuid
+            if req == "Add 4G VPN Profile" or req == "Remove 4G VPN profile" or req == "Remove Trial Certificate" or req == "Add Trial Certificate" or req == "Retire device": # type | uuid
                 if len(data[i]) < 2:
                     skippedEntries.append(i)
                     continue
@@ -172,7 +166,7 @@ async def addrequests():
                     continue
                 entry["device"] = data[i][0]
             elif req == "Add Webclip": # type | webclip | uuid
-                if len(data[i]) < 3:
+                if len(data[i]) < 3 or not "wcp_" in data[i][1]:
                     skippedEntries.append(data[i])
                     continue
 
@@ -181,7 +175,6 @@ async def addrequests():
                     SELECT * FROM webclips WHERE webclip=%s
                 ''',(data[i][1],));
                 fetched = cursor.fetchone()
-                print(fetched)
                 if fetched == None:
                     skippedEntries.append(data[i])
                     continue
@@ -190,11 +183,11 @@ async def addrequests():
                 entry["uuid"] = data[i][2]
 
             elif req == "App Update": # type | app | uuid
-                if len(data[i]) < 3:
+                if len(data[i]) < 3 or not "app_" in data[i][1]:
                     skippedEntries.append(data[i])
                     continue
                 entry["device"] = data[i][0]
-                entry["app"] = data[i][1]
+                entry["app"] = data[i][1][4:]
                 entry["uuid"] = data[i][2]
             elif req == "Change of Device Type": # type | change to | uuid
                 if len(data[i]) < 3:
@@ -244,7 +237,7 @@ async def addrequests():
 
     return Responses.ok(skippedEntries)
 
-@app.route('/api/requests', methods=['GET'], endpoint='getrequests')
+@app.route('/api/requests/', methods=['GET'], endpoint='getrequests')
 @defaultErrorHandler
 async def getrequests():
     Responses = responses()
@@ -397,9 +390,9 @@ async def addWebclips():
         ''', tuple(i))
     return Responses.ok()
 
-# client api
-@app.route('/api/getwebclips', methods=["GET"], endpoint='getWebclips')
-# @defaultErrorHandler
+# this is the client api
+@app.route('/api/getwebclips/', methods=["GET"], endpoint='getWebclips')
+@defaultErrorHandler
 async def getWebclips():
     Responses = responses()
     valid = await validateClientKey(request.headers["Key"])
@@ -410,14 +403,13 @@ async def getWebclips():
     if (data["model"] == '' or data["dtype"] == '' or data["platform"] == '' or not 'os' in data.keys()):
         return Responses.defaultError
 
-
     cursor, conn = createCursor()
     cursor.execute('''
             SELECT * FROM webclips 
             WHERE (active='active') AND
-            (model=%(model)s OR model='')  AND
+            (model ~* ANY(string_to_array(%(model)s, ' '))) AND
             (dtype=%(dtype)s) AND
-            (platform=%(platform)s OR platform='') AND
+            (%(platform)s LIKE platform OR platform='') AND
             (os=%(os)s OR %(os)s = '' OR os='') AND
             (clstr=%(clstr)s OR %(clstr)s='' OR clstr='')
         ''', data)
@@ -425,12 +417,14 @@ async def getWebclips():
     listofitems = []
     while fetched:
         item = webclipToDict(fetched)
-        listofitems.append("wcp_"+item["webclip"])
+        if (item["model"].lower() in data["model"].lower()):
+            listofitems.append("wcp_"+item["webclip"])
         fetched = cursor.fetchone()
+
     return Responses.ok(listofitems)
 
 
-# server api
+# this is the server api
 @app.route('/api/fetchwebclips/', methods=["GET"], endpoint='fetchWebclips')
 @defaultErrorHandler
 async def fetchWebclips():
@@ -473,13 +467,37 @@ async def fetchMiApps():
     password = env["apiPassword"]
     r = requests.get(settings.domain+"api/v2/devices/appinventory",auth=(user,password), params={"adminDeviceSpaceId" : spaceID, 'deviceUuids' : uuid}).json()
 
-    return Responses.ok(r["results"])
+    return Responses.ok(r["results"][0]["appInventory"])
 
+@app.route('/api/mi/getdevicelabels/', methods=["GET"], endpoint='fetchDeviceLabels')
+@defaultErrorHandler
+async def fetchDeviceLabels():
+    settings = apiSettings()
+    Responses = responses()
+    # valid = await validateKey(request.headers["Key"])
+    # if not valid:
+    #     return Responses.keyError
+    args = request.args.to_dict()
+    uuid = args["uuid"]
+    env = loadEnv()
+    spaceID = env["adminDeviceSpaceId"]
+    user = env["apiUsername"]
+    password = env["apiPassword"]
 
+    r = requests.get(settings.domain + "api/v2/devices", auth=(user, password),
+                     params={"adminDeviceSpaceId": spaceID, "fields": "common.uuid",
+                             "query": 'common.uuid="' + uuid + '"'}).json()["results"]
+    if len(r) == 0:
+        return Responses.customError("The uuid is not in the records.")
+    print(uuid)
+    r = requests.get(settings.domain + "api/v2/devices/" + uuid + "/labels",auth=(user, password), params={"adminDeviceSpaceId": spaceID}).json()["results"]
+
+    return Responses.ok(r)
 
 @app.route('/api/mi/fetchdevice/', methods=["GET"], endpoint='fetchMi')
 @defaultErrorHandler
 async def fetchMi():
+    print("recieved")
     Responses = responses()
     settings = apiSettings()
     # valid = await validateKey(request.headers["Key"])
@@ -491,16 +509,18 @@ async def fetchMi():
     spaceID = env["adminDeviceSpaceId"]
     user = env["apiUsername"]
     password = env["apiPassword"]
-    r = requests.get(settings.domain + 'api/v2/devices', auth=(user, password),params={"adminDeviceSpaceId" : spaceID, "fields": "common.uuid" ,"query" : 'common.SerialNumber="' + sn + '"'}).json()["results"]
-    return Responses.ok(r)
+    r = requests.get(settings.domain + 'api/v2/devices', auth=(user, password),params={"adminDeviceSpaceId" : spaceID, "fields": settings.getSearchFields(),"query" : 'common.SerialNumber="' + sn + '"'}).json()["results"]
+    filtered = [x for x in r if x["common.status"] == "ACTIVE"]
+
+    return Responses.ok(filtered)
 
 @app.route('/api/mi/removelabel/', methods=["GET"], endpoint='removeLabelMi')
 async def removeLabelMi():
     settings = apiSettings()
     Responses = responses()
-    # valid = await validateKey(request.headers["Key"])
-    # if not valid:
-    #     return Responses.keyError
+    valid = await validateKey(request.headers["Key"])
+    if not valid:
+        return Responses.keyError
     args = request.args.to_dict()
     uuid = args["uuid"]
     labelid = args["labelid"]
@@ -521,7 +541,7 @@ async def removeLabelMi():
     if len(r) == 0:
         return Responses.customError("The uuid is not in the records.")
 
-    r = requests.get(settings.domain + "api/v2/devices/" + uuid + "/labels", params={"adminDeviceSpaceId" : spaceID})["results"]
+    r = requests.get(settings.domain + "api/v2/devices/" + uuid + "/labels", auth=(user, password),params={"adminDeviceSpaceId" : spaceID}).json()["results"]
     found = False
     for i in r:
         if i["name"] == labelname and i["id"] == str(labelid):
@@ -530,21 +550,24 @@ async def removeLabelMi():
     if not found:
         return Responses.customError("The label does not exists on device with this uuid.", [labelname, uuid])
 
-    r = requests.put(settings.domain + "api/v2/devices/labels/" + labelname + "/remove", params={"adminDeviceSpaceId" : spaceID}, data={
-        "deviceUuids" : [uuid]
-    }).json()
-    if (not r["successful"]):
-        return Responses.customError("Failed to remove label for this uuid.", [labelname, uuid])
+    # Removing label here
+    # r = requests.put(settings.domain + "api/v2/devices/labels/" + labelname + "/remove", auth=(user, password),params={"adminDeviceSpaceId" : spaceID}, data={
+    #     "deviceUuids" : [uuid]
+    # }).json()
+    # if (not r["successful"]):
+    #     return Responses.customError("Failed to remove label for this uuid.", [labelname, uuid])
+    #
+    # return Responses.ok(r)
 
-    return Responses.ok(r)
+    return Responses.ok()
 
 @app.route('/api/mi/addlabel/', methods=["GET"], endpoint='addLabelMi')
 async def addLabelMi():
     settings = apiSettings()
     Responses = responses()
-    # valid = await validateKey(request.headers["Key"])
-    # if not valid:
-    #     return Responses.keyError
+    valid = await validateKey(request.headers["Key"])
+    if not valid:
+        return Responses.keyError
     args = request.args.to_dict()
     uuid = args["uuid"]
     labelid = args["labelid"]
@@ -563,12 +586,13 @@ async def addLabelMi():
         return Responses.customError("The uuid is not in the records.")
 
     # appying label here
-    r = requests.put(settings.domain+"api/v2/devices/labels/" + labelname + "/add",params={"adminDeviceSpaceId" : spaceID}, data={"deviceUuids" : [uuid]}).json()
-    if not r["successful"]:
-        return Responses.customError("Error in updating this label on this uuid.", [labelname, uuid])
+    # r = requests.put(settings.domain+"api/v2/devices/labels/" + labelname + "/add", auth=(user, password), params={"adminDeviceSpaceId" : spaceID}, data={"deviceUuids" : [uuid]}).json()
+    # if not r["successful"]:
+    #     return Responses.customError("Error in updating this label on this uuid.", [labelname, uuid])
+    #
+    # return Responses.ok(r)
 
-    return Responses.ok(r)
-
+    return Responses.ok()
 
 # closes connection automatically, get the connection using createCursor() method
 @app.teardown_appcontext

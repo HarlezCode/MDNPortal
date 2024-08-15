@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react'
+import React from 'react'
 import {useEffect, useState, useRef} from 'react';
 import { fetchWebClips, fetchApps } from './serverActions';
 import "./components.css"
@@ -29,7 +29,7 @@ export function DefaultTitle({children} : any){
     return(<b><h3 style={{fontSize: "2.5rem", fontWeight: 400, lineHeight: "2rem", color:"black"}}>{children}</h3></b>)
 }
 
-export function WebClipSelector({sn, tabledata, possibleWC} : {sn : string, tabledata : {[index : string] : string[]}, possibleWC : React.MutableRefObject<{[index : string] : string[]}>}){
+export function WebClipSelector({sn, tabledata, possibleWC, metadata} : {sn : string, tabledata : {[index : string] : string[]}, possibleWC : React.MutableRefObject<{[index : string] : string[]}>, metadata : {[index : string] : string}}){
     //fetch from mobileiron here for each sn using a server action
 
     const [webClips, setWebClips] = useState([] as string[]);
@@ -37,11 +37,20 @@ export function WebClipSelector({sn, tabledata, possibleWC} : {sn : string, tabl
     const allowFetch = useRef(true);
     useEffect(() =>{
         if (sn != "" && allowFetch.current){
-            snNumber.current  = sn;
+            snNumber.current = sn;
             const fetchData = async () =>{
-                await fetchWebClips(sn).then((res)=>{
-                    setWebClips(res);
-                    possibleWC.current[snNumber.current] = res; 
+                await fetchWebClips(metadata, tabledata[sn]).then((res)=>{
+                    if (res["error"] == ""){
+                        if (res["data"].length == 0){
+                            setWebClips(["error","No webclips"]);
+                        } else {
+                            setWebClips(res["data"]);
+                        }
+                        possibleWC.current[snNumber.current] = res["data"]; 
+                    } else {
+                        setWebClips(["error", res["error"]]);
+                        possibleWC.current[snNumber.current] = [];
+                    }
                 });
             }
             fetchData();
@@ -66,7 +75,17 @@ export function WebClipSelector({sn, tabledata, possibleWC} : {sn : string, tabl
 
             }
         }}>
-            <option value="" >select</option>
+            {
+                (webClips[0] == "error" && webClips.length == 2) && <><option value="">Error CLICK ME</option>
+
+                <option value="">
+                    {webClips[1]}
+                </option>   
+                </>
+            }
+
+
+            {(webClips[0] != "error") && <><option value="" >select</option>
             {webClips.map((item : string) =>{
                 if (item.length >= 4){
                     return(
@@ -76,7 +95,7 @@ export function WebClipSelector({sn, tabledata, possibleWC} : {sn : string, tabl
                     )
                 }   
                 return;
-            })}
+            })}</>}
         </select>
     </>);
 
@@ -84,16 +103,24 @@ export function WebClipSelector({sn, tabledata, possibleWC} : {sn : string, tabl
 }
 
 
-export function AppSelector({sn, tabledata, possibleApps} : {sn : string, tabledata : {[index : string] : string[]}, possibleApps : React.MutableRefObject<{[index : string] : string[]}>}){
+export function AppSelector({sn, tabledata, possibleApps, uuid} : {sn : string, tabledata : {[index : string] : string[]}, possibleApps : React.MutableRefObject<{[index : string] : string[]}>, uuid : string}){
     //fetch from mobileiron here for each sn using a server action
-
     const [apps, setApps] = useState([] as string[]);
     const snNumber = useRef(sn);
     useEffect(() =>{
         if (sn != "" && apps.length == 0){
             snNumber.current  = sn;
             const fetchData = async () =>{
-                await fetchApps(sn).then((res)=>{
+                await fetchApps(uuid).then((res : string[])=>{
+                    possibleApps.current[snNumber.current] = [];
+                    if (res.length == 0){
+                        setApps(["No Apps!"]);
+                        return;
+                    } else if (res[0] == "error"){
+                        setApps(["Error"]);
+                        return;
+                    }
+
                     setApps(res);
                     possibleApps.current[snNumber.current] = res; 
                 });
@@ -119,8 +146,13 @@ export function AppSelector({sn, tabledata, possibleApps} : {sn : string, tabled
 
             }
         }}>
-            <option value="" >select</option>
-            {apps.map((item : string) =>{
+            {!(apps[0]??"").startsWith("app_") &&
+            <option value="" >{apps[0]}</option>}
+
+
+            {(apps[0]??"").startsWith("app_") &&
+            <option value="" >select</option>}
+            {(apps[0]??"").startsWith("app_") && apps.map((item : string) =>{
                 if (item.length >= 4){
                     return(
                         <option className="bg-slate-700" value={item} key={sn +" "+item}>

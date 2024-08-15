@@ -128,7 +128,16 @@ def combinations(ls):
 class apiSettings:
     def __init__(self):
         self.domain = 'https://emmdev2.ha.org.hk/'
-
+        self.fetchDeviceFields = [
+            'common.uuid',
+            'common.model',
+            'common.platform',
+            'common.os_version',
+            'common.creation_date',
+            'common.status'
+        ]
+    def getSearchFields(self):
+        return ",".join(self.fetchDeviceFields)
 class responses:
     def __init__(self):
         self.defaultError = jsonify({

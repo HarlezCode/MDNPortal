@@ -82,7 +82,7 @@ export async function updateWebclip(item : ResType, update : string){
 }
 
 export async function rejectRequest(data : ResType[]){
-    const res = await fetch("http://localhost:5000/api/rejectrequest", {
+    const res = await fetch("http://localhost:5000/api/rejectrequest/", {
         method: "POST",
         headers: {
             "Key": localStorage.getItem("Token") ?? "", // temp val
@@ -125,7 +125,7 @@ export async function logout() : Promise<boolean>{
 
 export async function processRequests(data : ResType[]){
     let val;
-    await fetch("http://localhost:5000/api/processrequests", {
+    await fetch("http://localhost:5000/api/processrequests/", {
         method: "POST",
         headers: {
             "Key": localStorage.getItem("Token") ?? "", // temp val
@@ -164,7 +164,7 @@ export async function fetchFromServerRaw({rtype='',sn='',stat='Pending',uid='', 
     queryParams += "time=" + tm + "&";
     queryParams += "processed=" + processed; 
 
-    const res = await fetch("http://localhost:5000/api/requests" + queryParams, {
+    const res = await fetch("http://localhost:5000/api/requests/" + queryParams, {
         method : "GET",
         headers : {
             "key" : localStorage.getItem("Token") ?? ""
@@ -201,7 +201,7 @@ export async function fetchFromServer(e : FormEvent<HTMLFormElement>){
     queryParams += "time=" + e.currentTarget.timefilter.value + "&";
     queryParams += "processed=" + e.currentTarget.processfilter.value;
 
-    const res = await fetch("http://localhost:5000/api/requests" + queryParams, {
+    const res = await fetch("http://localhost:5000/api/requests/" + queryParams, {
         method : "GET",
         headers : {
             "key" : localStorage.getItem("Token") ?? "" // temp val

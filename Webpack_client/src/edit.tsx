@@ -8,6 +8,7 @@ import { resetLocalStorage } from "./clientActions";
 
 export default function Edit(){
     const [tableData, setData] = useState({"Headers" : [] as string[]} as {[index : string]: string[]});
+    const [metaData, setMetaData] = useState({} as {[index : string] : {[index : string] : string}});
     const [update, setUpdate] = useState(true);
     const [isPreview, setPreview] = useState(false);
     const [isAdding, setAdding] = useState(false);
@@ -20,8 +21,8 @@ export default function Edit(){
     const shiftKeyDown = useRef(false);
     const possibleWC = useRef({} as {[index : string] : string[]});
     const possibleApps = useRef({} as {[index : string] : string[]});
-
     useEffect(() => {
+        console.log("here:", tableData);
         const tempCheckboxes = JSON.parse(JSON.stringify(checkboxStates));
         let updated = false;
         for (let i =0; i< Object.keys(tableData).length; i++){
@@ -58,17 +59,14 @@ export default function Edit(){
                 break;
             case "Add 4G VPN Profile": 
                 temp["Headers"].push("Type");
-                temp["Headers"].push("VPN");
                 setData(temp);
                 break;
             case "Add new device record":
                 temp["Headers"].push("Type");
-                temp["Headers"].push("VPN");
                 setData(temp);
                 break;
             case "Add Trial Certificate":
                 temp["Headers"].push("Type");
-                temp["Headers"].push("VPN");
                 setData(temp);
                 break;
             case "Add Webclip":
@@ -93,12 +91,10 @@ export default function Edit(){
                 break;
             case "Remove 4G VPN profile":
                 temp["Headers"].push("Type");
-                temp["Headers"].push("VPN");
                 setData(temp);
                 break;
             case "Remove Trial Certificate":
                 temp["Headers"].push("Type");
-                temp["Headers"].push("VPN");
                 setData(temp);
                 break;
         }
@@ -176,6 +172,11 @@ export default function Edit(){
                                 }
                             }
                             setData(temp);
+                            const temp2 = JSON.parse(JSON.stringify(checkboxStates));
+                            Object.keys(checkboxStates).forEach((val : string) =>{
+                                temp2[val] = false;
+                            })
+                            setCheckboxStates(temp2);
                         }
                         break;
                     case "bulkapps":
@@ -193,6 +194,11 @@ export default function Edit(){
                                 }
                             }
                             setData(temp);
+                            const temp2 = JSON.parse(JSON.stringify(checkboxStates));
+                            Object.keys(checkboxStates).forEach((val : string) =>{
+                                temp2[val] = false;
+                            })
+                            setCheckboxStates(temp2);
                         }
                         break;
                         
@@ -341,6 +347,7 @@ export default function Edit(){
                 if (!isAdding && !isPreview){
                     buttonClick.current = "bulkapps";
                 }
+                
             }} style={{padding: ".5% 2.1%", fontSize:"0.875rem",lineHeight:"1.25rem"}}>
                 Confirm
             </button>
@@ -439,13 +446,13 @@ export default function Edit(){
                                 if (item.startsWith("wcp_")){
                                     return(
                                         <td style={{fontWeight: 400, paddingLeft:10, paddingRight: 10, paddingTop:2, paddingBottom:2, userSelect: 'none'}} key={String(i)}>
-                                            <WebClipSelector tabledata={tableData} sn={key} possibleWC={possibleWC}/>
+                                            <WebClipSelector metadata={metaData[key]} tabledata={tableData} sn={key} possibleWC={possibleWC}/>
                                         </td>
                                     )
                                 } else if (item.startsWith("app_")){
                                     return(
                                         <td style={{fontWeight: 400, paddingLeft:10, paddingRight: 10, paddingTop:2, paddingBottom:2, userSelect: 'none'}} key={String(i)}>
-                                            <AppSelector tabledata={tableData} sn={key} possibleApps={possibleApps} />
+                                            <AppSelector uuid={metaData[key]["common.uuid"] ?? ""} tabledata={tableData} sn={key} possibleApps={possibleApps} />
                                         </td>
                                     )
                                 } else if (item.startsWith("uuid_")){
@@ -472,7 +479,7 @@ export default function Edit(){
         (isPreview && !isAdding) && <Preview previewFunc={setPreview} data={tableData}/>
     }
     {
-        (!isPreview && isAdding) && <Adding reqtype={reqType.current ?? ""} close={()=>{setAdding(false)}} tabledata={tableData}
+        (!isPreview && isAdding) && <Adding metadata={metaData} setmetadata={setMetaData} reqtype={reqType.current ?? ""} close={()=>{setAdding(false)}} tabledata={tableData}
         settabledata={setData} count={numberOfDevices}/>
     }
     </>)
