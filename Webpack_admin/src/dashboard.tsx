@@ -21,6 +21,7 @@ export default function Dashboard(){
     const autoRefresh = useRef(false);
     const isProcess = useRef(false);
     const exportOption = useRef("current");
+    const showOptions = useRef(false);
 
     useEffect(() =>{
         const temp = {} as {[index :string] : boolean};
@@ -98,7 +99,15 @@ export default function Dashboard(){
                 }}>
                     Export
                 </button>
-                <button className='bg-red-500 processall' onClick={()=>{
+                <div>
+                <button className="bg-red-500 processall options" style={{marginBottom: "5px"}}  onClick={
+                    ()=>{
+                        showOptions.current = !showOptions.current;
+                        setRefresh(true);
+                    }
+                }>Options</button>
+                {showOptions.current && <div style={{display: "grid", zIndex: 100}}>
+                <button className='bg-red-500 dropdownitem'  style={{zIndex: 100}} onClick={()=>{
                     if (isProcess.current){
                         return;
                     }
@@ -126,6 +135,11 @@ export default function Dashboard(){
                         setTimeout(()=>{setToast("")}, 3000);
                     })
                 }}>Process Selected</button>
+                <button className='bg-red-500 dropdownitem' style={{zIndex: 100}}>
+                    Export Selected Devices
+                </button>
+                </div>}
+                </div>
             </div>
             
         </div>

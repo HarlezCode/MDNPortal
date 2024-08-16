@@ -30,8 +30,6 @@ export function DefaultTitle({children} : any){
 }
 
 export function WebClipSelector({sn, tabledata, possibleWC, metadata} : {sn : string, tabledata : {[index : string] : string[]}, possibleWC : React.MutableRefObject<{[index : string] : string[]}>, metadata : {[index : string] : string}}){
-    //fetch from mobileiron here for each sn using a server action
-
     const [webClips, setWebClips] = useState([] as string[]);
     const snNumber = useRef(sn);
     const allowFetch = useRef(true);

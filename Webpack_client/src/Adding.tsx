@@ -2,12 +2,19 @@ import React from 'react'
 import {useState, FormEvent, useRef} from 'react'
 import './components.css'
 import { getDeviceInfo, getDeviceType } from './serverActions';
+const clusters = [
+    'HKEC',
+    'HKWC',
+    'KEC',
+    'KWC',
+    'KCC',
+    'NTEC',
+    'NTWC',
+    'HAHO'
+];
 
-async function llfetch(count : number[],entries : string, errors : string[], newData : {[index : string]: string[]}, newMetaData : {[index : string] : {[index : string] : string}}){
+async function llfetch(reqType : string, count : number[], entries : string, errors : string[], newData : {[index : string]: string[]}, newMetaData : {[index : string] : {[index : string] : string}}){
     const entry = entries.split(",");
-    if (entry.length != 2){
-        return;
-    }
     if (entry[0].length == 0 || entry[1].length == 0){
         return;
     }
@@ -16,23 +23,48 @@ async function llfetch(count : number[],entries : string, errors : string[], new
         return;
     }
 
-    const res = await getDeviceInfo(entry[0]);
-    if (res["error"] != ""){
-        errors.push(res["error"]);
-        return;
-    }
+    console.log(newData);
+    console.log(entries);
+    if (reqType == "Look for last location"){
+        if (entry.length != 2){
+            return;
+        }
+        const res = await getDeviceInfo(entry[0]);
+        if (res["error"] != ""){
+            errors.push(res["error"]);
+            return;
+        }
 
-    const devicetype = await getDeviceType(res["data"][0]["common.uuid"]);
-    if (devicetype == "error"){
-        errors.push("Could not get identify device type for " + entry[0]);
-        return;
+        const devicetype = await getDeviceType(res["data"][0]["common.uuid"]);
+        if (devicetype == "error"){
+            errors.push("Could not get identify device type for " + entry[0]);
+            return;
+        }
+        newData[entry[0]] = [] as string[];
+        newData[entry[0]].push(devicetype);
+        // validate mac address here
+        newData[entry[0]].push(entry[1]);
+        newData[entry[0]].push("uuid_" + res["data"][0]["common.uuid"]);
+        newMetaData[entries] = res["data"][0];
+    } else {
+        if (entry.length != 3){
+            return;
+        }
+        // validate dtype & cluster
+        if (!clusters.includes(entry[1].toUpperCase())){
+            errors.push("Invalid Cluster For SN: " + entry[0]);
+            return;
+        } else if (!["CORP", "COPE", "OUD"].includes(entry[2].toUpperCase())){
+            errors.push("Invalid Device Type For SN: " + entry[0]);
+            return;
+        }
+
+        // enroll device
+        newData[entry[0]] = [] as string[];
+        newData[entry[0]].push(entry[2].toUpperCase()); // dtype
+        newData[entry[0]].push(entry[1].toUpperCase()); // cluster
     }
-    newData[entry[0]] = [] as string[];
-    newData[entry[0]].push(devicetype);
-    // validate mac address somehow
-    newData[entry[0]].push(entry[1]);
-    newData[entry[0]].push("uuid_" + res["data"][0]["common.uuid"]);
-    newMetaData[entries] = res["data"][0];
+    
     count[0]++;
 }
 
@@ -81,7 +113,7 @@ export default function Adding({reqtype, close, tabledata, settabledata, count, 
     const [textArea, setText] = useState("");
     const importing = useRef(false);
 
-    if (reqtype == "Look for last location"){
+    if (reqtype == "Look for last location" || reqtype=="Add new device record"){
         return (<div><form onSubmit={
             async (event : FormEvent<HTMLFormElement>) => {
                 event.preventDefault();
@@ -93,19 +125,36 @@ export default function Adding({reqtype, close, tabledata, settabledata, count, 
                     for (let i =0; i<arr.length;i++){
                         arr[i] = arr[i].trim();
                         const temp = arr[i].split(",");
-                        if (temp.length == 2){
-                            if (temp[0].length > 0 && temp[1].length > 0 && !curString.includes(temp[0])){
-                                curString.push(temp[0]);
+                        if (reqtype == "Look for last location"){
+                            if (temp.length == 2){
+                                if (temp[0].length > 0 && temp[1].length > 0 && !curString.includes(temp[0])){
+                                    curString.push(temp[0]);
+                                } else {
+                                    discardedCount++;
+                                }
                             } else {
+                                if (temp.length == 1){
+                                    if (temp[0] == ''){
+                                        continue;
+                                    }
+                                }
                                 discardedCount++;
                             }
                         } else {
-                            if (temp.length == 1){
-                                if (temp[0] == ''){
-                                    continue;
+                            if (temp.length == 3){
+                                if (temp[0].length > 0 && temp[1].length > 0 && !curString.includes(temp[0])){
+                                    curString.push(temp[0]);
+                                } else {
+                                    discardedCount++;
                                 }
+                            } else {
+                                if (temp.length == 1){
+                                    if (temp[0] == ''){
+                                        continue;
+                                    }
+                                }
+                                discardedCount++;
                             }
-                            discardedCount++;
                         }
                     }
                     const errors = [] as string[];
@@ -113,10 +162,11 @@ export default function Adding({reqtype, close, tabledata, settabledata, count, 
                     const newData = JSON.parse(JSON.stringify(tabledata))
                     const newCounts = [0];
                     const promises = arr.map( async (val : string) =>
-                        llfetch(newCounts,val,errors,newData,newMetaData)
+                        llfetch(reqtype,newCounts,val,errors,newData,newMetaData)
                     );
 
                     await Promise.all(promises);
+
                     setmetadata(newMetaData);
                     settabledata(newData);
                     count.current += newCounts[0];
@@ -162,7 +212,7 @@ export default function Adding({reqtype, close, tabledata, settabledata, count, 
                     }
     
                 }}/>
-                <div className="flex-1"><b style={{color: "black"}}>SN & MAC of device(s): </b><textarea readOnly={false} style={{resize: "none", color: "black"}} placeholder='Eg. 123,snxxx1111' value={textArea} onChange={(e)=>{setText(e.currentTarget.value)}} className="sntextarea2" name="snDevices"/></div>
+                <div className="flex-1"><b style={{color: "black"}}>{reqtype=="Look for last location" ? <>SN & MAC of device(s):</> : <>SN & Cluster of device(s) & Type:</> }</b><textarea readOnly={false} style={{resize: "none", color: "black"}} placeholder={'Eg. 123,' + (reqtype == "Look for last location" ? "mcl1112" : "HAHO,CORP")} value={textArea} onChange={(e)=>{setText(e.currentTarget.value)}} className="sntextarea2" name="snDevices"/></div>
     
                 <div>
                     <button className="mr2" onClick={() =>{importing.current = false; close()}}>Close</button>
@@ -176,6 +226,7 @@ export default function Adding({reqtype, close, tabledata, settabledata, count, 
             </form>
         </div>);
     }
+
 
     return (<div><form onSubmit={  
         async (event : FormEvent<HTMLFormElement>) => {

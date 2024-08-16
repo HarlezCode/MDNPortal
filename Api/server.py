@@ -7,7 +7,6 @@ import threading
 import requests
 
 
-clusterMutex = threading.Lock()
 processMutex = threading.Lock()
 updateMutex = threading.Lock()
 updateReqMutex = threading.Lock()
@@ -160,11 +159,12 @@ async def addrequests():
                     continue
                 entry["device"] = data[i][0]
                 entry["uuid"] = data[i][1]
-            elif req == "Add new device record": # type
-                if len(data[i]) == 0:
+            elif req == "Add new device record": # type | clusterid
+                if len(data[i]) < 2:
                     skippedEntries.append(data[i])
                     continue
                 entry["device"] = data[i][0]
+                entry["cluster"] = data[i][1]
             elif req == "Add Webclip": # type | webclip | uuid
                 if len(data[i]) < 3 or not "wcp_" in data[i][1]:
                     skippedEntries.append(data[i])
@@ -206,33 +206,13 @@ async def addrequests():
             entries.append(entry)
 
 
-    with clusterMutex: # ensure only one thread can acquire new cluster id
+    for i in entries:
         cursor.execute(
             '''
-            SELECT * FROM CLUSTERID
+            INSERT INTO entries(rtype, sn, clusterid, status, uid, cdate, dtype, totype, fuser, mac, app,webclip,timecreated,processed)
+            Values(%(requestType)s,%(serial)s,%(cluster)s,%(status)s,%(uuid)s,%(date)s,%(device)s,%(change)s,%(from)s,%(mac)s,%(app)s,%(webclip)s,%(time)s,'')
             '''
-        )
-        clusterid = cursor.fetchone()
-        if clusterid == None:
-            clusterid = ''
-        else:
-            clusterid = clusterid[0]
-
-        for i in entries:
-            i["cluster"] = clusterid
-            cursor.execute(
-                '''
-                INSERT INTO entries(rtype, sn, clusterid, status, uid, cdate, dtype, totype, fuser, mac, app,webclip,timecreated,processed)
-                Values(%(requestType)s,%(serial)s,%(cluster)s,%(status)s,%(uuid)s,%(date)s,%(device)s,%(change)s,%(from)s,%(mac)s,%(app)s,%(webclip)s,%(time)s,'')
-                '''
-            , i)
-        cursor.execute(
-            '''
-            UPDATE CLUSTERID
-            SET
-            val = %(cid)s
-            '''
-        , {"cid": int(clusterid)+1})
+        , i)
 
 
     return Responses.ok(skippedEntries)

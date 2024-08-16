@@ -63,6 +63,7 @@ export default function Edit(){
                 break;
             case "Add new device record":
                 temp["Headers"].push("Type");
+                temp["Headers"].push("Cluster");
                 setData(temp);
                 break;
             case "Add Trial Certificate":

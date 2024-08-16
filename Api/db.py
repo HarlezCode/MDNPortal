@@ -66,13 +66,6 @@ CREATE TABLE entries(
     active varchar(12)
     );
     ''')
-    cursor.execute('''
-    CREATE TABLE clusterid(
-    VAL INT
-    );
-    INSERT INTO clusterid values(0);
-    ''')
-
     conn.close()
 
 if __name__ == "__main__":

@@ -278,13 +278,30 @@ background-color: rgb(196, 20, 64);
   margin-right: 8px;
 }
 
+.dropdownitem{
+  width: 200%;
+  border: none;
+  border-radius: 0;
+  
+}
+
+.dropdownitem:hover{
+  background-color: rgb(196, 20, 64)
+}
+
+
+.options{
+  border-radius: 0;
+}
+
 .processall{
   top: 0;
+  margin-top: 10px;
   border-style: none; 
   font-size: 1rem;
   line-height: 1.1rem;
-  padding: 12px;
-  max-height: 100%;
+  padding: 12px 20px;
+  height: 3rem;
 }
 .processall:hover{
   background-color: rgb(196, 20, 64)
