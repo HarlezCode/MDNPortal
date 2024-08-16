@@ -120,11 +120,82 @@ export async function logout() : Promise<boolean>{
     return new Promise( (res) => {
         res(true)});
 }
+// returns true if d1 later than d2
+function compareDates(d1 : string, d2 : string){
+    const date1 = new Date(d1);
+    const date2 = new Date(d2);
+    console.log(date1, date2);
+    return date1 > date2;
+}
 
+async function validateAddRequest(data : ResType){
+    let res = await fetch("http://localhost:5000/api/mi/fetchdevice/?sn=" + data["serial"], {
+        headers: {
+            "Key": localStorage.getItem("Token") ?? ""
+        },
+        method: "GET"}
+    ).then((res : Response) =>{
+        return res.json()
+    })
+    res = res["data"];
+    if (res.length == 0){
+        return [false, data["id"], data["serial"]];
+    }
+    let latestEntry : {[index : string] : string} = res[0];
+    let latestdate = latestEntry["common.creation_date"];
+    if (res.length > 1){
+        for (let i = 0; i<res.length;i++){
+            if (compareDates(res[i]["common.creation_date"], latestdate)){
+                latestEntry = res[i];
+                latestdate = res[i]["common.creation_date"];
+            }
+        }
+    }
+    let reqDateString = (data["date"].split("/").reverse().join("-")) + "T" + data["time"];
+    console.log(reqDateString);
+    if (compareDates(reqDateString, latestdate)){
+        return [false, data["id"], data["serial"]]
+    }
+    return [true, data["id"], data["serial"]]
+}
 
+export async function processRequests(data : ResType[], force : boolean = false){
+    // validate that add new device is actually complete
+    const addRequests = [] as ResType[];
+    let tempData = JSON.parse(JSON.stringify(data));
+    const erroredData = [] as string[];
 
-export async function processRequests(data : ResType[]){
-    let val;
+    for (let i = 0; i < tempData.length;i++){
+        if (tempData[i]["requestType"] == "Add new device record"){
+            addRequests.push(tempData[i]);
+        }
+    }
+    if (addRequests.length > 0 && !force){
+        const Promises = addRequests.map(
+            async (val : ResType) =>{
+                return validateAddRequest(val);
+            }
+        )
+        const responses = await Promise.all(Promises);
+        const filter = [] as string[];
+        responses.forEach(
+            (val : (string | boolean)[]) =>{
+                if (!val[0]){
+                    filter.push(val[1] as string);
+                    erroredData.push(val[2] as string);
+                }
+            }
+        )
+        tempData = tempData.filter((val : ResType) => {
+            if (val["requestType"] != "Add new device record"){
+                return true;
+            } else if (filter.includes(val["id"])){
+                return false;
+            }
+            return true
+        })
+    }
+    let val : {[index : string] : any} = {};
     await fetch("http://localhost:5000/api/processrequests/", {
         method: "POST",
         headers: {
@@ -133,7 +204,7 @@ export async function processRequests(data : ResType[]){
             'Accept' : 'application/json', 
             'Content-Type' : 'application/json'
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(tempData)
     }).then(async (res : any) =>{
         await res.json().then((res : any) =>{
             val = res;
@@ -142,6 +213,11 @@ export async function processRequests(data : ResType[]){
         
     }).catch((error : any)=>console.log(error));
 
+    if (erroredData.length > 0){
+        alert("Adding devices with these serial numbers are not valid, turn on force if you want to mark as complete");
+        val["res"] = "error";
+        val["error"] = "Some of the results were not processed. Including SN(s): " + erroredData.join(", "); 
+    }
     return val;
 }
 

@@ -2,7 +2,7 @@ import React, { BaseSyntheticEvent } from 'react';
 import {fetchFromServerRaw, processRequests, rejectRequest} from './serverActions'
 import {useState, useRef, useEffect } from 'react';
 import { Navbar, Toaster } from './components';
-import { exportExcel } from './clientActions';
+import { exportExcel, exportCsvNewDevice } from './clientActions';
 import Loading from './loading';
 import './components.css';
 
@@ -22,6 +22,7 @@ export default function Dashboard(){
     const isProcess = useRef(false);
     const exportOption = useRef("current");
     const showOptions = useRef(false);
+    const forceProcess = useRef(false);
 
     useEffect(() =>{
         const temp = {} as {[index :string] : boolean};
@@ -124,7 +125,7 @@ export default function Dashboard(){
                         }   
                     });
                     
-                    processRequests(temp).then((res : any) =>{
+                    processRequests(temp, forceProcess.current).then((res : any) =>{
                         isProcess.current = false;
                         setRefresh(true);
                         if (res?.res == "error"){
@@ -135,7 +136,30 @@ export default function Dashboard(){
                         setTimeout(()=>{setToast("")}, 3000);
                     })
                 }}>Process Selected</button>
-                <button className='bg-red-500 dropdownitem' style={{zIndex: 100}}>
+                <button className='bg-red-500 dropdownitem' onClick={
+                    () => {
+                        const validData = [] as {[index : string] : any}[];
+                        Object.keys(cbState).forEach((val : string) => {
+                            if (cbState[val]){
+                                for (let i=0; i<tableData.length; i++){
+                                    if (tableData[i].id == val){
+                                        if (tableData[i].requestType == "Add new device record"){
+                                            validData.push(tableData[i]);
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        })
+                        if (validData.length == 0){
+                            setToast("This only exports data for adding new devices. Please select at least one valid request.")
+                            setTimeout(()=>{setToast("")}, 3000);
+                        }
+                        exportCsvNewDevice(validData);
+                        showOptions.current = !showOptions.current;
+                        setRefresh(true);
+                    }} 
+                    style={{zIndex: 100}}>
                     Export Selected Devices
                 </button>
                 </div>}
@@ -151,9 +175,12 @@ export default function Dashboard(){
                 <div className='flex'><h3 className='mr-2 mt-2'>Auto Refresh:</h3><input onChange={(e : any) =>{
                     autoRefresh.current = e.currentTarget.checked;
                     setRefresh(true);
-                }} type="checkbox"/>
+                }} type="checkbox" style={{marginRight:"20px"}}/>
+                <h3 className='mr-2 mt-2'>Force Process:</h3><input onChange={(e : any) =>{
+                    forceProcess.current = e.currentTarget.checked;
+                }} type="checkbox"/></div>
                 
-                </div>
+                
             </div>
             <table className='bg-rose-700 mx-auto pendingtable'>
                 <thead style={{position: 'sticky', top: 0}} className='bg-rose-700'>
@@ -225,7 +252,7 @@ export default function Dashboard(){
                                         if (tableData[i].id == key){
                                             const temp = [] as ResType[];
                                             temp.push(tableData[i]);
-                                            processRequests(temp).then((res : any)=>{
+                                            processRequests(temp, forceProcess.current).then((res : any)=>{
                                                 setRefresh(true);
                                                 isProcess.current = false;
                                                 console.log(res);

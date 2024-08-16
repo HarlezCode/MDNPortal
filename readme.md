@@ -29,9 +29,7 @@ apiPassword=something
 
 
 ## Todo
-- add enroll device export into excel/csv, check time of request and latest enrollment time if there is two records
-if so, warn the user that it will take the latest record. After export, clicking process will prompt the user to apply
-labels to new device record if there is one that fits the restrictions. Adding new devices CANNOT be bulk.
+- mailing system details (need for an interface?)
 - retire device api
 - Look for last location (mac checking)
 - Authentication
