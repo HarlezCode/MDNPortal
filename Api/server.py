@@ -14,6 +14,9 @@ app = Flask("Admin Api")
 # logging
 app.logger.setLevel(logging.INFO)
 logHandle = logging.FileHandler('server'+'.log')
+formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-8s From [%(threadName)s] [%(thread)d]: %(message)s',
+                              datefmt='%Y-%m-%d %H:%M:%S')
+logHandle.setFormatter(formatter)
 app.logger.addHandler(logHandle)
 
 # enable cross origin resource sharing
@@ -26,7 +29,7 @@ def defaultErrorHandler(f):
             val = await f(*args, **kwargs)
             return val
         except Exception as e:
-            app.logger.error("Error: "+repr(e))
+            app.logger.error(repr(e))
             return jsonify({"res": "error", "error": "An error has occurred"})
     return wrapper
 
@@ -39,7 +42,7 @@ async def rejectrequest():
     user = request.headers["From"]
     if not valid:
         return Responses.keyError
-
+    app.logger.info("Attempting to reject requests by " + user + " : " + str(data))
     cursor, conn = createCursor()
     cursor.execute(
         '''
@@ -49,13 +52,17 @@ async def rejectrequest():
     , (data["id"],))
     fetched = cursor.fetchone()
     if fetched == None:
+        app.logger.info("Error (Request does not exist on db) attempting to reject requests by " + user + " : " + str(data))
         return Responses.customError("Request does not exist on db.")
     fetched = list(fetched)
     fetched.pop(13) # pop id from result
 
     with updateReqMutex:
+
         for ind, key in enumerate(params):
             if data[key] != fetched[ind]:
+                app.logger.info(
+                    "Error (Request does not match db entry) attempting to reject requests by " + user + " : " + str(data))
                 return Responses.customError("Request does not match db entry.")
         cursor.execute('''
         UPDATE entries 
@@ -64,6 +71,7 @@ async def rejectrequest():
         processed=%s
         WHERE id=%s
         ''', (user,data['id']))
+    app.logger.info("Successfully rejected requests by " + user + " : " + str(data))
     return Responses.ok()
 
 
@@ -83,6 +91,7 @@ async def processrequests():
     with processMutex:
         pending = []
         repeatedCounts = []
+        app.logger.info("Processing requests by " + user + " : " + str(data))
         # check that requests are not complete already
         for i in data:
             if not checkProcessParams(i):
@@ -94,6 +103,7 @@ async def processrequests():
             ''', {"id" : i["id"]})
             entry = cursor.fetchone()
             if entry == None:
+                app.logger.warning("Processing requests encounter entry not exists in DB for " + str(entry))
                 conn.close()
                 return Responses.customError("Error: Entry does not exist in database!", [i])
             if entry[3] == "Completed":
@@ -101,6 +111,7 @@ async def processrequests():
             else:
                 for ind, key in enumerate(paramsProcess):
                     if i[key] != entry[ind]:
+                        app.logger.warning("Processing requests encounter DB mismatch for " + str(entry))
                         conn.close()
                         return Responses.customError("Error: Entry mismatch with database records!", [i])
                 pending.append(i)
@@ -117,7 +128,7 @@ async def processrequests():
                             WHERE 
                                 id=%(id)s
                         ''', {"id": i["id"], "status": "Completed", "processed" : user})
-
+        app.logger.info("Completed requests by " + user + " : " + str(data))
     return Responses.ok(repeatedCounts)
 
 
@@ -127,7 +138,6 @@ async def processrequests():
 async def addrequests():
     Responses = responses()
     data = request.json
-    print(data)
     valid = await validateClientKey(request.headers["Key"])
     if not valid:
         return Responses.keyError
@@ -142,6 +152,7 @@ async def addrequests():
     entries = []
     skippedEntries = []
     cursor, conn = createCursor()
+    app.logger.info("Attempting to add requests by " + request.headers["Fromuser"] + " : " + str(data))
     for i in data.keys():
         if i != "RequestType" and i != "Headers":
             entry = dict()
@@ -153,20 +164,23 @@ async def addrequests():
             entry["date"] = date.today().strftime("%d/%m/%Y")
             entry["time"] = datetime.now().strftime("%H:%M:%S")
             entry["status"] = "Pending"
+            entry["server"] = ''
             if req == "Add 4G VPN Profile" or req == "Remove 4G VPN profile" or req == "Remove Trial Certificate" or req == "Add Trial Certificate" or req == "Retire device": # type | uuid
-                if len(data[i]) < 2:
+                if len(data[i]) < 3:
                     skippedEntries.append(i)
                     continue
                 entry["device"] = data[i][0]
                 entry["uuid"] = data[i][1]
+                entry["server"] = data[i][2]
             elif req == "Add new device record": # type | clusterid
                 if len(data[i]) < 2:
                     skippedEntries.append(data[i])
                     continue
                 entry["device"] = data[i][0]
                 entry["cluster"] = data[i][1]
+
             elif req == "Add Webclip": # type | webclip | uuid
-                if len(data[i]) < 3 or not "wcp_" in data[i][1]:
+                if len(data[i]) < 4 or not "wcp_" in data[i][1]:
                     skippedEntries.append(data[i])
                     continue
 
@@ -181,36 +195,40 @@ async def addrequests():
                 entry["device"] = data[i][0]
                 entry["webclip"] = data[i][1]
                 entry["uuid"] = data[i][2]
+                entry["server"] = data[i][3]
 
             elif req == "App Update": # type | app | uuid
-                if len(data[i]) < 3 or not "app_" in data[i][1]:
+                if len(data[i]) < 4 or not "app_" in data[i][1]:
                     skippedEntries.append(data[i])
                     continue
                 entry["device"] = data[i][0]
                 entry["app"] = data[i][1][4:]
                 entry["uuid"] = data[i][2]
+                entry["server"] = data[i][3]
             elif req == "Change of Device Type": # type | change to | uuid
-                if len(data[i]) < 3:
+                if len(data[i]) < 4:
                     skippedEntries.append(data[i])
                     continue
                 entry["device"] = data[i][0]
                 entry["change"] = data[i][1]
                 entry["uuid"] = data[i][2]
+                entry["server"] = data[i][3]
             elif req == "Look for last location": # type | mac | uuid
-                if len(data[i]) < 3:
+                if len(data[i]) < 4:
                     skippedEntries.append(data[i])
                     continue
                 entry["device"] = data[i][0]
                 entry["mac"] = data[i][1]
                 entry["uuid"] = data[i][2]
+                entry["server"] = data[i][3]
             entries.append(entry)
 
-
+    app.logger.info("Successfully added requests by " + request.headers["Fromuser"] + " : " + str(entries))
     for i in entries:
         cursor.execute(
             '''
-            INSERT INTO entries(rtype, sn, clusterid, status, uid, cdate, dtype, totype, fuser, mac, app,webclip,timecreated,processed)
-            Values(%(requestType)s,%(serial)s,%(cluster)s,%(status)s,%(uuid)s,%(date)s,%(device)s,%(change)s,%(from)s,%(mac)s,%(app)s,%(webclip)s,%(time)s,'')
+            INSERT INTO entries(rtype, sn, clusterid, status, uid, cdate, dtype, totype, fuser, mac, app,webclip,timecreated,processed,server)
+            Values(%(requestType)s,%(serial)s,%(cluster)s,%(status)s,%(uuid)s,%(date)s,%(device)s,%(change)s,%(from)s,%(mac)s,%(app)s,%(webclip)s,%(time)s,'',%(server)s)
             '''
         , i)
 
@@ -285,9 +303,10 @@ async def getrequests():
         items.append(dict())
         for index, key in enumerate(params):
             items[-1][key] = i[index]
-        items[-1]["id"] = i[len(i)-2]
-        items[-1]["processed"] = i[-1]
-    print(items)
+        # if you added/removed another column in the db, you have to change the index here
+        items[-1]["id"] = i[len(i)-3]
+        items[-1]["processed"] = i[-2]
+
     return Responses.ok(items)
 
 @app.route('/api/updatewebclip/', methods=["POST"], endpoint='updateWebclip')
@@ -303,18 +322,21 @@ async def updateWebclip():
         return Responses.defaultError
 
     key = data["data"]["id"]
-
+    user = request.headers["From"]
     cursor, conn = createCursor()
+    app.logger.info("Attempting to update webclips by" + user + " : " + str(data['data']))
     cursor.execute('''
     SELECT * FROM webclips
     WHERE id=%(id)s
     ''', {"id": key})
     fetched = cursor.fetchone()
     if fetched == None:
+        app.logger.warning("Error (Webclip does not exist on DB) when updating webclips by" + user + " : " + str(data['data']))
         return Responses.customError("Entry id does not exist on database!")
     item = webclipToDict(fetched)
     for i in item.keys():
         if data["data"][i] != item[i]:
+            app.logger.warning("Error (item mismatch with entry on DB) when updating webclips by" + user + " : " + str(data['data']))
             return Responses.customError("Item mismatch with entry in database!")
     with updateMutex:
         if data["to"] == "active":
@@ -334,6 +356,7 @@ async def updateWebclip():
             DELETE FROM webclips
             WHERE id=%s            
             ''', (key,))
+    app.logger.info("Successfully updated webclips by" + user + " : " + str(data['data']))
     return Responses.ok()
 
 @app.route('/api/addwebclips/', methods=["POST"])
@@ -343,6 +366,7 @@ async def addWebclips():
     valid = await validateKey(request.headers["Key"])
     if not valid:
         return Responses.keyError
+    user = request.headers["From"]
     data = request.json
     models = data["models"].split(',')
     dtypes = data["dtypes"].split(',')
@@ -360,6 +384,8 @@ async def addWebclips():
     if len(webclip) > 100:
         return Responses.defaultError
     # slap into db
+    app.logger.info("Attempting to add webclips by " + user + " : " + str(data))
+
     entries = combinations([models, dtypes,platform,clusters,oses,webclip])
     cursor, conn = createCursor()
     for i in entries:
@@ -368,6 +394,7 @@ async def addWebclips():
             %s,%s,%s,%s,%s,%s,'active'
         )
         ''', tuple(i))
+    app.logger.info("Successfully added webclips by " + user + " : " + str(data))
     return Responses.ok()
 
 # this is the client api
@@ -437,7 +464,9 @@ async def fetchMiApps():
     # if not valid:
     #     return Responses.keyError
     uuid = request.args.to_dict()["uuid"]
-
+    server = request.args.to_dict()["server"]
+    if not validateServer(server):
+        return Responses.customError("Invalid server.")
     if len(uuid) == 0:
         return Responses.customError("Please enter a uuid.")
 
@@ -445,7 +474,7 @@ async def fetchMiApps():
     spaceID = env["adminDeviceSpaceId"]
     user = env["apiUsername"]
     password = env["apiPassword"]
-    r = requests.get(settings.domain+"api/v2/devices/appinventory",auth=(user,password), params={"adminDeviceSpaceId" : spaceID, 'deviceUuids' : uuid}).json()
+    r = requests.get(server+"api/v2/devices/appinventory",auth=(user,password), params={"adminDeviceSpaceId" : spaceID, 'deviceUuids' : uuid}).json()
 
     return Responses.ok(r["results"][0]["appInventory"])
 
@@ -459,25 +488,29 @@ async def fetchDeviceLabels():
     #     return Responses.keyError
     args = request.args.to_dict()
     uuid = args["uuid"]
+    server = args["server"]
+
+    if server == '':
+        server = settings.domain
+    if not validateServer(server):
+        return Responses.customError("Invalid server.")
     env = loadEnv()
     spaceID = env["adminDeviceSpaceId"]
     user = env["apiUsername"]
     password = env["apiPassword"]
-
-    r = requests.get(settings.domain + "api/v2/devices", auth=(user, password),
+    r = requests.get(server + "api/v2/devices", auth=(user, password),
                      params={"adminDeviceSpaceId": spaceID, "fields": "common.uuid",
                              "query": 'common.uuid="' + uuid + '"'}).json()["results"]
     if len(r) == 0:
         return Responses.customError("The uuid is not in the records.")
-    print(uuid)
-    r = requests.get(settings.domain + "api/v2/devices/" + uuid + "/labels",auth=(user, password), params={"adminDeviceSpaceId": spaceID}).json()["results"]
+
+    r = requests.get(server + "api/v2/devices/" + uuid + "/labels",auth=(user, password), params={"adminDeviceSpaceId": spaceID}).json()["results"]
 
     return Responses.ok(r)
 
 @app.route('/api/mi/fetchdevice/', methods=["GET"], endpoint='fetchMi')
 @defaultErrorHandler
 async def fetchMi():
-    print("recieved")
     Responses = responses()
     settings = apiSettings()
     # valid = await validateKey(request.headers["Key"])
@@ -491,6 +524,18 @@ async def fetchMi():
     password = env["apiPassword"]
     r = requests.get(settings.domain + 'api/v2/devices', auth=(user, password),params={"adminDeviceSpaceId" : spaceID, "fields": settings.getSearchFields(),"query" : 'common.SerialNumber="' + sn + '"'}).json()["results"]
     filtered = [x for x in r if x["common.status"] == "ACTIVE"]
+    for i in filtered:
+        i["server"] = settings.domain
+    if len(filtered) == 0:
+        # check fallback servers
+        for i in settings.fallback:
+            r = requests.get(i + 'api/v2/devices', auth=(user, password),
+                             params={"adminDeviceSpaceId": spaceID, "fields": settings.getSearchFields(),
+                                     "query": 'common.SerialNumber="' + sn + '"'}).json()["results"]
+            newfiltered =  [x for x in r if x["common.status"] == "ACTIVE"]
+            for v in newfiltered:
+                v["server"] = i
+            filtered += newfiltered
 
     return Responses.ok(filtered)
 
@@ -498,81 +543,98 @@ async def fetchMi():
 async def removeLabelMi():
     settings = apiSettings()
     Responses = responses()
-    valid = await validateKey(request.headers["Key"])
-    if not valid:
-        return Responses.keyError
+    # valid = await validateKey(request.headers["Key"])
+    # if not valid:
+    #     return Responses.keyError
+    # user = request.headers["From"]
+    # app.logger.info("Attempting to remove label by " + user + " : " + request.args.to_dict()["labelname"] + " on " + request.args.to_dict()["uuid"])
+
     args = request.args.to_dict()
     uuid = args["uuid"]
     labelid = args["labelid"]
     labelname = args["labelname"]
+    server = args["server"]
+    if not validateServer(server):
+        return Responses.customError("Invalid server.")
+
     env = loadEnv()
     spaceID = env["adminDeviceSpaceId"]
     user = env["apiUsername"]
     password = env["apiPassword"]
     labelid = int(labelid)  # throws error if id is not int
-    r = requests.get(settings.domain + "api/v2/labels/" + str(labelid), auth=(user, password),
+    r = requests.get(server + "api/v2/labels/" + str(labelid), auth=(user, password),
                      params={"adminDeviceSpaceId": spaceID}).json()["results"]
     if r["name"] != labelname:
+        # app.logger.warning("Error (Label id does not match label name!) attempting to remove label by " + user + " : " + labelname + " on " + uuid)
         return Responses.customError("Label id does not match label name!")
 
-    r = requests.get(settings.domain + "api/v2/devices", auth=(user, password),
+    r = requests.get(server + "api/v2/devices", auth=(user, password),
                      params={"adminDeviceSpaceId": spaceID, "fields": "common.uuid",
                              "query": 'common.uuid="' + uuid + '"'}).json()["results"]
     if len(r) == 0:
+        # app.logger.warning("Error (The uuid is not in the records.) attempting to remove label by " + user + " : " + labelname + " on " + uuid)
         return Responses.customError("The uuid is not in the records.")
 
-    r = requests.get(settings.domain + "api/v2/devices/" + uuid + "/labels", auth=(user, password),params={"adminDeviceSpaceId" : spaceID}).json()["results"]
+    r = requests.get(server + "api/v2/devices/" + uuid + "/labels", auth=(user, password),params={"adminDeviceSpaceId" : spaceID}).json()["results"]
     found = False
     for i in r:
         if i["name"] == labelname and i["id"] == str(labelid):
             found = True
             break
     if not found:
+        # app.logger.warning("Error (The label does not exists on device with this uuid) attempting to remove label by " + user + " : " + labelname + " on " + uuid)
         return Responses.customError("The label does not exists on device with this uuid.", [labelname, uuid])
 
     # Removing label here
-    # r = requests.put(settings.domain + "api/v2/devices/labels/" + labelname + "/remove", auth=(user, password),params={"adminDeviceSpaceId" : spaceID}, data={
-    #     "deviceUuids" : [uuid]
-    # }).json()
-    # if (not r["successful"]):
-    #     return Responses.customError("Failed to remove label for this uuid.", [labelname, uuid])
-    #
-    # return Responses.ok(r)
-
-    return Responses.ok()
+    r = requests.put(server + "api/v2/devices/labels/" + labelname + "/remove", auth=(user, password),params={"adminDeviceSpaceId" : spaceID}, json={
+        "deviceUuids" : [uuid]
+    }, headers={"Content-Type": "application/json"}).json()
+    if (not r["successful"]):
+        # app.logger.warning("Error (Failed to remove label for this uuid.) attempting to remove label by " + user + " : " + labelname + " on " + uuid)
+        return Responses.customError("Failed to remove label for this uuid.", [labelname, uuid])
+    # app.logger.info("Successfully removed label by " + user + " : " + labelname + " on " + uuid)
+    return Responses.ok(r)
 
 @app.route('/api/mi/addlabel/', methods=["GET"], endpoint='addLabelMi')
 async def addLabelMi():
     settings = apiSettings()
     Responses = responses()
-    valid = await validateKey(request.headers["Key"])
-    if not valid:
-        return Responses.keyError
+    # valid = await validateKey(request.headers["Key"])
+    # if not valid:
+    #     return Responses.keyError
+    # user = request.headers["From"]
+    # app.logger.info("Attempting to add label by " + user + " : " + request.args.to_dict()["labelname"] + " on " + request.args.to_dict()["uuid"])
     args = request.args.to_dict()
     uuid = args["uuid"]
     labelid = args["labelid"]
     labelname = args["labelname"]
+    server = args["server"]
+    if not validateServer(server):
+        return Responses.customError("Invalid server.")
     env = loadEnv()
     spaceID = env["adminDeviceSpaceId"]
     user = env["apiUsername"]
     password = env["apiPassword"]
     labelid = int(labelid) # throws error if id is not int
-    r = requests.get(settings.domain + "api/v2/labels/" + str(labelid), auth=(user, password), params={"adminDeviceSpaceId": spaceID}).json()["results"]
+    r = requests.get(server + "api/v2/labels/" + str(labelid), auth=(user, password), params={"adminDeviceSpaceId": spaceID}).json()["results"]
     if r["name"] != labelname:
+        # app.logger.warning("Error (Label id does not match label name!) attempting to remove label by " + user + " : " + labelname + " on " + uuid)
         return Responses.customError("Label id does not match label name!")
 
-    r = requests.get(settings.domain + "api/v2/devices", auth=(user, password),params={"adminDeviceSpaceId" : spaceID, "fields": "common.uuid" ,"query" : 'common.uuid="' + uuid + '"'}).json()["results"]
+    r = requests.get(server + "api/v2/devices", auth=(user, password),params={"adminDeviceSpaceId" : spaceID, "fields": "common.uuid" ,"query" : 'common.uuid="' + uuid + '"'}).json()["results"]
     if len(r) == 0:
+        # app.logger.warning("Error (The uuid is not in the records) attempting to remove label by " + user + " : " + labelname + " on " + uuid)
         return Responses.customError("The uuid is not in the records.")
 
     # appying label here
-    # r = requests.put(settings.domain+"api/v2/devices/labels/" + labelname + "/add", auth=(user, password), params={"adminDeviceSpaceId" : spaceID}, data={"deviceUuids" : [uuid]}).json()
-    # if not r["successful"]:
-    #     return Responses.customError("Error in updating this label on this uuid.", [labelname, uuid])
-    #
-    # return Responses.ok(r)
+    r = requests.put(server+"api/v2/devices/labels/" + labelname + "/add", auth=(user, password), params={"adminDeviceSpaceId" : spaceID}, json={"deviceUuids" : [uuid]}, headers={"Content-Type" : "application/json"}).json()
+    if not r["successful"]:
+        # app.logger.warning("Error (Error in adding this label on this uuid.) attempting to remove label by " + user + " : " + labelname + " on " + uuid)
+        return Responses.customError("Error in adding this label on this uuid.", [labelname, uuid])
 
-    return Responses.ok()
+    # app.logger.info("Successfully added label by " + user + " : " + labelname + " on " + uuid)
+    return Responses.ok(r)
+
 
 # closes connection automatically, get the connection using createCursor() method
 @app.teardown_appcontext

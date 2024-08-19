@@ -9,7 +9,7 @@ async function submitFunc(data : {[index : string]: string[]}, close : () => voi
     //for add/remove trial cert, need to check for existence and warn the user correspondingly.
     // prepare api call here as well
 
-    await fetch("http://localhost:5000/api/addrequests/", {headers : {"key" : localStorage.getItem("Token") ?? "", "fromuser" : "user_" + localStorage.getItem("Token"), 'Accept' : 'application/json', 'Content-Type' : 'application/json'}, method : "POST", body : JSON.stringify(data)}).then((res) =>{
+    await fetch("http://localhost:5000/api/addrequests/", {headers : {"key" : localStorage.getItem("Token") ?? "","fromuser" : "user_" + localStorage.getItem("Token"), 'Accept' : 'application/json', 'Content-Type' : 'application/json'}, method : "POST", body : JSON.stringify(data)}).then((res) =>{
         res.json().then((res) =>{
             if (res["res"] == "error"){
                 nav("../response?res=error&data="+res["error"])

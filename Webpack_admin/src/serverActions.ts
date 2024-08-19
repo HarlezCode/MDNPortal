@@ -24,7 +24,8 @@ export async function addWebclips(e : FormEvent<HTMLFormElement>){
         headers: {
             "Key": localStorage.getItem("Token") ?? "", // temp val
             'Accept' : 'application/json', 
-            'Content-Type' : 'application/json'
+            'Content-Type' : 'application/json',
+            "From": localStorage.getItem("Token") + "_User"
         },
         body: JSON.stringify({
             "models" : e.currentTarget.model.value,
@@ -36,10 +37,11 @@ export async function addWebclips(e : FormEvent<HTMLFormElement>){
         })
     }).then((res : Response) =>{
         return res.json()
-    }).catch((error : any)=>console.log(error));
+    }).catch((error : any)=>{console.log(error); alert("Server not responding."); return false;});
 
     if (res.status == "error"){
         alert(JSON.stringify(res["error"]));
+        return false;
     }
 
     return true;
@@ -64,7 +66,8 @@ export async function updateWebclip(item : ResType, update : string){
         headers: {
             "Key": localStorage.getItem("Token") ?? "", // temp val
             'Accept' : 'application/json', 
-            'Content-Type' : 'application/json'
+            'Content-Type' : 'application/json',
+            "From": localStorage.getItem("Token") + "_User"
         },
         body: JSON.stringify({
             "data" : item,
@@ -72,7 +75,7 @@ export async function updateWebclip(item : ResType, update : string){
         })
     }).then((res : Response) =>{
         return res.json()
-    }).catch((error : any)=>console.log(error));;
+    }).catch((error : any)=>{console.log(error); return new Promise(res=>res({res : "error"}))});;
 
     if (!res){
         return {res : "error"};
@@ -108,7 +111,7 @@ export async function fetchWebclips(active : string){
         }
     }).then((res : Response) =>{
         return res.json()
-    }).catch((error : any)=>console.log(error));
+    }).catch((error : any)=>{console.log(error); return new Promise(res=>res([]))});
     
     if (!res){
         return [];
@@ -136,7 +139,11 @@ async function validateAddRequest(data : ResType){
         method: "GET"}
     ).then((res : Response) =>{
         return res.json()
-    })
+    }).catch((err) =>{
+        console.log(err);
+        alert("Server not responding.");
+        return [false, data["id"], data["serial"]];
+    });
     res = res["data"];
     if (res.length == 0){
         return [false, data["id"], data["serial"]];
@@ -247,11 +254,12 @@ export async function fetchFromServerRaw({rtype='',sn='',stat='Pending',uid='', 
         }
     }).then((res : Response) =>{
         return res.json().then((res : any) =>{
+            console.log(res);
             return new Promise((resolve : any) =>{
                 resolve(res.data ?? [] as ResType[]);
             })
         })
-    }).catch((error : any)=>console.log(error));
+    }).catch((error : any)=>{console.log(error); return new Promise((res)=>res([] as ResType[]))});
 
     if (!res){
         return [] as ResType[];
@@ -288,7 +296,7 @@ export async function fetchFromServer(e : FormEvent<HTMLFormElement>){
                 resolve(res.data ?? []);
             })
         })
-    }).catch((error : any)=>console.log(error));;
+    }).catch((error : any)=>{console.log(error); return new Promise((res)=>res([] as ResType[]))});
     if (!res){
         return [] as ResType[];
     }

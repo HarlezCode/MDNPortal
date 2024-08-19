@@ -267,7 +267,7 @@ export default function Webclips(){
                                                 isProcess.current = false;
                                                 setRefresh(true);
                                                 if ((res.res ?? "error") == "error"){
-                                                    setToast("An error has occured.");
+                                                    setToast("An error has occured. Most likely server not responsive.");
                                                 } else {
                                                     setToast("Webclip deleted.");
                                                 }
@@ -293,7 +293,7 @@ export default function Webclips(){
                                                 isProcess.current=false;
                                                 setRefresh(true);
                                                 if ((res.res ?? "error") == "error"){
-                                                    setToast("An error has occured.");
+                                                    setToast("An error has occured. Most likely server not responsive.");
                                                 } else {
                                                     setToast("Webclip deactivated.");
                                                 }
@@ -351,7 +351,7 @@ export default function Webclips(){
                                                     isProcess.current=false; 
                                                     setRefresh(true);
                                                     if ((res.res ?? "error") == "error"){
-                                                        setToast("An error has occured.");
+                                                        setToast("An error has occured. Most likely server not responsive.");
                                                     } else {
                                                         setToast("Webclip deleted.");
                                                     }
@@ -379,7 +379,7 @@ export default function Webclips(){
                                                 isProcess.current = false;
                                                 setRefresh(true);
                                                 if ((res.res ?? "error") == "error"){
-                                                    setToast("An error has occured.");
+                                                    setToast("An error has occured. Most likely server not responsive.");
                                                 } else {
                                                     setToast("Webclip activated.");
                                                 }

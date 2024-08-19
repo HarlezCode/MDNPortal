@@ -17,7 +17,7 @@ export async function getDeviceInfo(sn : string){
                 res({
                     "res" : "error",
                     "data": [],
-                    "error": "Something went wrong"
+                    "error": "Server not responding"
                 })
             })
         }
@@ -28,13 +28,13 @@ export async function getDeviceInfo(sn : string){
     if (res["data"].length == 0){
         return {"data" : [], "error": ("No ACTIVE entries found for this SN on mobile iron: " + sn)};
     } else if (res["data"].length > 1){
-        return {"data" : [], "error" : ("Multipy ACTIVE entries found for this SN on mobile iron: " + sn)}
+        return {"data" : [], "error" : ("Multiple ACTIVE entries found for this SN on mobile iron: " + sn)}
     }
     return {"data" : res["data"], "error" : ""}
 }
 
-export async function getDeviceType(uuid : string){
-    const res = await fetch("http://localhost:5000/api/mi/getdevicelabels/?uuid=" +uuid, {
+export async function getDeviceType(uuid : string, server : string){
+    const res = await fetch("http://localhost:5000/api/mi/getdevicelabels/?uuid=" +uuid + "&server="+server, {
         headers: {
             "Key": localStorage.getItem("Token") ?? ""
         },
@@ -70,14 +70,15 @@ export async function fetchWebClips(metadata : {[index : string] : string}, data
     }).then((res : Response) =>{
         return res.json();
     }).catch(()=>{
-        return new Promise<string[]>((res)=>{res([] as string[])});
+        return new Promise<{[index : string] : string[] | string}>((res)=>{
+            res({"data" : [] as string[], "res" : "error", "error" : "Server not responding."})});
     }); 
 
-    return {"data" : webres["data"], "error" : ""} ?? {"data" : [], "error": ""};
+    return {"data" : webres["data"], "res" : webres["res"], "error" : webres["error"]} ?? {"data" : [], "error": ""};
 }
 
-export async function fetchApps(uuid : string){
-    const res = await fetch("http://localhost:5000/api/mi/fetchapps/?uuid="+ uuid).then(
+export async function fetchApps(uuid : string, server : string){
+    const res = await fetch("http://localhost:5000/api/mi/fetchapps/?uuid="+ uuid + "&server=" + server).then(
         (res : Response) =>{
             return res.json();
         }

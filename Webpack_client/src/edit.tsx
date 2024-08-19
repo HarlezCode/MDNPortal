@@ -7,9 +7,13 @@ import Adding from "./Adding";
 import { resetLocalStorage } from "./clientActions";
 
 export default function Edit(){
+    // data states
     const [tableData, setData] = useState({"Headers" : [] as string[]} as {[index : string]: string[]});
     const [metaData, setMetaData] = useState({} as {[index : string] : {[index : string] : string}});
     const [update, setUpdate] = useState(true);
+    const possibleWC = useRef({} as {[index : string] : string[]});
+    const possibleApps = useRef({} as {[index : string] : string[]});
+    // ui states
     const [isPreview, setPreview] = useState(false);
     const [isAdding, setAdding] = useState(false);
     const [checkboxStates, setCheckboxStates] = useState({} as {[index : string] : boolean});
@@ -19,10 +23,8 @@ export default function Edit(){
     const numberOfDevices = useRef(0);
     const prevTarget = useRef("");
     const shiftKeyDown = useRef(false);
-    const possibleWC = useRef({} as {[index : string] : string[]});
-    const possibleApps = useRef({} as {[index : string] : string[]});
+    
     useEffect(() => {
-        console.log("here:", tableData);
         const tempCheckboxes = JSON.parse(JSON.stringify(checkboxStates));
         let updated = false;
         for (let i =0; i< Object.keys(tableData).length; i++){
@@ -36,6 +38,7 @@ export default function Edit(){
         if (updated)
             setCheckboxStates(tempCheckboxes);
     }, [tableData]);
+
     useEffect(()=>{
         if (update == false){
             return;
@@ -55,10 +58,12 @@ export default function Edit(){
         switch (req){
             case "Retire device":
                 temp["Headers"].push("Type");
+                temp["Headers"].push("Server");
                 setData(temp);
                 break;
             case "Add 4G VPN Profile": 
                 temp["Headers"].push("Type");
+                temp["Headers"].push("Server");
                 setData(temp);
                 break;
             case "Add new device record":
@@ -68,37 +73,45 @@ export default function Edit(){
                 break;
             case "Add Trial Certificate":
                 temp["Headers"].push("Type");
+                temp["Headers"].push("Server");
                 setData(temp);
                 break;
             case "Add Webclip":
                 temp["Headers"].push("Type");
                 temp["Headers"].push("Webclip");
+                temp["Headers"].push("Server");
                 setData(temp);
                 break;
             case "App Update":
                 temp["Headers"].push("Type");
                 temp["Headers"].push("App");
+                temp["Headers"].push("Server");
                 setData(temp);
                 break;
             case "Change of Device Type":
                 temp["Headers"].push("Type");
                 temp["Headers"].push("Changing To");
+                temp["Headers"].push("Server");
                 setData(temp);
                 break;
             case "Look for last location":
                 temp["Headers"].push("Type");
                 temp["Headers"].push("MAC");
+                temp["Headers"].push("Server");
                 setData(temp);
                 break;
             case "Remove 4G VPN profile":
                 temp["Headers"].push("Type");
+                temp["Headers"].push("Server");
                 setData(temp);
                 break;
             case "Remove Trial Certificate":
                 temp["Headers"].push("Type");
+                temp["Headers"].push("Server");
                 setData(temp);
                 break;
         }
+        
         setUpdate(false);
     }, [update, nav]);
     
@@ -453,7 +466,7 @@ export default function Edit(){
                                 } else if (item.startsWith("app_")){
                                     return(
                                         <td style={{fontWeight: 400, paddingLeft:10, paddingRight: 10, paddingTop:2, paddingBottom:2, userSelect: 'none'}} key={String(i)}>
-                                            <AppSelector uuid={metaData[key]["common.uuid"] ?? ""} tabledata={tableData} sn={key} possibleApps={possibleApps} />
+                                            <AppSelector uuid={metaData[key]["common.uuid"] ?? ""} tabledata={tableData} sn={key} possibleApps={possibleApps}/>
                                         </td>
                                     )
                                 } else if (item.startsWith("uuid_")){

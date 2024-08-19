@@ -207,6 +207,7 @@ export default function Dashboard(){
                     {
                         tableData.map((item : ResType, i : number) => {
                             return <tr key={i} id={item.id + "_row"} className={'trhove ' + ((cbState[item.id] ?? false) ? 'trhover': '')} onClick={(e : any) =>{
+                                console.log(tableData[i]);
                                 const key = e.currentTarget.id.slice(0, e.currentTarget.id.length-4) ?? ""
                                 const temp = JSON.parse(JSON.stringify(cbState));
                                 console.log(cbState);

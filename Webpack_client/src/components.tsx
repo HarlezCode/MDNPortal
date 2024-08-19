@@ -102,14 +102,13 @@ export function WebClipSelector({sn, tabledata, possibleWC, metadata} : {sn : st
 
 
 export function AppSelector({sn, tabledata, possibleApps, uuid} : {sn : string, tabledata : {[index : string] : string[]}, possibleApps : React.MutableRefObject<{[index : string] : string[]}>, uuid : string}){
-    //fetch from mobileiron here for each sn using a server action
     const [apps, setApps] = useState([] as string[]);
     const snNumber = useRef(sn);
     useEffect(() =>{
         if (sn != "" && apps.length == 0){
             snNumber.current  = sn;
             const fetchData = async () =>{
-                await fetchApps(uuid).then((res : string[])=>{
+                await fetchApps(uuid, tabledata[sn][3]).then((res : string[])=>{
                     possibleApps.current[snNumber.current] = [];
                     if (res.length == 0){
                         setApps(["No Apps!"]);
@@ -144,13 +143,13 @@ export function AppSelector({sn, tabledata, possibleApps, uuid} : {sn : string, 
 
             }
         }}>
-            {!(apps[0]??"").startsWith("app_") &&
+            {!(apps[0] ?? "").startsWith("app_") &&
             <option value="" >{apps[0]}</option>}
 
 
-            {(apps[0]??"").startsWith("app_") &&
-            <option value="" >select</option>}
-            {(apps[0]??"").startsWith("app_") && apps.map((item : string) =>{
+            {(apps[0] ?? "").startsWith("app_") &&
+            <option value = "" >select</option>}
+            {(apps[0] ?? "").startsWith("app_") && apps.map((item : string) =>{
                 if (item.length >= 4){
                     return(
                         <option className="bg-slate-700" value={item} key={sn +" "+item}>

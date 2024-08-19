@@ -51,7 +51,8 @@ CREATE TABLE entries(
     WEBCLIP VARCHAR(255),
     TIMECREATED VARCHAR(255),
     ID SERIAL PRIMARY KEY,
-    PROCESSED TEXT  
+    PROCESSED TEXT,
+    SERVER VARCHAR(255)  
     );
     ''')
     cursor.execute('''

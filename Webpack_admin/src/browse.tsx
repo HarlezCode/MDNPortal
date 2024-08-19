@@ -65,7 +65,7 @@ export default function Browse(){
                     await fetchFromServer(e).then((res : ResType[]) => {
                         setData(res);
                         if (res.length == 0){
-                            setToast("No data found.");
+                            setToast("No data found. Please check if the server is online.");
                         } else {
                             setToast("Successfully fetched data.")
                         }

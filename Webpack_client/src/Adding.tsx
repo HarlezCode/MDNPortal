@@ -2,7 +2,13 @@ import React from 'react'
 import {useState, FormEvent, useRef} from 'react'
 import './components.css'
 import { getDeviceInfo, getDeviceType } from './serverActions';
-const clusters = [
+/* Possible improvements
+- Enforce a limit to the number of possible requests at a time 
+since if the number of devices added is > n, it may overload the server.
+This can be achieved by simply splitting up the fetch requests into batches of fixed size q.
+*/
+
+const clusters : string[] = [
     'HKEC',
     'HKWC',
     'KEC',
@@ -23,8 +29,6 @@ async function llfetch(reqType : string, count : number[], entries : string, err
         return;
     }
 
-    console.log(newData);
-    console.log(entries);
     if (reqType == "Look for last location"){
         if (entry.length != 2){
             return;
@@ -35,7 +39,7 @@ async function llfetch(reqType : string, count : number[], entries : string, err
             return;
         }
 
-        const devicetype = await getDeviceType(res["data"][0]["common.uuid"]);
+        const devicetype = await getDeviceType(res["data"][0]["common.uuid"], res["data"][0]["server"]);
         if (devicetype == "error"){
             errors.push("Could not get identify device type for " + entry[0]);
             return;
@@ -45,12 +49,18 @@ async function llfetch(reqType : string, count : number[], entries : string, err
         // validate mac address here
         newData[entry[0]].push(entry[1]);
         newData[entry[0]].push("uuid_" + res["data"][0]["common.uuid"]);
+        newData[entry[0]].push(res["data"][0]["server"]);
         newMetaData[entries] = res["data"][0];
     } else {
         if (entry.length != 3){
             return;
         }
         // validate dtype & cluster
+        
+        for (let i=0; i < 3; i++){
+            entry[i] = entry[i].trim();
+        }
+
         if (!clusters.includes(entry[1].toUpperCase())){
             errors.push("Invalid Cluster For SN: " + entry[0]);
             return;
@@ -83,7 +93,7 @@ async function nmfetch(reqtype : string, count : number[],entry : string, errors
         return;
     }
 
-    const devicetype = await getDeviceType(res["data"][0]["common.uuid"]);
+    const devicetype = await getDeviceType(res["data"][0]["common.uuid"], res["data"][0]["server"]);
     if (devicetype == "error"){
         errors.push("Could not get identify device type for " + entry);
         return;
@@ -102,6 +112,7 @@ async function nmfetch(reqtype : string, count : number[],entry : string, errors
     }
     if (reqtype != "Add new device record"){
         newData[entry].push("uuid_" + res["data"][0]["common.uuid"]);
+        newData[entry].push(res["data"][0]["server"]);
     }
 
     count[0]++;
@@ -125,6 +136,9 @@ export default function Adding({reqtype, close, tabledata, settabledata, count, 
                     for (let i =0; i<arr.length;i++){
                         arr[i] = arr[i].trim();
                         const temp = arr[i].split(",");
+                        for (let i = 0; i < temp.length; i++){
+                            temp[i] = temp[i].trim();
+                        }
                         if (reqtype == "Look for last location"){
                             if (temp.length == 2){
                                 if (temp[0].length > 0 && temp[1].length > 0 && !curString.includes(temp[0])){

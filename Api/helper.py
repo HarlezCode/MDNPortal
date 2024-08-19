@@ -127,7 +127,8 @@ def combinations(ls):
 
 class apiSettings:
     def __init__(self):
-        self.domain = 'https://emmdev2.ha.org.hk/'
+        self.domain = 'https://emmdev2.ha.org.hk/' # your main server eg. emmdev1
+        self.fallback = [] # add your older servers here, eg. emmdev
         self.fetchDeviceFields = [
             'common.uuid',
             'common.model',
@@ -136,6 +137,83 @@ class apiSettings:
             'common.creation_date',
             'common.status'
         ]
+
+        '''
+        If you have a backup server say mdm, you have to add another type here eg.
+        {
+             self.domain : {
+                "default" : {},
+                "CORP" : {
+                    'add' : {},
+                    'remove' : {}
+                },
+                ...
+            },
+            self.fallback[0] : {
+                "default" :{},
+                "CORP" : {
+                    'add' : {},
+                    'remove' : {}
+                },
+                ...    
+        
+            }
+        }
+        '''
+        self.typelabels = {
+            self.domain : {
+                "default" : {
+                    "12" : "11. WiFi BCK - CORP COPE",
+                    "13" : "2. Filter - CORP",
+                    "10" : "11. Public Apps VPP",
+                    "3" : "1. Filter - Assigned",
+                    "16" : "2. Profile - CORP 2018 (A1)",
+                    "202"  : "11. Fonts - 2024"
+                },
+                "CORP" : {
+                    "add" : {
+                        "14" : "2. Global Proxy - CORP",
+                        "18" : "2. WiFi 256 - CORP",
+                        "65" : "66. Web Clip - VIS portal",
+                        "4" : "1. Registration Completed"
+                    },
+                    "remove" : {
+
+                    }
+                },
+                "COPE" : {
+                    "add" : {
+                        "19" : "3. Filter - COPE",
+                        "20" : "3. Global Proxy - COPE",
+                        "21" : "3. Profile - COPE 2018 (A2)",
+                        "23" : "3. WiFi 256 - COPE",
+                        "84" : "66. Web Clip - DPMS",
+                        "4" : "1. Registration Completed"
+                    },
+                    "remove" : {
+                        "13" : "2. Filter - CORP",
+                        "16" : "2. Profile - CORP 2018 (A1)"
+                    }
+                },
+                "OUD" : {
+                    "add" : {
+                        "25" : "4. Filter - OUD",
+                        "28" : "4. WiFi BCK - OUD",
+                        "27" : "4. WiFi 256 - OUD",
+                        "26" : "4. Profile - OUD 2018",
+                        "24" : "4. App - MI App VPP",
+                        "4" : "1. Registration Completed"
+                    },
+                    "remove" : {
+                        "12": "11. WiFi BCK - CORP COPE",
+                        "13": "2. Filter - CORP",
+                        "10": "11. Public Apps VPP",
+                        "16": "2. Profile - CORP 2018 (A1)",
+                        "202": "11. Fonts - 2024"
+                    }
+                }
+            }
+        }
     def getSearchFields(self):
         return ",".join(self.fetchDeviceFields)
 class responses:
@@ -162,7 +240,14 @@ class responses:
             "data": data,
             "error": ""
         })
-
+def validateServer(url):
+    settings = apiSettings()
+    if url == settings.domain:
+        return True
+    for i in settings.fallback:
+        if i == url:
+            return True
+    return False
 if __name__ == "__main__":
     a = [["a","b","c"],[],["1","2","3"],[],['q','w','e']]
     b = [[],[]]
