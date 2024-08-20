@@ -65,7 +65,8 @@ CREATE TABLE entries(
     webclip text,
     id SERIAL primary key,
     active varchar(12),
-    server text
+    server text,
+    labelids text 
     );
     ''')
     conn.close()
