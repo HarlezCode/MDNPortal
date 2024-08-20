@@ -13,14 +13,14 @@ export function Confirmation({children, text} : {children : any, text : string})
             !isGuard && <>{children}</>
         }
         { isGuard && <>
-        <button className='ml mrs bg-rose-600 border-none trhovexl' onClick={()=>{setConfirm(true)}}>{text} Confirm</button>
+        <button className='ml mrs bg-rose-600 border-none trhovexl' style={{width: "100px"}} onClick={()=>{setConfirm(true)}}>{text} Confirm</button>
         {
             isConfirm && isGuard &&
         <div>
-            <div className='coverdiv' style={{top: "-13%", left: "-18%", position: "absolute", zIndex: "2"}}></div>
-            <div className='loadingcard bg-slate-400' style={{zIndex: "3", position: "absolute", left: "60%", top : "35%"}}>
+            <div className='coverdiv' style={{top: "0", left: "0", position: "fixed", zIndex: "2"}}></div>
+            <div className='loadingcard bg-slate-400' style={{zIndex: "3", position: "absolute", left: "40%", top: "40%"}}>
                 <h1 style={{fontSize: "2.5rem"}}>Confirm?</h1>
-                <button className='ml mrs bg-rose-600 border-none trhovexl' onClick={(e : React.MouseEvent<HTMLButtonElement>)=>{
+                <button className='ml mrs bg-rose-600 border-none trhovexl'  onClick={()=>{
                     setConfirm(false);
                     setGuard(false);
                     }}>

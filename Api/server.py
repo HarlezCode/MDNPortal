@@ -74,6 +74,65 @@ async def rejectrequest():
     app.logger.info("Successfully rejected requests by " + user + " : " + str(data))
     return Responses.ok()
 
+# make some helper functions
+def addAllLabels(labels, uuid, server, logger):
+    env = loadEnv()
+    spaceID = env["adminDeviceSpaceId"]
+    user = env["apiUsername"]
+    password = env["apiPassword"]
+    finished = []
+    if not validateServer(server):
+        return finished
+    for i in labels:
+        r = requests.get(server + "api/v2/labels/" + str(i), auth=(user, password), params={"adminDeviceSpaceId": spaceID}).json()["results"]
+        if r["name"] != labels[i]:
+            logger.info("Failed to apply label " + labels[i] + " to " + uuid + " because name does not match.")
+            continue
+
+        r = requests.get(server + "api/v2/devices", auth=(user, password),params={"adminDeviceSpaceId" : spaceID, "fields": "common.uuid" ,"query" : 'common.uuid="' + uuid + '"'}).json()["results"]
+        if len(r) == 0:
+            logger.info("Failed to apply label " + labels[i] + " to " + uuid + " serial number does not exist.")
+            continue
+        # appying label here
+        r = requests.put(server+"api/v2/devices/labels/" + labels[i] + "/add", auth=(user, password), params={"adminDeviceSpaceId" : spaceID}, json={"deviceUuids" : [uuid]}, headers={"Content-Type" : "application/json"}).json()
+        if (not r["successful"]):
+            logger.info("Failed to apply label " + labels[i] + " to " + uuid + " MI Error.")
+            continue
+        finished.append((i, labels[i]))
+    return finished
+
+
+def removeAllLabels(labels, uuid, server, logger):
+    env = loadEnv()
+    spaceID = env["adminDeviceSpaceId"]
+    user = env["apiUsername"]
+    password = env["apiPassword"]
+    finished = []
+    if not validateServer(server):
+        return finished
+    for i in labels:
+        r = requests.get(server + "api/v2/labels/" + str(i), auth=(user, password),
+                         params={"adminDeviceSpaceId": spaceID}).json()["results"]
+        if r["name"] != labels[i]:
+            logger.info("Failed to remove label " + labels[i] + " to " + uuid + " because name does not match.")
+            continue
+
+        r = requests.get(server + "api/v2/devices", auth=(user, password),
+                         params={"adminDeviceSpaceId": spaceID, "fields": "common.uuid",
+                                 "query": 'common.uuid="' + uuid + '"'}).json()["results"]
+        if len(r) == 0:
+            logger.info("Failed to remove label " + labels[i] + " to " + uuid + " serial number does not exist.")
+            continue
+        # appying label here
+        r = requests.put(server + "api/v2/devices/labels/" + labels[i] + "/remove", auth=(user, password),
+                         params={"adminDeviceSpaceId": spaceID}, json={"deviceUuids": [uuid]},
+                         headers={"Content-Type": "application/json"}).json()
+        if (not r["successful"]):
+            logger.info("Failed to remove label " + labels[i] + " to " + uuid + " MI Error.")
+            continue
+        finished.append((i, labels[i]))
+    return finished
+
 
 @app.route('/api/processrequests/', methods=['POST'], endpoint='processrequests')
 @defaultErrorHandler
@@ -463,7 +522,6 @@ async def getWebclips():
 
     if (data["model"] == '' or data["dtype"] == '' or data["platform"] == '' or not 'os' in data.keys() or data["server"] == ''):
         return Responses.defaultError
-    print(data)
     cursor, conn = createCursor()
     cursor.execute('''
             SELECT * FROM webclips 

@@ -1,5 +1,5 @@
 import React from "react";
-import { Navbar, Toaster} from "./components";
+import { Confirmation, Navbar, Toaster} from "./components";
 import {useRef, useState, useEffect} from 'react';
 import {fetchWebclips, updateWebclip} from "./serverActions"
 import Loading from "./loading";
@@ -253,7 +253,7 @@ export default function Webclips(){
                                     }
                                     setCb(temp);
                                 }}/></td>
-                                <td style={{padding:"0.5rem",width:"2.5rem"}}><button className='bg-rose-600 defaultbutton' name={item.id + "_delbut"} onClick={(e : any)=>{
+                                <td style={{padding:"0.5rem",width:"2.5rem"}}><Confirmation text="Delete"><button className='bg-rose-600 defaultbutton' name={item.id + "_delbut"} onClick={(e : any)=>{
                                     if (isProcess.current){
                                         return;
                                     }
@@ -279,7 +279,7 @@ export default function Webclips(){
                                     if (!found){
                                         isProcess.current = false;
                                     }
-                                }}>Delete</button></td>
+                                }}>Delete</button></Confirmation></td>
                                  <td style={{padding:"0.5rem",width:"2.5rem"}}><button className='bg-rose-600 defaultbutton' name={item.id + "_deabut"} onClick={(e : any)=>{
                                     if (isProcess.current){
                                         return;
@@ -338,7 +338,7 @@ export default function Webclips(){
                                         }
                                         setInactiveCb(temp);
                                     }}/></td>
-                                    <td style={{padding:"0.5rem",width:"2.5rem"}}><button className='bg-rose-600 defaultbutton' name={item.id + "_delbut"} onClick={(e : any)=>{
+                                    <td style={{padding:"0.5rem",width:"2.5rem"}}><Confirmation text="Delete"><button className='bg-rose-600 defaultbutton' name={item.id + "_delbut"} onClick={(e : any)=>{
                                         if (isProcess.current){
                                             return;
                                         }
@@ -364,7 +364,7 @@ export default function Webclips(){
                                         if (!found){
                                             isProcess.current = false;
                                         }
-                                    }}>Delete</button></td>
+                                    }}>Delete</button></Confirmation></td>
                                      <td style={{padding:"0.5rem",width:"2.5rem"}}><button className='bg-rose-600 defaultbutton' name={item.id + "_actbut"} onClick={(e : any)=>{
                                     if (isProcess.current){
                                         return;
