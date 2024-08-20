@@ -115,12 +115,31 @@ async def processrequests():
                         conn.close()
                         return Responses.customError("Error: Entry mismatch with database records!", [i])
                 pending.append(i)
-        # based on different request do api calls here
-
-
+        # based on different request do api calls here &
         # finish request by setting pending -> complete
         for i in pending:
-            cursor.execute('''
+            if i["requestType"] == "Add 4G VPN Profile":
+                pass
+            elif i["requestType"] == "Add new device record":
+                pass
+            elif i["requestType"] == "Add Trial Certificate":
+                pass
+            elif i["requestType"] == "Add Webclip":
+                pass
+            elif i["requestType"] == "App Update":
+                pass
+            elif i["requestType"] == "Change of Device Type":
+                pass
+            elif i["requestType"] == "Look for last location":
+                pass
+            elif i["requestType"] == "Remove 4G VPN profile":
+                pass
+            elif i["requestType"] == "Remove Trial Certificate":
+                pass
+            elif i["requestType"] == "Retire device":
+                pass
+
+        cursor.execute('''
                             UPDATE entries
                             SET
                                 status=%(status)s,
@@ -128,6 +147,10 @@ async def processrequests():
                             WHERE 
                                 id=%(id)s
                         ''', {"id": i["id"], "status": "Completed", "processed" : user})
+
+        # put your email api here the user is the email
+
+        # logging
         app.logger.info("Completed requests by " + user + " : " + str(data))
     return Responses.ok(repeatedCounts)
 
@@ -165,7 +188,8 @@ async def addrequests():
             entry["time"] = datetime.now().strftime("%H:%M:%S")
             entry["status"] = "Pending"
             entry["server"] = ''
-            if req == "Add 4G VPN Profile" or req == "Remove 4G VPN profile" or req == "Remove Trial Certificate" or req == "Add Trial Certificate" or req == "Retire device": # type | uuid
+            if (req == "Add 4G VPN Profile" or req == "Remove 4G VPN profile" or req == "Remove Trial Certificate" or
+                    req == "Add Trial Certificate" or req == "Retire device"): # type | uuid
                 if len(data[i]) < 3:
                     skippedEntries.append(i)
                     continue
@@ -366,14 +390,27 @@ async def addWebclips():
     valid = await validateKey(request.headers["Key"])
     if not valid:
         return Responses.keyError
+
+    settings = apiSettings()
+    env = loadEnv()
+    spaceID = env["adminDeviceSpaceId"]
+    username = env["apiUsername"]
+    password = env["apiPassword"]
     user = request.headers["From"]
     data = request.json
     models = data["models"].split(',')
     dtypes = data["dtypes"].split(',')
     platform = data["pt"].split(',')
-    clusters = data['clstr'].split(',')
+    labels = data['labels']
+    labelids = data["labelids"]
     oses = data['oses'].split(',')
     webclip = [data['webclip']]
+    server = settings.domain
+    if int(data["server"]) == 0:
+        if len(settings.fallback) == 0:
+            return Responses.customError("No fallback server.")
+        server = settings.fallback[int(data["server"])-1]
+
 
     # validate data here
     if len(dtypes) > 3:
@@ -383,17 +420,33 @@ async def addWebclips():
             return Responses.defaultError
     if len(webclip) > 100:
         return Responses.defaultError
+
+
+    # verify labels
+    labellist = labels.split(",")
+    for v, i in enumerate(labelids.split(",")):
+        print(server + "api/v2/labels/" + i)
+        r = requests.get(server + "api/v2/labels/" + i, auth=(username, password),
+                         params={"adminDeviceSpaceId": spaceID}).json()
+        if r == {}:
+            return Responses.customError("Label id does not exist on mi server.",[i])
+        if r["results"]["name"] != labellist[v]:
+            return Responses.customError("Label name does not match id provided.", [i])
+
     # slap into db
     app.logger.info("Attempting to add webclips by " + user + " : " + str(data))
 
-    entries = combinations([models, dtypes,platform,clusters,oses,webclip])
+
+    entries = combinations([models, dtypes,platform,oses,webclip])
     cursor, conn = createCursor()
     for i in entries:
+        entry = i[:3] + [labels] + i[3:] + [server] + [labelids]
+        print(entry)
         cursor.execute('''
-        INSERT INTO  webclips(model, dtype, platform, clstr, os, webclip, active) VALUES(
-            %s,%s,%s,%s,%s,%s,'active'
+        INSERT INTO  webclips(model, dtype, platform, labels, os, webclip, active, server, labelids) VALUES(
+            %s,%s,%s,%s,%s,%s,'active',%s,%s
         )
-        ''', tuple(i))
+        ''', tuple(entry))
     app.logger.info("Successfully added webclips by " + user + " : " + str(data))
     return Responses.ok()
 
@@ -407,9 +460,10 @@ async def getWebclips():
         return Responses.keyError
 
     data = request.args.to_dict()
-    if (data["model"] == '' or data["dtype"] == '' or data["platform"] == '' or not 'os' in data.keys()):
-        return Responses.defaultError
 
+    if (data["model"] == '' or data["dtype"] == '' or data["platform"] == '' or not 'os' in data.keys() or data["server"] == ''):
+        return Responses.defaultError
+    print(data)
     cursor, conn = createCursor()
     cursor.execute('''
             SELECT * FROM webclips 
@@ -418,7 +472,7 @@ async def getWebclips():
             (dtype=%(dtype)s) AND
             (%(platform)s LIKE platform OR platform='') AND
             (os=%(os)s OR %(os)s = '' OR os='') AND
-            (clstr=%(clstr)s OR %(clstr)s='' OR clstr='')
+            (server=%(server)s)
         ''', data)
     fetched = cursor.fetchone()
     listofitems = []
@@ -538,7 +592,9 @@ async def fetchMi():
             filtered += newfiltered
 
     return Responses.ok(filtered)
-
+'''
+Removes a label from a device
+'''
 @app.route('/api/mi/removelabel/', methods=["GET"], endpoint='removeLabelMi')
 async def removeLabelMi():
     settings = apiSettings()
@@ -594,7 +650,9 @@ async def removeLabelMi():
         return Responses.customError("Failed to remove label for this uuid.", [labelname, uuid])
     # app.logger.info("Successfully removed label by " + user + " : " + labelname + " on " + uuid)
     return Responses.ok(r)
-
+'''
+Adds label to device
+'''
 @app.route('/api/mi/addlabel/', methods=["GET"], endpoint='addLabelMi')
 async def addLabelMi():
     settings = apiSettings()

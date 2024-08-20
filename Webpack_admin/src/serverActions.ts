@@ -15,9 +15,24 @@ export async function addWebclips(e : FormEvent<HTMLFormElement>){
         dtype = dtype.slice(0,dtype.length-1);
     }
     if (dtype.length == 0){
-        alert("Please select atleast 1 device type.")
+        alert("Please select at least 1 device type.")
         return false;
     }
+
+    // trim values
+    const labels = e.currentTarget.labels.value.split(",");
+    for (let i=0; i< labels.length; i++){
+        labels[i] = labels[i].trim();
+    }
+    const labelids = e.currentTarget.labelids.value.split(",");
+    for (let i=0; i < labelids.length; i++){
+        labelids[i] = labelids[i].trim();
+    }
+
+    const cleanLabels = labels.join(",");
+    const cleanLabelids = labelids.join(",");
+
+
 
     const res = await fetch("http://localhost:5000/api/addwebclips/", {
         method: "POST",
@@ -31,9 +46,12 @@ export async function addWebclips(e : FormEvent<HTMLFormElement>){
             "models" : e.currentTarget.model.value,
             "dtypes": dtype,
             "pt": e.currentTarget.platform.value,
-            "clstr": e.currentTarget.cluster.value,
+            "labels": cleanLabels,
             "oses": e.currentTarget.os.value,
-            "webclip": e.currentTarget.webclip.value 
+            "webclip": e.currentTarget.webclip.value,
+            "server": e.currentTarget.server.value,
+            "labelids": cleanLabelids
+
         })
     }).then((res : Response) =>{
         return res.json()

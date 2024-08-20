@@ -1,7 +1,7 @@
 import React, { BaseSyntheticEvent } from 'react';
 import {fetchFromServerRaw, processRequests, rejectRequest} from './serverActions'
 import {useState, useRef, useEffect } from 'react';
-import { Navbar, Toaster } from './components';
+import { Confirmation, Navbar, Toaster } from './components';
 import { exportExcel, exportCsvNewDevice } from './clientActions';
 import Loading from './loading';
 import './components.css';
@@ -22,6 +22,7 @@ export default function Dashboard(){
     const isProcess = useRef(false);
     const exportOption = useRef("current");
     const showOptions = useRef(false);
+    const processConfirm = useRef(false);
     const forceProcess = useRef(false);
 
     useEffect(() =>{
@@ -107,35 +108,48 @@ export default function Dashboard(){
                         setRefresh(true);
                     }
                 }>Options</button>
-                {showOptions.current && <div style={{display: "grid", zIndex: 100}}>
-                <button className='bg-red-500 dropdownitem'  style={{zIndex: 100}} onClick={()=>{
-                    if (isProcess.current){
-                        return;
+                {showOptions.current && <div style={{display: "grid", zIndex: "1"}}>
+                    {
+                        processConfirm.current == false && <button className='bg-red-500 dropdownitem'  style={{zIndex: "1"}} onClick={
+                            () => { processConfirm.current = true;setRefresh(true);}
+                        }>Process Selected</button>
                     }
-                    const temp = [] as ResType[];
-                    isProcess.current = true;
-                    setRefresh(true);
-                    Object.keys(cbState).forEach((val : string) =>{
-                        if (cbState[val]){
-                            for (let i =0; i<tableData.length;i++){
-                                if (tableData[i].id == val){
-                                    temp.push(JSON.parse(JSON.stringify(tableData[i])));
-                                }
-                            }
-                        }   
-                    });
-                    
-                    processRequests(temp, forceProcess.current).then((res : any) =>{
-                        isProcess.current = false;
-                        setRefresh(true);
-                        if (res?.res == "error"){
-                            setToast(res.error);
-                        } else if (res?.res == "ok"){
-                            setToast("Requests were successfully processed.");
-                        }
-                        setTimeout(()=>{setToast("")}, 3000);
-                    })
-                }}>Process Selected</button>
+                    {
+                        processConfirm.current == true && <>
+                            <div style={{display : "flex"}}>
+                                <button className='bg-red-500 dropdownitem' onClick={()=>{processConfirm.current=false;setRefresh(true);}}>No</button>
+                                <button className='bg-red-500 dropdownitem' onClick={()=>{
+                                    if (isProcess.current){
+                                        return;
+                                    }
+                                    const temp = [] as ResType[];
+                                    isProcess.current = true;
+                                    setRefresh(true);
+                                    Object.keys(cbState).forEach((val : string) =>{
+                                        if (cbState[val]){
+                                            for (let i =0; i<tableData.length;i++){
+                                                if (tableData[i].id == val){
+                                                    temp.push(JSON.parse(JSON.stringify(tableData[i])));
+                                                }
+                                            }
+                                        }   
+                                    });
+                                    
+                                    processRequests(temp, forceProcess.current).then((res : any) =>{
+                                        isProcess.current = false;
+                                        setRefresh(true);
+                                        if (res?.res == "error"){
+                                            setToast(res.error);
+                                        } else if (res?.res == "ok"){
+                                            setToast("Requests were successfully processed.");
+                                        }
+                                        setTimeout(()=>{setToast("")}, 3000);
+                                    })
+                                    processConfirm.current = false;
+                }}>Yes</button>
+                            </div>
+                        </>
+                    }
                 <button className='bg-red-500 dropdownitem' onClick={
                     () => {
                         const validData = [] as {[index : string] : any}[];
@@ -158,8 +172,9 @@ export default function Dashboard(){
                         exportCsvNewDevice(validData);
                         showOptions.current = !showOptions.current;
                         setRefresh(true);
+                        processConfirm.current = false;
                     }} 
-                    style={{zIndex: 100}}>
+                    style={{zIndex: 1}}>
                     Export Selected Devices
                 </button>
                 </div>}
@@ -216,7 +231,7 @@ export default function Dashboard(){
                                 }
                                 setCb(temp);
                             }}>
-                                <td><button className='ml mrs bg-rose-600 border-none trhovexl' name={item.id + "_rejbut"} onClick={(e : any) =>{
+                                <td><Confirmation text="Reject"><button className='ml mrs bg-rose-600 border-none trhovexl' name={item.id + "_rejbut"} onClick={(e : any) =>{
 
                                     if (isProcess.current){
                                         return;
@@ -242,8 +257,8 @@ export default function Dashboard(){
                                     }
 
 
-                                }}>Reject</button></td>
-                                <td><button className='bg-rose-600 bg-rose-600 border-none trhovexl' name={item.id + "_but"} onClick={(e : React.MouseEvent<HTMLButtonElement>)=>{
+                                }}>Reject</button></Confirmation></td>
+                                <td><Confirmation text='Process'><button className='bg-rose-600 bg-rose-600 border-none trhovexl' name={item.id + "_but"} onClick={(e : React.MouseEvent<HTMLButtonElement>)=>{
                                     if (isProcess.current){
                                         return;
                                     }
@@ -268,7 +283,7 @@ export default function Dashboard(){
                                         }
                                     }
 
-                                }}>Process</button></td>
+                                }}>Process</button></Confirmation></td>
                                 <td><input type='checkbox' name={item.id + "_check"} checked={cbState[item.id] ?? false} onChange={(e : any) =>{
                                     const key = e.currentTarget.name.slice(0, e.currentTarget.name.length-6) ?? "";
                                     const temp = JSON.parse(JSON.stringify(cbState));

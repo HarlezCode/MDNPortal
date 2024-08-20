@@ -1,8 +1,42 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, SyntheticEvent } from 'react';
 import { useNavigate } from "react-router-dom";
 import { logout } from "./serverActions";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {Toast} from 'bootstrap';
+
+export function Confirmation({children, text} : {children : any, text : string}){
+    const [isConfirm, setConfirm] = useState(false);
+    const [isGuard, setGuard] = useState(true);
+    console.log(children);
+    return (<>
+        {
+            !isGuard && <>{children}</>
+        }
+        { isGuard && <>
+        <button className='ml mrs bg-rose-600 border-none trhovexl' onClick={()=>{setConfirm(true)}}>{text} Confirm</button>
+        {
+            isConfirm && isGuard &&
+        <div>
+            <div className='coverdiv' style={{top: "-13%", left: "-18%", position: "absolute", zIndex: "2"}}></div>
+            <div className='loadingcard bg-slate-400' style={{zIndex: "3", position: "absolute", left: "60%", top : "35%"}}>
+                <h1 style={{fontSize: "2.5rem"}}>Confirm?</h1>
+                <button className='ml mrs bg-rose-600 border-none trhovexl' onClick={(e : React.MouseEvent<HTMLButtonElement>)=>{
+                    setConfirm(false);
+                    setGuard(false);
+                    }}>
+                    Yes
+                </button>
+                <button className='ml mrs bg-rose-600 border-none trhovexl' onClick={()=>{setConfirm(false)}}>
+                    No
+                </button>
+            </div>
+            
+        </div>
+        } </>}
+    </>)
+}
+
+
 
 export function Toaster({show, msg} : {show : boolean, msg : string}){
     const toastRef = useRef<HTMLDivElement>(null);

@@ -228,7 +228,7 @@ export default function Webclips(){
                         <th>Model</th>
                         <th>Device Type</th>
                         <th>Platform</th>
-                        <th>Cluster</th>
+                        <th>Labels</th>
                         <th>OS</th>
                         <th>Webclip</th>
                     </tr>
@@ -313,7 +313,7 @@ export default function Webclips(){
                                 <ScrollableTD>{item.model}</ScrollableTD>
                                 <ScrollableTD>{item.dtype}</ScrollableTD>
                                 <ScrollableTD>{item.platform}</ScrollableTD>
-                                <ScrollableTD>{item.clstr}</ScrollableTD>
+                                <ScrollableTD>{item.labels}</ScrollableTD>
                                 <ScrollableTD>{item.os}</ScrollableTD>
                                 <ScrollableTD>{item.webclip}</ScrollableTD>
                             </tr>
@@ -397,7 +397,7 @@ export default function Webclips(){
                                     <ScrollableTD>{item.model}</ScrollableTD>
                                     <ScrollableTD>{item.dtype}</ScrollableTD>
                                     <ScrollableTD>{item.platform}</ScrollableTD>
-                                    <ScrollableTD>{item.clstr}</ScrollableTD>
+                                    <ScrollableTD>{item.labels}</ScrollableTD>
                                     <ScrollableTD>{item.os}</ScrollableTD>
                                     <ScrollableTD>{item.webclip}</ScrollableTD>
                                 </tr>

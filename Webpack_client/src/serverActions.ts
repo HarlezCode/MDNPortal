@@ -59,7 +59,7 @@ export async function fetchWebClips(metadata : {[index : string] : string}, data
         "dtype" : data[0] ?? "",
         "platform" : metadata["common.platform"] ?? "",
         "os": metadata["common.os"] ?? "",
-        "clstr": metadata["clstr"] ?? ""
+        "server": data[3] ?? ""
     };
 
     const webres = await fetch("http://localhost:5000/api/getwebclips/?" + new URLSearchParams(fetchParams).toString(), {

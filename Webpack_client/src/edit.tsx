@@ -285,9 +285,9 @@ export default function Edit(){
                                 options.push(val);
                         });
                         return (<>{
-                            options.map((val : string) =>{
+                            options.map((val : string, id : number) =>{
                                 return (
-                                    <option style={{userSelect: "none"}} value={val}>
+                                    <option key={id} style={{userSelect: "none"}} value={val}>
                                         {val.slice(4)}
                                     </option>
                                 )
@@ -344,9 +344,9 @@ export default function Edit(){
                                 options.push(val);
                         });
                         return (<>{
-                            options.map((val : string) =>{
+                            options.map((val : string, id : number) =>{
                                 return (
-                                    <option style={{userSelect: "none"}} value={val}>
+                                    <option key={id} style={{userSelect: "none"}} value={val}>
                                         {val.slice(4)}
                                     </option>
                                 )

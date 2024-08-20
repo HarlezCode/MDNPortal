@@ -38,6 +38,7 @@ export function WebClipSelector({sn, tabledata, possibleWC, metadata} : {sn : st
             snNumber.current = sn;
             const fetchData = async () =>{
                 await fetchWebClips(metadata, tabledata[sn]).then((res)=>{
+                    console.log(res);
                     if (res["error"] == ""){
                         if (res["data"].length == 0){
                             setWebClips(["error","No webclips"]);

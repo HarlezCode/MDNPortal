@@ -33,9 +33,17 @@ export default function AddWebclips({close, setRefresh} : {close : (val : boolea
                         <div className=''><h3 className="h3default">Cope </h3><input className="bg-white" name="COPE" type="checkbox"/></div>
                     </div>
                     <div className="flex justify-center mbdiv"><h3 className="h3default">Platform: </h3><input className="defaultinputs2" name="platform" placeholder="Eg. IOS, ANDROID"/></div>
-                    <div className="flex justify-center mbdiv"><h3 className="h3default">Cluster: </h3><input className="defaultinputs2" name="cluster" placeholder="Eg. 1, 2"/></div>
                     <div className="flex justify-center mbdiv"><h3 className="h3default">Os versions: </h3><input className="defaultinputs2" name="os" placeholder="Only use for one platform"/></div>
                     <div className="flex justify-center mbdiv"><h3 className="h3default">Webclip: </h3><input required={true} className="defaultinputs2" name="webclip" placeholder="Eg. Clip1"/></div>
+                    <div className="flex justify-center mbdiv"><h3 className="h3default">Labels: </h3><input required={true} className="defaultinputs2" name="labels" placeholder="Eg. label 1, label 2"/></div>
+                    <div className="flex justify-center mbdiv"><h3 className="h3default">Labelids: </h3><input required={true} className="defaultinputs2" name="labelids" placeholder="Eg. 32,53"/></div>
+                    <div className='flex justify-center mbdiv'>
+                        <h3 className='h3default' style={{marginRight: "1rem"}}>Server: </h3>
+                        <select name="server" className='mbdiv' style={{paddingRight: "2rem", color: "black"}}>
+                            <option value='1' style={{color: "black"}}>MDM-1</option>
+                            <option value='0' style={{color: "black"}}>MDM</option>
+                        </select>
+                    </div>
                     <button className="bg-rose-500 defaultbutton">Submit</button>
                 </div>
                 <h3 className="relative">* If a field is left empty it will not use that field as requirement.</h3>

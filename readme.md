@@ -31,6 +31,9 @@ apiPassword=something
 ## Todo
 - mailing system details (need for an interface?)
 - retire device api
-- Look for last location (mac checking)
+- Look for last location (mac checking)  *Might abandon
 - Authentication
 - update msg
+- mi tools (low priority)
+- mailing api
+- process requests by applying labels

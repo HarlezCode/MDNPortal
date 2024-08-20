@@ -60,11 +60,12 @@ CREATE TABLE entries(
     MODEL text,
     dtype varchar(255),
     platform text,
-    clstr text,
+    labels text,
     os varchar(255),
     webclip text,
     id SERIAL primary key,
-    active varchar(12)
+    active varchar(12),
+    server text
     );
     ''')
     conn.close()
