@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, SyntheticEvent } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { logout } from "./serverActions";
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -7,7 +7,7 @@ import {Toast} from 'bootstrap';
 export function Confirmation({children, text} : {children : any, text : string}){
     const [isConfirm, setConfirm] = useState(false);
     const [isGuard, setGuard] = useState(true);
-    console.log(children);
+    console.log(isGuard, isConfirm);
     return (<>
         {
             !isGuard && <>{children}</>
@@ -18,7 +18,7 @@ export function Confirmation({children, text} : {children : any, text : string})
             isConfirm && isGuard &&
         <div>
             <div className='coverdiv' style={{top: "0", left: "0", position: "fixed", zIndex: "2"}}></div>
-            <div className='loadingcard bg-slate-400' style={{zIndex: "3", position: "absolute", left: "40%", top: "40%"}}>
+            <div className='loadingcard bg-slate-400' style={{zIndex: "3", position: "absolute", left: "35vw", top: "40%"}}>
                 <h1 style={{fontSize: "2.5rem"}}>Confirm?</h1>
                 <button className='ml mrs bg-rose-600 border-none trhovexl'  onClick={()=>{
                     setConfirm(false);

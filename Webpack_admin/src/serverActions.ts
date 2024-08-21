@@ -186,6 +186,7 @@ async function validateAddRequest(data : ResType){
 
 export async function processRequests(data : ResType[], force : boolean = false){
     // validate that add new device is actually complete
+    console.log(data);
     const addRequests = [] as ResType[];
     let tempData = JSON.parse(JSON.stringify(data));
     const erroredData = [] as string[];

@@ -5,7 +5,7 @@ import logging
 from datetime import date, datetime
 import threading
 import requests
-
+import queue
 
 processMutex = threading.Lock()
 updateMutex = threading.Lock()
@@ -75,20 +75,48 @@ async def rejectrequest():
     return Responses.ok()
 
 # make some helper functions
+# async target func
+def addLabelTarget(server, user, password, spaceID, uuid, label, labelid, logger, queue):
+    r = requests.get(server + "api/v2/labels/" + str(labelid), auth=(user, password),
+                     params={"adminDeviceSpaceId": spaceID}).json()["results"]
+    if r["name"] != label:
+        logger.info("Failed to apply label " + label + " to " + uuid + " because name does not match.")
+        queue.put(False)
+
+    r = requests.get(server + "api/v2/devices", auth=(user, password),
+                     params={"adminDeviceSpaceId": spaceID, "fields": "common.uuid",
+                             "query": 'common.uuid="' + uuid + '"'}).json()["results"]
+    if len(r) == 0:
+        logger.info("Failed to apply label " + label + " to " + uuid + " uuid does not exist.")
+        queue.put(False)
+    # appying label here
+    r = requests.put(server + "api/v2/devices/labels/" + label + "/add", auth=(user, password),
+                     params={"adminDeviceSpaceId": spaceID}, json={"deviceUuids": [uuid]},
+                     headers={"Content-Type": "application/json"}).json()
+    if (not r["successful"]):
+        logger.info("Failed to apply label " + label + " to " + uuid + " MI Error.")
+        queue.put(False)
+    queue.put(True)
 def addAllLabels(labels, uuid, server, logger):
     env = loadEnv()
     spaceID = env["adminDeviceSpaceId"]
     user = env["apiUsername"]
     password = env["apiPassword"]
-    finished = []
     if not validateServer(server):
-        return finished
+        return []
+    # async implementation
+    q = queue.Queue()
+    threads = []
     for i in labels:
-        r = requests.get(server + "api/v2/labels/" + str(i), auth=(user, password), params={"adminDeviceSpaceId": spaceID}).json()["results"]
-        if r["name"] != labels[i]:
-            logger.info("Failed to apply label " + labels[i] + " to " + uuid + " because name does not match.")
-            continue
+        t = threading.Thread(target=addLabelTarget,args=[server,user,password,spaceID,uuid,labels[i],i,logger,q])
+        t.start()
+        threads.append(t)
+    for t in threads:
+        t.join()
 
+    '''
+    # non-async implementation
+    for i in labels:
         r = requests.get(server + "api/v2/devices", auth=(user, password),params={"adminDeviceSpaceId" : spaceID, "fields": "common.uuid" ,"query" : 'common.uuid="' + uuid + '"'}).json()["results"]
         if len(r) == 0:
             logger.info("Failed to apply label " + labels[i] + " to " + uuid + " serial number does not exist.")
@@ -99,38 +127,70 @@ def addAllLabels(labels, uuid, server, logger):
             logger.info("Failed to apply label " + labels[i] + " to " + uuid + " MI Error.")
             continue
         finished.append((i, labels[i]))
+    '''
+
+    finished = [(list(labels.keys())[i], labels[list(labels.keys())[i]]) for i in range(len(threads)) if q.get()]
+    print(finished)
+
     return finished
 
 
+def removeLabelTarget(server, user, password, spaceID, uuid, label, labelid, logger, queue):
+    r = requests.get(server + "api/v2/labels/" + str(labelid), auth=(user, password),
+                     params={"adminDeviceSpaceId": spaceID}).json()["results"]
+    if r["name"] != label:
+        logger.info("Failed to remove label " + label + " to " + uuid + " because name does not match.")
+        queue.put(False)
+
+    r = requests.get(server + "api/v2/devices", auth=(user, password),
+                     params={"adminDeviceSpaceId": spaceID, "fields": "common.uuid",
+                             "query": 'common.uuid="' + uuid + '"'}).json()["results"]
+    if len(r) == 0:
+        logger.info("Failed to remove label " + label + " to " + uuid + " uuid does not exist.")
+        queue.put(False)
+    # appying label here
+    r = requests.put(server + "api/v2/devices/labels/" + label + "/remove", auth=(user, password),
+                     params={"adminDeviceSpaceId": spaceID}, json={"deviceUuids": [uuid]},
+                     headers={"Content-Type": "application/json"}).json()
+    if (not r["successful"]):
+        logger.info("Failed to remove label " + label + " to " + uuid + " MI Error.")
+        queue.put(False)
+    queue.put(True)
 def removeAllLabels(labels, uuid, server, logger):
     env = loadEnv()
     spaceID = env["adminDeviceSpaceId"]
     user = env["apiUsername"]
     password = env["apiPassword"]
-    finished = []
     if not validateServer(server):
-        return finished
+        return []
+    # async implementation
+    q = queue.Queue()
+    threads = []
     for i in labels:
-        r = requests.get(server + "api/v2/labels/" + str(i), auth=(user, password),
-                         params={"adminDeviceSpaceId": spaceID}).json()["results"]
-        if r["name"] != labels[i]:
-            logger.info("Failed to remove label " + labels[i] + " to " + uuid + " because name does not match.")
-            continue
+        t = threading.Thread(target=removeLabelTarget,args=[server,user,password,spaceID,uuid,labels[i],i,logger,q])
+        t.start()
+        threads.append(t)
+    for t in threads:
+        t.join()
 
-        r = requests.get(server + "api/v2/devices", auth=(user, password),
-                         params={"adminDeviceSpaceId": spaceID, "fields": "common.uuid",
-                                 "query": 'common.uuid="' + uuid + '"'}).json()["results"]
+    '''
+    # non-async implementation
+    for i in labels:
+        r = requests.get(server + "api/v2/devices", auth=(user, password),params={"adminDeviceSpaceId" : spaceID, "fields": "common.uuid" ,"query" : 'common.uuid="' + uuid + '"'}).json()["results"]
         if len(r) == 0:
             logger.info("Failed to remove label " + labels[i] + " to " + uuid + " serial number does not exist.")
             continue
         # appying label here
-        r = requests.put(server + "api/v2/devices/labels/" + labels[i] + "/remove", auth=(user, password),
-                         params={"adminDeviceSpaceId": spaceID}, json={"deviceUuids": [uuid]},
-                         headers={"Content-Type": "application/json"}).json()
+        r = requests.put(server+"api/v2/devices/labels/" + labels[i] + "/remove", auth=(user, password), params={"adminDeviceSpaceId" : spaceID}, json={"deviceUuids" : [uuid]}, headers={"Content-Type" : "application/json"}).json()
         if (not r["successful"]):
             logger.info("Failed to remove label " + labels[i] + " to " + uuid + " MI Error.")
             continue
         finished.append((i, labels[i]))
+    '''
+
+    finished = [(list(labels.keys())[i], labels[list(labels.keys())[i]]) for i in range(len(threads)) if q.get()]
+    print(finished)
+
     return finished
 
 
@@ -173,12 +233,17 @@ async def processrequests():
                         app.logger.warning("Processing requests encounter DB mismatch for " + str(entry))
                         conn.close()
                         return Responses.customError("Error: Entry mismatch with database records!", [i])
+                if len(i["uuid"]) < 5:
+                    return Responses.customError("Error: invalid uuid." [i])
                 pending.append(i)
         # based on different request do api calls here &
         # finish request by setting pending -> complete
         for i in pending:
+            uuid = i['uuid']
+            if uuid[:5] == "uuid_":
+                uuid = uuid[5:]
             if i["requestType"] == "Add 4G VPN Profile":
-                pass
+                removeAllLabels({"35":"77. API test 1", "36":"77. API test 2"}, uuid, i["server"], app.logger)
             elif i["requestType"] == "Add new device record":
                 pass
             elif i["requestType"] == "Add Trial Certificate":
@@ -229,7 +294,10 @@ async def addrequests():
     #assert request data before putting into database
     if not checkRequestType(data["RequestType"][0]):
         return Responses.customError("Error: Request type invalid!")
-
+    env = loadEnv()
+    spaceID = env["adminDeviceSpaceId"]
+    username = env["apiUsername"]
+    password = env["apiPassword"]
     req = data["RequestType"][0]
     entries = []
     skippedEntries = []
@@ -304,6 +372,19 @@ async def addrequests():
                 entry["mac"] = data[i][1]
                 entry["uuid"] = data[i][2]
                 entry["server"] = data[i][3]
+            # check if uuid & sn exists and matches, can remove these checks if too slow
+            if entry['uuid'] != "":
+                if len(entry['uuid']) < 5:
+                    skippedEntries.append(data[i])
+                    continue
+                if entry['uuid'][:5] == "uuid_":
+                    entry['uuid'] = entry['uuid'][5:]
+                r = requests.get(entry['server'] + 'api/v2/devices', auth=(username, password),
+                                 params={"adminDeviceSpaceId": spaceID, "fields": "common.SerialNumber",
+                                         "query": 'common.uuid="' + entry['uuid'] + '"'}).json()["results"]
+                if len(r) == 0:
+                    skippedEntries.append(data[i])
+                    continue
             entries.append(entry)
 
     app.logger.info("Successfully added requests by " + request.headers["Fromuser"] + " : " + str(entries))
@@ -389,6 +470,7 @@ async def getrequests():
         # if you added/removed another column in the db, you have to change the index here
         items[-1]["id"] = i[len(i)-3]
         items[-1]["processed"] = i[-2]
+        items[-1]["server"] = i[-1]
 
     return Responses.ok(items)
 

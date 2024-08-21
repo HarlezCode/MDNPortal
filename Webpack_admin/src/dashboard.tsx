@@ -44,6 +44,7 @@ export default function Dashboard(){
             setRefresh(false);
             fetchFromServerRaw({}).then((res)=>{
                 setData(res);
+                console.log(res);
             });
             if (autoRefresh.current){
                 setTimeout(()=>{setRefresh(true)}, 10000);
@@ -146,6 +147,7 @@ export default function Dashboard(){
                                         setTimeout(()=>{setToast("")}, 3000);
                                     })
                                     processConfirm.current = false;
+                                    showOptions.current = false;
                 }}>Yes</button>
                             </div>
                         </>
@@ -231,7 +233,7 @@ export default function Dashboard(){
                                 }
                                 setCb(temp);
                             }}>
-                                <td><Confirmation text="Reject"><button className='ml mrs bg-rose-600 border-none trhovexl' name={item.id + "_rejbut"} onClick={(e : any) =>{
+                                <td><Confirmation key={item.id + "rej"} text="Reject"><button className='ml mrs bg-rose-600 border-none trhovexl' name={item.id + "_rejbut"} onClick={(e : any) =>{
 
                                     if (isProcess.current){
                                         return;
@@ -258,7 +260,7 @@ export default function Dashboard(){
 
 
                                 }}>Reject</button></Confirmation></td>
-                                <td><Confirmation text='Process'><button className='bg-rose-600 bg-rose-600 border-none trhovexl' name={item.id + "_but"} onClick={(e : React.MouseEvent<HTMLButtonElement>)=>{
+                                <td><Confirmation key={item.id + "process"} text='Process'><button className='bg-rose-600 bg-rose-600 border-none trhovexl' name={item.id + "_but"} onClick={(e : React.MouseEvent<HTMLButtonElement>)=>{
                                     if (isProcess.current){
                                         return;
                                     }
