@@ -137,16 +137,65 @@ class apiSettings:
             'common.creation_date',
             'common.status'
         ]
+        self.typechangeremove = {
+            self.domain : {
+                "12": "11. WiFi BCK - CORP COPE",
+                "13": "2. Filter - CORP",
+                "10": "11. Public Apps VPP",
+                "3": "1. Filter - Assigned",
+                "16": "2. Profile - CORP 2018 (A1)",
+                "202": "11. Fonts - 2024",
+                "14": "2. Global Proxy - CORP",
+                "18": "2. WiFi 256 - CORP",
+                "65": "66. Web Clip - VIS portal",
+                "4": "1. Registration Completed",
+                "19": "3. Filter - COPE",
+                "20": "3. Global Proxy - COPE",
+                "21": "3. Profile - COPE 2018 (A2)",
+                "23": "3. WiFi 256 - COPE",
+                "84": "66. Web Clip - DPMS",
+                "25": "4. Filter - OUD",
+                "28": "4. WiFi BCK - OUD",
+                "27": "4. WiFi 256 - OUD",
+                "26": "4. Profile - OUD 2018",
+                "24": "4. App - MI App VPP"
+            },
+            'mdm': {
+                "55": "11. WiFi BCK - CORP COPE",
+                "59": "2. Filter - CORP",
+                "66": "11. Public Apps VPP",
+                "76": "1. Filter - Assigned",
+                "109": "2. Profile - CORP 2018 (A1)",
+                "368": "11. Fonts - 2024",
+                "63": "2. Global Proxy - CORP",
+                "105": "2. WiFi 256 - CORP",
+                "230": "66. Web Clip - VIS portal",
+                "323": "1. Registration Completed",
+                "60": "3. Filter - COPE",
+                "64": "3. Global Proxy - COPE",
+                "110": "3. Profile - COPE 2018 (A2)",
+                "106": "3. WiFi 256 - COPE",
+                "255": "66. Web Clip - DPMS",
+                "39": "4. Filter - OUD",
+                "56": "4. WiFi BCK - OUD",
+                "104": "4. WiFi 256 - OUD",
+                "111": "4. Profile - OUD 2018",
+                "181": "4. App - MI App VPP",
+            }
+        }
 
         self.typelabels = {
             self.domain : { # mdm-1 labels
                 "default" : {
-                    "12": "11. WiFi BCK - CORP COPE",
-                    "13": "2. Filter - CORP",
-                    "10": "11. Public Apps VPP",
-                    "3": "1. Filter - Assigned",
-                    "16": "2. Profile - CORP 2018 (A1)",
-                    "202": "11. Fonts - 2024"
+                    'add' : {
+                        "12": "11. WiFi BCK - CORP COPE",
+                        "13": "2. Filter - CORP",
+                        "10": "11. Public Apps VPP",
+                        "3": "1. Filter - Assigned",
+                        "16": "2. Profile - CORP 2018 (A1)",
+                        "202": "11. Fonts - 2024"
+                    },
+                    'remove' : {}
                 },
                 "CORP" : {
                     "add" : {
@@ -155,7 +204,7 @@ class apiSettings:
                         "65": "66. Web Clip - VIS portal",
                         "4": "1. Registration Completed"
                     },
-                    "remove" : []
+                    "remove" : {}
                 },
                 "COPE" : {
                     "add" : {
@@ -192,12 +241,17 @@ class apiSettings:
             # change mdm to your fallback server eg. self.fallback[0] : {...}
             "mdm" : {
                 "default" : {
-                    "55": "11. WiFi BCK - CORP COPE",
-                    "59": "2. Filter - CORP",
-                    "66": "11. Public Apps VPP",
-                    "76": "1. Filter - Assigned",
-                    "109": "2. Profile - CORP 2018 (A1)",
-                    "368": "11. Fonts - 2024"
+                    "add" : {
+                        "55": "11. WiFi BCK - CORP COPE",
+                        "59": "2. Filter - CORP",
+                        "66": "11. Public Apps VPP",
+                        "76": "1. Filter - Assigned",
+                        "109": "2. Profile - CORP 2018 (A1)",
+                        "368": "11. Fonts - 2024"
+                    },
+                    'remove' : {
+
+                    }
                 },
                 "CORP" : {
                     "add" : {
@@ -206,7 +260,7 @@ class apiSettings:
                         "230": "66. Web Clip - VIS portal",
                         "323": "1. Registration Completed"
                     },
-                    "remove" : []
+                    "remove" : {}
                 },
                 "COPE" : {
                     "add" : {
@@ -245,69 +299,142 @@ class apiSettings:
         self.vpnlabels = {
             self.domain : {
                 "addprofile" : {
-                    "add" : {
-                        "default" : {
+                    "default" : {
+                        "add" : {
                             "38": "66. Filter - 4G VPN",
                             "59": "66. VPN - 4G VPN",
                             "60": "66. VPN - 4G VPN Safari"
+                        },
+                        "remove": {
+
                         }
                     },
-                    "remove" : {
-                        "default" : dict(),
-                        "CORP" : {"14": "2. Global Proxy - CORP"},
-                        "COPE" : {"20": "3. Global Proxy - COPE"}
+                    "CORP" : {
+                        'add' : {},
+                        'remove' : {"14": "2. Global Proxy - CORP"}
+                    },
+                    "COPE" : {
+                        'add' : {},
+                        'remove' : {"20": "3. Global Proxy - COPE"}
+                    },
+                    "OUD" : {
+                        'add' : {},
+                        'remove' : {}
                     }
+
                 },
                 "removeprofile" : {
-                    "add" : {
-                        "default" : dict(),
-                        "CORP" : {"14": "2. Global Proxy - CORP"},
-                        "COPE" : {"20": "3. Global Proxy - COPE"}
-                    },
-
-                    "remove" : {
-                        "default" : {
+                    "default" : {
+                        'add' : {},
+                        'remove' : {
                             "38": "66. Filter - 4G VPN",
                             "59": "66. VPN - 4G VPN",
                             "60": "66. VPN - 4G VPN Safari"
                         }
+                    },
+                    "CORP" : {
+                        "add" : {"14": "2. Global Proxy - CORP"},
+                        "remove" : {}
+                    },
+                    "COPE" : {
+                        'add' : {"20": "3. Global Proxy - COPE"},
+                        'remove' : {}
+                    },
+                    "OUD": {
+                        'add': {},
+                        'remove': {}
                     }
-                }
+                },
             },
-            "mdm" : { # change to your fallback server eg. self.fallback[0] : {...}
-                "addprofile" : {
-                    "add" : {
-                        "default" : {
+            "mdm" : {
+                "addprofile": {
+                    "default": {
+                        "add": {
                             "128": "66. Filter - 4G POC",
                             "129": "66. VPN - 4G POC",
                             "222": "66. VPN - 4G POC Safari"
-                        }
-                    },
-                    "remove" : {
-                        "default" : dict(),
-                        "CORP" : {"63": "2. Global Proxy - CORP"},
-                        "COPE" : {"64": "3. Global Proxy - COPE"}
-                    }
-                },
-                "removeprofile" : {
-                    "add" : {
-                        "default" : dict(),
-                        "CORP" : {"63": "2. Global Proxy - CORP"},
-                        "COPE" : {"64": "3. Global Proxy - COPE"}
-                    },
+                        },
+                        "remove": {
 
-                    "remove" : {
-                        "default" : {
+                        }
+                    },
+                    "CORP": {
+                        'add': {},
+                        'remove': {"63": "2. Global Proxy - CORP"}
+                    },
+                    "COPE": {
+                        'add': {},
+                        'remove': {"64": "3. Global Proxy - COPE"}
+                    }
+
+                },
+                "removeprofile": {
+                    "default": {
+                        'add': {},
+                        'remove': {
                             "128": "66. Filter - 4G POC",
                             "129": "66. VPN - 4G POC",
                             "222": "66. VPN - 4G POC Safari"
                         }
+
+                    },
+                    "CORP": {
+                        "add": {"63": "2. Global Proxy - CORP"},
+                        "remove": {}
+                    },
+                    "COPE": {
+                        'add': {"64": "3. Global Proxy - COPE"},
+                        'remove': {}
                     }
                 }
             }
         }
     def getSearchFields(self):
         return ",".join(self.fetchDeviceFields)
+    '''
+    ls : a dict of labels in the format of
+    {
+        'default' : {
+            'add' :{
+                id : label
+                ...
+            },
+            'remove' : {...}
+        },    
+        'CORP' : {
+            'add' : {},
+            'remove' : {}    
+        },
+            ...
+    },
+    * must have 'default' 'corp' 'cope' keys and within must have 'add' 'remove' keys even if it is empty
+    * priorities remove labels
+    returns 2 dicts, a dict for labels to add and a dict for labels to remove
+    eg. [{id:l1, id1:l2,...},{...}] : [adddict, removedict]
+    '''
+    def getlabels(self, ls, type):
+        if type != 'CORP' and type != 'COPE' and type != 'OUD':
+            return []
+        addls = set()
+        removels = set()
+        [addls.add((i,ls['default']['add'][i])) for i in ls['default']['add']]
+        [addls.add((i, ls[type]['add'][i])) for i in ls[type]['add']]
+        [removels.add((i, ls['default']['remove'][i])) for i in ls['default']['remove']]
+        [removels.add((i, ls[type]['remove'][i])) for i in ls[type]['remove']]
+
+        filteredls = []
+        removels = list(removels)
+        for i in addls:
+            if not i in removels:
+                filteredls.append(i)
+        # convert to dict
+        a, b = dict(), dict()
+        for i in filteredls:
+            a[i[0]] = i[1]
+        for i in removels:
+            b[i[0]] = i[1]
+
+        return [a,b]
 class responses:
     def __init__(self):
         self.defaultError = jsonify({
@@ -341,7 +468,10 @@ def validateServer(url):
             return True
     return False
 if __name__ == "__main__":
-    a = [["a","b","c"],[],["1","2","3"],[],['q','w','e']]
-    b = [[],[]]
-    print(combinations(a))
+    # a = [["a","b","c"],[],["1","2","3"],[],['q','w','e']]
+    # b = [[],[]]
+    # print(combinations(a))
     # print(combinations(b))
+    settings = apiSettings()
+    print(settings.getlabels({'default': {'add': {'38': '66. Filter - 4G VPN', '59': '66. VPN - 4G VPN', '60': '66. VPN - 4G VPN Safari'}, 'remove': {}}, 'CORP': {'add': {}, 'remove': {'14': '2. Global Proxy - CORP'}}, 'COPE': {'add': {}, 'remove': {'20': '3. Global Proxy - COPE'}}},'CORP'))
+    print(str(settings.getlabels(settings.typelabels[settings.domain],"COPE")))

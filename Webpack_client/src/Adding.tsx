@@ -1,7 +1,7 @@
 import React from 'react'
 import {useState, FormEvent, useRef} from 'react'
 import './components.css'
-import { getDeviceInfo, getDeviceType } from './serverActions';
+import { checkDeviceType, getDeviceInfo, getDeviceLabels } from './serverActions';
 /* Possible improvements
 - Enforce a limit to the number of possible requests at a time 
 since if the number of devices added is > n, it may overload the server.
@@ -39,11 +39,17 @@ async function llfetch(reqType : string, count : number[], entries : string, err
             return;
         }
 
-        const devicetype = await getDeviceType(res["data"][0]["common.uuid"], res["data"][0]["server"]);
-        if (devicetype == "error"){
-            errors.push("Could not get identify device type for " + entry[0]);
+        const labels = await getDeviceLabels(res["data"][0]["common.uuid"], res["data"][0]["server"]);
+        if (labels["res"] == "error"){
+            errors.push("Error fetching labels for " + entry);
             return;
         }
+        const devicetype = checkDeviceType(labels["data"]);
+        if (devicetype == "error"){
+            errors.push("Could not get identify device type for " + entry);
+            return;
+        }
+
         newData[entry[0]] = [] as string[];
         newData[entry[0]].push(devicetype);
         // validate mac address here
@@ -93,16 +99,25 @@ async function nmfetch(reqtype : string, count : number[],entry : string, errors
         return;
     }
 
-    const devicetype = await getDeviceType(res["data"][0]["common.uuid"], res["data"][0]["server"]);
+    const labels = await getDeviceLabels(res["data"][0]["common.uuid"], res["data"][0]["server"]);
+    if (labels["res"] == "error"){
+        errors.push("Error fetching labels for " + entry);
+        return;
+    }
+    const devicetype = checkDeviceType(labels["data"]);
     if (devicetype == "error"){
         errors.push("Could not get identify device type for " + entry);
         return;
     }
+    // check labels for things such as does vpn profile exist & etc
+    
+
+
 
     newData[entry] = [] as string[];
     newData[entry].push(devicetype);
     newMetaData[entry] = res["data"][0];
-    console.log(newMetaData[entry]);
+    
     if (reqtype == "Add Webclip"){
         newData[entry].push("wcp_Webclip"); // default value 
     } else if (reqtype == "App Update"){

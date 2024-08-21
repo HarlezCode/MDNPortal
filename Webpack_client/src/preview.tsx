@@ -88,9 +88,9 @@ export default function Preview({previewFunc, data} : {previewFunc : (val : bool
                                         return;
                                     }
                                     if (val.startsWith("wcp_") || val.startsWith("app_")){
-                                        return (<td style={{color: "black"}}>{val.substring(4)}</td>)
+                                        return (<td style={{color: "black"}} key={k+"preview_text_"+val}>{val.substring(4)}</td>)
                                     }
-                                    return (<td style={{color: "black"}}>{val}</td>)
+                                    return (<td style={{color: "black"}} key={k+"preview_text_"+val}>{val}</td>)
                                 })}
                                 </tr>
                                 )

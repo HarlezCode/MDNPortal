@@ -72,7 +72,7 @@ export async function getDeviceInfo(sn : string){
     return {"data" : res["data"], "error" : ""}
 }
 
-export async function getDeviceType(uuid : string, server : string){
+export async function getDeviceLabels(uuid : string, server : string){
     const res = await fetch("http://localhost:5000/api/mi/getdevicelabels/?uuid=" +uuid + "&server="+server, {
         headers: {
             "Key": localStorage.getItem("Token") ?? ""
@@ -80,42 +80,50 @@ export async function getDeviceType(uuid : string, server : string){
         method: "GET"}
     ).then((res : Response) =>{
         return res.json()
-    }).catch((err) => {
+    }).catch(() => {
         return new Promise((res)=>res({'res' : "error"}));
     });
+
     if (res["res"] == "ok"){
-        // mapping labels to dtype
-        const dtype : boolean[] = [true, true, true]; // CORP COPE OUD
         const labels : string[] = [];
         res["data"].map((val : {[index : string] : any}) =>{
             labels.push(val["name"])
         })
-
-        for (let v=0; v < Object.keys(labeltodtype).length; v++){
-            const name = Object.keys(labeltodtype)[v];
-            for (let i=0; i< labeltodtype[name].length;i++){
-                if (!labels.includes(labeltodtype[name][i])){
-                    dtype[v] = false;
-                    break;
-                }
-            }
-        }
-        let atype = "";
-        let count = 0;
-        dtype.forEach((val : boolean, ind : number) =>{
-            if (val){
-                atype = Object.keys(labeltodtype)[ind];
-                count++;
-            }
-        })
-        if (count != 1){
-            ///// MUST CHANGE TO "error" AFTER TESTING
-            return "CORP"
-        }
-        return atype;
+        return {res: "ok", data : labels};
     } else {
-        return "error";
+        return {res: "error", data : []};;
     }
+}
+
+
+
+export function checkDeviceType(labels : string[]){
+
+    // mapping labels to dtype
+    const dtype : boolean[] = [true, true, true]; // CORP COPE OUD
+
+    for (let v=0; v < Object.keys(labeltodtype).length; v++){
+        const name = Object.keys(labeltodtype)[v];
+        for (let i=0; i< labeltodtype[name].length;i++){
+            if (!labels.includes(labeltodtype[name][i])){
+                dtype[v] = false;
+                break;
+            }
+        }
+    }
+    let atype = "";
+    let count = 0;
+    dtype.forEach((val : boolean, ind : number) =>{
+        if (val){
+            atype = Object.keys(labeltodtype)[ind];
+            count++;
+        }
+    })
+    if (count != 1){
+        ///// MUST CHANGE TO "error" AFTER TESTING
+        return "error"
+    }
+    return atype;
 } 
 
 

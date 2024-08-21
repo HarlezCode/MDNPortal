@@ -189,7 +189,6 @@ def removeAllLabels(labels, uuid, server, logger):
     '''
 
     finished = [(list(labels.keys())[i], labels[list(labels.keys())[i]]) for i in range(len(threads)) if q.get()]
-    print(finished)
 
     return finished
 
@@ -204,6 +203,7 @@ async def processrequests():
     if not valid:
         return Responses.keyError
 
+    settings = apiSettings()
     cursor, conn = createCursor()
 
     # ensure atomic property
@@ -234,18 +234,42 @@ async def processrequests():
                         conn.close()
                         return Responses.customError("Error: Entry mismatch with database records!", [i])
                 if len(i["uuid"]) < 5:
-                    return Responses.customError("Error: invalid uuid." [i])
+                    return Responses.customError("Error: invalid uuid.", [i])
+                if not validateServer(i['server']):
+                    return Responses.customError("Error: invalid server. ", [i])
                 pending.append(i)
         # based on different request do api calls here &
         # finish request by setting pending -> complete
+        errs = []
         for i in pending:
             uuid = i['uuid']
             if uuid[:5] == "uuid_":
                 uuid = uuid[5:]
             if i["requestType"] == "Add 4G VPN Profile":
-                removeAllLabels({"35":"77. API test 1", "36":"77. API test 2"}, uuid, i["server"], app.logger)
+                # removeAllLabels({"35":"77. API test 1", "36":"77. API test 2"}, uuid, i["server"], app.logger)
+                app.logger.info("Attempting to add 4G vpn to this device: " + uuid)
+                '''
+                lbls = settings.getlabels(settings.vpnlabels[i['server']]["addprofile"], i['device'])
+                fin = addAllLabels(lbls[0], uuid, i["server"], app.logger)
+                if len(fin) < len(lbls[0]):
+                    errs.append("Only finished apply these labels for " + uuid + " : "+ str(fin))
+                fin = removeAllLabels({lbls[1], uuid, i["server"], app.logger)
+                if len(fin) < len(lbls[1]):
+                    errs.append("Only finished removing these labels for " + uuid + " : "+ str(fin))
+                '''
+                app.logger.info("Finished adding 4G vpn to this device: " + uuid)
             elif i["requestType"] == "Add new device record":
-                pass
+                app.logger.info("Attempting to add new device " + uuid)
+                '''
+                lbls = settings.getlabels(settings.typelabels[i["server"]], i['device'])
+                fin = addAllLabels(lbls[0], uuid, i["server"], app.logger)
+                if len(fin) < len(lbls[0]):
+                    errs.append("Only finished apply these labels for " + uuid + " : "+ str(fin))
+                fin = removeAllLabels({lbls[1], uuid, i["server"], app.logger)
+                if len(fin) < len(lbls[1]):
+                    errs.append("Only finished removing these labels for " + uuid + " : "+ str(fin))
+                '''
+                app.logger.info("Successfully added new device " + uuid)
             elif i["requestType"] == "Add Trial Certificate":
                 pass
             elif i["requestType"] == "Add Webclip":
@@ -257,6 +281,11 @@ async def processrequests():
             elif i["requestType"] == "Look for last location":
                 pass
             elif i["requestType"] == "Remove 4G VPN profile":
+                '''
+                lbls = settings.getlabels(settings.vpnlabels[i['server']]["removeprofile"], i['device'])
+                addAllLabels(lbls[0], uuid, i["server"], app.logger)
+                removeAllLabels({lbls[1], uuid, i["server"], app.logger)
+                '''
                 pass
             elif i["requestType"] == "Remove Trial Certificate":
                 pass
@@ -276,6 +305,8 @@ async def processrequests():
 
         # logging
         app.logger.info("Completed requests by " + user + " : " + str(data))
+    if len(errs) > 0:
+        return Responses.customError("Some errors occurred.", errs)
     return Responses.ok(repeatedCounts)
 
 
@@ -736,6 +767,7 @@ async def fetchMi():
 Removes a label from a device
 '''
 @app.route('/api/mi/removelabel/', methods=["GET"], endpoint='removeLabelMi')
+@defaultErrorHandler
 async def removeLabelMi():
     settings = apiSettings()
     Responses = responses()
@@ -794,6 +826,7 @@ async def removeLabelMi():
 Adds label to device
 '''
 @app.route('/api/mi/addlabel/', methods=["GET"], endpoint='addLabelMi')
+@defaultErrorHandler
 async def addLabelMi():
     settings = apiSettings()
     Responses = responses()
@@ -832,6 +865,23 @@ async def addLabelMi():
 
     # app.logger.info("Successfully added label by " + user + " : " + labelname + " on " + uuid)
     return Responses.ok(r)
+
+@app.route('/api/mi/setcustomattr/', methods=['POST'], endpoint='setCustomAttr')
+@defaultErrorHandler
+async def setCustomAttr():
+    Responses = responses()
+    settings = apiSettings()
+    data = request.json
+    # valid = await validateKey(request.headers["Key"])
+    # if not valid:
+    #     return Responses.keyError
+    # user = request.headers["From"]
+    # app.logger.info("Attempting to set custpm attributes by " + user + " : " + str(data))
+    
+
+    return Responses.ok()
+
+
 
 
 # closes connection automatically, get the connection using createCursor() method

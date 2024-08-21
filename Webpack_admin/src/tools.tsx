@@ -47,8 +47,6 @@ export default function Tools(){
                         }}>
                         <option value="none">-- Select -- </option>
                         <option value="SCAttr">Set Custom Attributes</option>
-                        <option value="GCAttr">Get Custom Attributes</option>
-                        <option value="GUUID">Get UUIDs</option>
                     </select></div>
                     <div className="mrdiv">
                         <hr/>
@@ -114,69 +112,6 @@ export default function Tools(){
                                 </div>
                             </div>
                         }
-                        {
-                            mode == "GCAttr" &&
-                            <div>
-                                N/A
-                            </div>
-                        }
-                        {
-                            mode == "GUUID" &&
-                            <div>
-                                <h3>Add Search fields</h3>
-                                <select style={{color: "black", backgroundColor : "white", marginRight: "5px"}} onChange={(e : any)=>{
-                                    if ((e.currentTarget.value ?? "").length > 0){
-                                        setInputValue(e.currentTarget.value);
-                                    }
-                                }}>
-                                    <option value="">-- select --</option>
-                                    <option value="apns_capable">apns_capable</option>
-                                    <option value="background_status">background_status</option>
-                                    <option value="battery_level">battery_level</option>
-                                    
-
-
-                                </select>
-                                <input value={inputValue} placeholder="Key" style={{maxWidth: "150px", marginRight: "10px",border:"none",color: "black", backgroundColor:"white"}} onChange={(e : any)=>{
-                                    setInputValue(e.currentTarget.value);
-                                }
-                                }/>
-                                <input placeholder="Value" style={{width:"100px",marginRight: "10px",border:"none",color: "black", backgroundColor:"white"}} onChange={(e : any)=>{
-                                    value.current = e.currentTarget.value;
-                                }} />
-                                <button className="logoutbut" onClick={()=>{
-                                    setInputs([...inputs, [inputValue, value.current]]);
-                                }}>Add</button>
-                                {inputs.length > 0  && <div style={{width:"100%"}}>
-                                    <table style={{marginRight:"auto", marginLeft: "auto"}}>
-                                        <thead>
-                                            <tr>
-                                                <th/>
-                                                <th>Key</th>
-                                                <th>Value</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {inputs.map((val : any, index : number) =>{
-                                                return(
-                                                    <tr key={index}>
-                                                        <td style={{paddingLeft: '15px', paddingRight:'15px'}}><button className="logoutbut" style={{fontSize: "0.8rem"}} onClick={(e : any)=>{
-                                                            const temp = JSON.parse(JSON.stringify(inputs));
-                                                            temp.splice(index, 1);
-                                                            setInputs(temp);
-                                                        }}>Remove</button></td>
-                                                        <td style={{paddingLeft: '15px', paddingRight:'15px'}}>{val[0]}</td>
-                                                        <td style={{paddingLeft: '15px', paddingRight:'15px'}}>{val[1]}</td>
-                                                    </tr>
-                                                )
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>}
-                            </div>
-                            
-                            
-                        }
                     </div>
                 </div>
                 {isPreview &&
@@ -227,8 +162,11 @@ export default function Tools(){
                         if (mode == "none"){
                             setToast("Please Select a Request Type!");
                             setTimeout(()=>{setToast("")}, 3000);
-                            
                             return;
+                        } else if (mode == "SCAttr"){
+
+                        } else if (mode == "SLabels"){
+                            
                         }
                         setPreview(false);
                     }}>Process</button>
