@@ -168,7 +168,7 @@ export default function Browse(){
                 </table>
                 
             </form>
-            <div className='browsediv3' style={{height: '24rem'}}>
+            <div className='browsediv3' style={{height: '65vh'}}>
             <table className='bg-rose-700 browsetable2'>
                 <thead style={{position: 'sticky', top: 0}} className='bg-rose-700'>
                     <tr>

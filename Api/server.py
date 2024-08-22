@@ -80,21 +80,15 @@ def addLabelTarget(server, user, password, spaceID, uuid, label, labelid, logger
     r = requests.get(server + "api/v2/labels/" + str(labelid), auth=(user, password),
                      params={"adminDeviceSpaceId": spaceID}).json()["results"]
     if r["name"] != label:
-        logger.info("Failed to apply label " + label + " to " + uuid + " because name does not match.")
+        logger.warning("Failed to apply label " + label + " to " + uuid + " because name does not match.")
         queue.put(False)
 
-    r = requests.get(server + "api/v2/devices", auth=(user, password),
-                     params={"adminDeviceSpaceId": spaceID, "fields": "common.uuid",
-                             "query": 'common.uuid="' + uuid + '"'}).json()["results"]
-    if len(r) == 0:
-        logger.info("Failed to apply label " + label + " to " + uuid + " uuid does not exist.")
-        queue.put(False)
     # appying label here
     r = requests.put(server + "api/v2/devices/labels/" + label + "/add", auth=(user, password),
                      params={"adminDeviceSpaceId": spaceID}, json={"deviceUuids": [uuid]},
                      headers={"Content-Type": "application/json"}).json()
     if (not r["successful"]):
-        logger.info("Failed to apply label " + label + " to " + uuid + " MI Error.")
+        logger.warning("Failed to apply label " + label + " to " + uuid + " MI Error.")
         queue.put(False)
     queue.put(True)
 def addAllLabels(labels, uuid, server, logger):
@@ -139,21 +133,16 @@ def removeLabelTarget(server, user, password, spaceID, uuid, label, labelid, log
     r = requests.get(server + "api/v2/labels/" + str(labelid), auth=(user, password),
                      params={"adminDeviceSpaceId": spaceID}).json()["results"]
     if r["name"] != label:
-        logger.info("Failed to remove label " + label + " to " + uuid + " because name does not match.")
+        logger.warning("Failed to remove label " + label + " to " + uuid + " because name does not match.")
         queue.put(False)
 
-    r = requests.get(server + "api/v2/devices", auth=(user, password),
-                     params={"adminDeviceSpaceId": spaceID, "fields": "common.uuid",
-                             "query": 'common.uuid="' + uuid + '"'}).json()["results"]
-    if len(r) == 0:
-        logger.info("Failed to remove label " + label + " to " + uuid + " uuid does not exist.")
-        queue.put(False)
     # appying label here
     r = requests.put(server + "api/v2/devices/labels/" + label + "/remove", auth=(user, password),
                      params={"adminDeviceSpaceId": spaceID}, json={"deviceUuids": [uuid]},
                      headers={"Content-Type": "application/json"}).json()
+
     if (not r["successful"]):
-        logger.info("Failed to remove label " + label + " to " + uuid + " MI Error.")
+        logger.warning("Failed to remove label " + label + " to " + uuid + " MI Error.")
         queue.put(False)
     queue.put(True)
 def removeAllLabels(labels, uuid, server, logger):
@@ -204,6 +193,10 @@ async def processrequests():
         return Responses.keyError
 
     settings = apiSettings()
+    env = loadEnv()
+    spaceID = env["adminDeviceSpaceId"]
+    username = env["apiUsername"]
+    password = env["apiPassword"]
     cursor, conn = createCursor()
     if len(data) == 0:
         return Responses.customError("Empty Data")
@@ -234,10 +227,22 @@ async def processrequests():
                         app.logger.warning("Processing requests encounter DB mismatch for " + str(entry))
                         conn.close()
                         return Responses.customError("Error: Entry mismatch with database records!", [i])
-                if len(i["uuid"]) < 5 and not i["requestType"] == "Add new device record":
-                    return Responses.customError("Error: invalid uuid.", [i])
                 if not validateServer(i['server']):
                     return Responses.customError("Error: invalid server. ", [i])
+
+                if not i["requestType"] == "Add new device record":
+                    if len(i["uuid"]) < 5:
+                        return Responses.customError("Error: invalid uuid.", [i])
+                    else:
+                        server = i["server"]
+                        uuid = i['uuid']
+                        if uuid[:5] == "uuid_":
+                            uuid = uuid[5:]
+                        r = requests.get(server + "api/v2/devices", auth=(username, password),
+                                         params={"adminDeviceSpaceId": spaceID, "fields": "common.uuid",
+                                                 "query": 'common.uuid="' + uuid + '"'}).json()["results"]
+                        if len(r) == 0:
+                            return Responses.customError("Error: invalid uuid.", [i])
                 pending.append(i)
         # based on different request do api calls here &
         # finish request by setting pending -> complete
@@ -248,7 +253,7 @@ async def processrequests():
                 uuid = uuid[5:]
             if i["requestType"] == "Add 4G VPN Profile":
                 app.logger.info("Attempting to add 4G vpn to this device: " + uuid)
-                '''
+                ''' Comment for now
                 lbls = settings.getlabels(settings.vpnlabels[i['server']]["addprofile"], i['device'])
                 fin = addAllLabels(lbls[0], uuid, i["server"], app.logger)
                 if len(fin) < len(lbls[0]):
@@ -260,7 +265,7 @@ async def processrequests():
                 app.logger.info("Finished adding 4G vpn to this device: " + uuid)
             elif i["requestType"] == "Add new device record":
                 app.logger.info("Attempting to add new device " + uuid)
-                '''
+                ''' Comment for now
                 lbls = settings.getlabels(settings.typelabels[i["server"]], i['device'])
                 fin = addAllLabels(lbls[0], uuid, i["server"], app.logger)
                 if len(fin) < len(lbls[0]):
@@ -298,27 +303,68 @@ async def processrequests():
                 fin = addAllLabels(lbldict,uuid,i["server"],app.logger)
                 if (len(fin) != len(lbls)):
                     errs.append("Only these labels were applied successfully for " + uuid + " : " + str(fin))
-                    app.logger.info("Only partial labels were applied for " + uuid)
+                    app.logger.warning("Only partial labels were applied for " + uuid)
                     continue
                 app.logger.info("Successfully added webclip for " + uuid)
             elif i["requestType"] == "App Update":
-                pass
+                app.logger.info("Attempting to update " + i['app'] + " on " + uuid)
+                if len(i['app']) == 0:
+                    errs.append("App is empty.")
+                    continue
+                r = requests.get(server + "api/v2/devices/appinventory", auth=(username, password),
+                                 params={"adminDeviceSpaceId": spaceID, 'deviceUuids': uuid}).json()["results"][0]["appInventory"]
+                invId = None
+                for v in r:
+                    if (v["identifier"] == i['app']):
+                        invId = v["inventoryId"]
+                        break
+                ''' Comment for now
+                if invId != None:
+                    r = requests.post(server + "api/v2/appstore/apps/" + str(invId) + "/message", params={
+                        "adminDeviceSpaceId" : spaceID
+                    }, json={
+                        "updateIncluded": True,
+                        "pushApp": True,
+                        "deviceUuids": [uuid]
+                    }, headers={
+                        "Content-Type": "application/json"
+                    }).json()
+                    if not r["successful"]:
+                        errs.append("Failed to update " + i['app'] + " on " + uuid)
+                        app.logger.warning("Failed to update " + i['app'] + " on " + uuid)
+                        continue
+                else:
+                    errs.append("Cannot find matching identifier in mi.")
+                    continue
+                '''
+                app.logger.info("Successfully updated " + i['app'] + "(" + str(invId) + ")" + " on " + uuid)
             elif i["requestType"] == "Change of Device Type":
-                pass
+                app.logger.info("Attempting to change device type of " + uuid)
+                ''' Comment for now
+                fin = removeAllLabels(settings.typechangeremove[i['server']],uuid, i['server'],app.logger)
+                if len(fin) < len(settings.typechangeremove[i['server']]):
+                    errs.append("Only finished removing these labels for " + uuid + " : "+ str(fin))
+                lbls = settings.getlabels(settings.typelabels[i["server"]], i['device'])
+                fin = addAllLabels(lbls[0], uuid, i["server"], app.logger)
+                if len(fin) < len(lbls[0]):
+                    errs.append("Only finished apply these labels for " + uuid + " : "+ str(fin))
+                '''
+                app.logger.info("Successfully added new device " + uuid)
             elif i["requestType"] == "Look for last location":
                 pass
             elif i["requestType"] == "Remove 4G VPN profile":
-                '''
+                app.logger.info("Attempting to add 4G vpn to this device: " + uuid)
+                ''' Comment for now
                 lbls = settings.getlabels(settings.vpnlabels[i['server']]["removeprofile"], i['device'])
                 addAllLabels(lbls[0], uuid, i["server"], app.logger)
                 removeAllLabels({lbls[1], uuid, i["server"], app.logger)
                 '''
-                pass
+                app.logger.info("Finished adding 4G vpn to this device: " + uuid)
             elif i["requestType"] == "Remove Trial Certificate":
                 pass
             elif i["requestType"] == "Retire device":
                 pass
-            
+
             cursor.execute('''
                             UPDATE entries
                             SET
@@ -923,6 +969,8 @@ async def setCustomAttr():
     res = requests.post(server, auth=(username, password), params={"adminDeviceSpaceId" : spaceID},json={
         "uuids" : uuids,
         "attributes" : attr
+    }, headers={
+        "Content-Type": "application/json"
     }).json()
 
     return Responses.ok(res)
