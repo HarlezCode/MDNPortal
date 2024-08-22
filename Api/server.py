@@ -205,13 +205,14 @@ async def processrequests():
 
     settings = apiSettings()
     cursor, conn = createCursor()
-
+    if len(data) == 0:
+        return Responses.customError("Empty Data")
     # ensure atomic property
     with processMutex:
         pending = []
         repeatedCounts = []
         app.logger.info("Processing requests by " + user + " : " + str(data))
-        # check that requests are not complete already
+        # check that requests are not complete already & validate data
         for i in data:
             if not checkProcessParams(i):
                 conn.close()
@@ -233,7 +234,7 @@ async def processrequests():
                         app.logger.warning("Processing requests encounter DB mismatch for " + str(entry))
                         conn.close()
                         return Responses.customError("Error: Entry mismatch with database records!", [i])
-                if len(i["uuid"]) < 5:
+                if len(i["uuid"]) < 5 and not i["requestType"] == "Add new device record":
                     return Responses.customError("Error: invalid uuid.", [i])
                 if not validateServer(i['server']):
                     return Responses.customError("Error: invalid server. ", [i])
@@ -246,7 +247,6 @@ async def processrequests():
             if uuid[:5] == "uuid_":
                 uuid = uuid[5:]
             if i["requestType"] == "Add 4G VPN Profile":
-                # removeAllLabels({"35":"77. API test 1", "36":"77. API test 2"}, uuid, i["server"], app.logger)
                 app.logger.info("Attempting to add 4G vpn to this device: " + uuid)
                 '''
                 lbls = settings.getlabels(settings.vpnlabels[i['server']]["addprofile"], i['device'])
@@ -273,7 +273,34 @@ async def processrequests():
             elif i["requestType"] == "Add Trial Certificate":
                 pass
             elif i["requestType"] == "Add Webclip":
-                pass
+                app.logger.info("Attempting to add webclip for " + uuid)
+                webclip = i["webclip"]
+                cursor.execute('''
+                SELECT labels, labelids  FROM webclips WHERE
+                webclip=%s AND
+                server=%s
+                    
+                    ''', (webclip,i['server']))
+                res = cursor.fetchone()
+                if not res:
+                    errs.append("Webclip entry not found on db for " + uuid)
+                    continue
+
+                lbls, ids = res
+                lbls = lbls.split(",")
+                ids = ids.split(',')
+                if len(ids) != len(lbls):
+                    errs.append("Number of labels does not match number of label ids for " + uuid)
+                    continue
+                lbldict = dict()
+                for v in range(len(ids)):
+                    lbldict[ids[v]] = lbls[v]
+                fin = addAllLabels(lbldict,uuid,i["server"],app.logger)
+                if (len(fin) != len(lbls)):
+                    errs.append("Only these labels were applied successfully for " + uuid + " : " + str(fin))
+                    app.logger.info("Only partial labels were applied for " + uuid)
+                    continue
+                app.logger.info("Successfully added webclip for " + uuid)
             elif i["requestType"] == "App Update":
                 pass
             elif i["requestType"] == "Change of Device Type":
@@ -291,8 +318,8 @@ async def processrequests():
                 pass
             elif i["requestType"] == "Retire device":
                 pass
-
-        cursor.execute('''
+            
+            cursor.execute('''
                             UPDATE entries
                             SET
                                 status=%(status)s,
@@ -877,9 +904,28 @@ async def setCustomAttr():
     #     return Responses.keyError
     # user = request.headers["From"]
     # app.logger.info("Attempting to set custpm attributes by " + user + " : " + str(data))
-    
+    uuids = data["uuids"]
+    attr = data['attr']
+    server = data['server']
+    if server == 0:
+        server = settings.domain
+    elif server == 1:
+        if len(settings.fallback) == 0:
+            return Responses.customError("No fallback server (mdm).")
+        server = settings.fallback[0]
+    if len(uuids) == 0:
+        return Responses.customError("No uuids")
+    env = loadEnv()
+    spaceID = env["adminDeviceSpaceId"]
+    username = env["apiUsername"]
+    password = env["apiPassword"]
 
-    return Responses.ok()
+    res = requests.post(server, auth=(username, password), params={"adminDeviceSpaceId" : spaceID},json={
+        "uuids" : uuids,
+        "attributes" : attr
+    }).json()
+
+    return Responses.ok(res)
 
 
 

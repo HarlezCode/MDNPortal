@@ -121,7 +121,7 @@ export function checkDeviceType(labels : string[]){
     })
     if (count != 1){
         ///// MUST CHANGE TO "error" AFTER TESTING
-        return "error"
+        return "CORP"
     }
     return atype;
 } 

@@ -221,6 +221,7 @@ export async function processRequests(data : ResType[], force : boolean = false)
             return true
         })
     }
+
     let val : {[index : string] : any} = {};
     await fetch("http://localhost:5000/api/processrequests/", {
         method: "POST",
@@ -237,12 +238,18 @@ export async function processRequests(data : ResType[], force : boolean = false)
         }
         );
         
-    }).catch((error : any)=>console.log(error));
+    }).catch(()=>{
+        val["res"] = "error";
+        val["error"] = "Server not responding.";
+    });
 
-    if (erroredData.length > 0){
+    if (erroredData.length > 0 && val['res'] != "error"){
         alert("Adding devices with these serial numbers are not valid, turn on force if you want to mark as complete");
         val["res"] = "error";
         val["error"] = "Some of the results were not processed. Including SN(s): " + erroredData.join(", "); 
+    } else if (erroredData.length > 0 && val['res'] == "error"){
+        alert("Adding devices with these serial numbers are not valid, turn on force if you want to mark as complete");
+        val["error"] += "\n Some of the results were not processed. Including SN(s): " + erroredData.join(", "); 
     }
     return val;
 }

@@ -473,5 +473,5 @@ if __name__ == "__main__":
     # print(combinations(a))
     # print(combinations(b))
     settings = apiSettings()
-    print(settings.getlabels({'default': {'add': {'38': '66. Filter - 4G VPN', '59': '66. VPN - 4G VPN', '60': '66. VPN - 4G VPN Safari'}, 'remove': {}}, 'CORP': {'add': {}, 'remove': {'14': '2. Global Proxy - CORP'}}, 'COPE': {'add': {}, 'remove': {'20': '3. Global Proxy - COPE'}}},'CORP'))
+    # print(settings.getlabels({'default': {'add': {'38': '66. Filter - 4G VPN', '59': '66. VPN - 4G VPN', '60': '66. VPN - 4G VPN Safari'}, 'remove': {}}, 'CORP': {'add': {}, 'remove': {'14': '2. Global Proxy - CORP'}}, 'COPE': {'add': {}, 'remove': {'20': '3. Global Proxy - COPE'}}},'CORP'))
     print(str(settings.getlabels(settings.typelabels[settings.domain],"COPE")))
