@@ -6,6 +6,32 @@ export async function authAction(username : string, password : string) : Promise
         res(username+password)});
 }
 
+export async function setCustomAttributes(uuids : string[], attr : {[i : string] : string}, server : string){
+    const res = await fetch("http://localhost:5000/api/mi/setcustomattr/", {
+        method: "POST",
+        headers: {
+            "Key": localStorage.getItem("Token") ?? "", // temp val
+            'Accept' : 'application/json', 
+            'Content-Type' : 'application/json',
+            "From": localStorage.getItem("Token") + "_User"
+        },
+        body: JSON.stringify({
+            "uuids" : uuids,
+            "attr" : attr,
+            "server" : server
+
+        })
+    }).then((res) => {return res.json()}).catch(
+        () =>{
+            return new Promise((res)=>res({"res" : "error", "error" : "Server not responding!"}));
+        }
+    );
+    
+    
+    return res;
+}
+
+
 export async function addWebclips(e : FormEvent<HTMLFormElement>){
     let dtype = (e.currentTarget.CORP.checked ? "CORP" : "") +  "," + (e.currentTarget.OUD.checked ? "OUD," : "") + (e.currentTarget.COPE.checked ? "COPE" : "")
     if (dtype.charAt(0) == ","){

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Navbar, Toaster } from "./components";
 import "./components.css"
+import { setCustomAttributes } from "./serverActions";
 
 export default function Tools(){
     const [mode, setMode] = useState('none');
@@ -9,6 +10,7 @@ export default function Tools(){
     const [isPreview, setPreview] = useState(true);
     const [toastMsg, setToast] = useState("");
     const [inputValue, setInputValue] = useState("");
+    const [server, setServer] = useState("");
     const value = useRef("");
     return (<div>
             <Toaster show={toastMsg != ""} msg={toastMsg}/>
@@ -52,9 +54,19 @@ export default function Tools(){
                         <hr/>
                         <h3 className="mbdiv">Configurations</h3>
                         <hr/>
+                        
                         {mode =="SCAttr" &&
                             <div>
                                 <div> 
+                                    <select style={{color: "black"}} onChange={(e : React.ChangeEvent<HTMLSelectElement>) =>{
+                                        console.log(e.currentTarget.value);
+                                        setServer(e.currentTarget.value);
+                                        
+    
+                                    }}>
+                                        
+                                        <option value="https://emmdev2.ha.org.hk/">MDM-1</option>
+                                    </select>
                                     <div style={{display:"flex", marginLeft: 20, marginBottom: 20}}><h3 style={{marginTop: 10}}>Attributes</h3>
                                         <button className="logoutbut" style={{
                                             marginLeft: 20,
@@ -131,7 +143,7 @@ export default function Tools(){
                                                 if (val[0] == ""){
                                                     return;
                                                 }
-                                                return (<li>
+                                                return (<li key={val + "_ulli"}>
                                                     {val[0]} : {val[1]}
                                                 </li>)
                                             })
@@ -155,6 +167,9 @@ export default function Tools(){
                                         </ul>
                                 </div>
 
+
+
+
                             </div>
                     }
                     <button className="logoutbut" style={{marginTop:"10px"}} onClick={()=>{
@@ -165,6 +180,20 @@ export default function Tools(){
                             return;
                         } else if (mode == "SCAttr"){
 
+                            // convert to dict
+                            const attr : {[ind : string] : string} = {};
+                            attributes.forEach((val) =>{
+                                attr[val[0]] = val[1];
+                            })
+                            setCustomAttributes(inputs, attr, server).then((res : any) =>{
+                                if (res.res == "error"){
+                                    setToast(res.error ?? "Server not responding!");
+                                    setTimeout(()=>{setToast("")}, 3000);
+                                } else {
+                                    setToast("Success!");
+                                    setTimeout(()=>{setToast("")}, 3000);
+                                }
+                            });
                         } else if (mode == "SLabels"){
                             
                         }
@@ -174,6 +203,7 @@ export default function Tools(){
                 {!isPreview &&
                 <div style={{backgroundColor: "rgb(91, 91, 112)", padding: 20, minWidth: "400px", borderRadius: 7, boxShadow: "10px 5px 5px rgb(90, 80, 105)"}}>
                     <div style={{display: 'flex'}}>
+
                         <button className="logoutbut" onClick={()=>{setPreview(true);}}>Back</button>
                         <h3 style={{margin: 'auto'}}>Response</h3>
                     </div>

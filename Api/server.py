@@ -966,13 +966,15 @@ async def setCustomAttr():
     username = env["apiUsername"]
     password = env["apiPassword"]
 
+    ''' comment for now
     res = requests.post(server, auth=(username, password), params={"adminDeviceSpaceId" : spaceID},json={
         "uuids" : uuids,
-        "attributes" : attr
+        "attributes" : attr 
     }, headers={
         "Content-Type": "application/json"
     }).json()
-
+    '''
+    res = []
     return Responses.ok(res)
 
 
