@@ -1,5 +1,16 @@
+/*
+    Actions that can be done locally
+*/
+
 import {Workbook, Column} from 'exceljs'
 type ResType = {[key : string] : string};
+
+
+/*
+    Exports table entries to excel
+    :param data: list of table entries
+    :returns: void
+*/
 export function exportExcel(data : ResType[]){
     if (data.length == 0){
         return;
@@ -32,7 +43,11 @@ const clusterToUserid : {[index : string] : string} = {
     'HAHO' : 'emmhaho'
 };
 
-
+/*
+    Exports table data to csv for use of enrolling new devices
+    :param data: list of table data entries
+    :returns: void
+*/
 export function exportCsvNewDevice(data : {[index : string] : any}[]){
     if (data.length == 0){
         return;

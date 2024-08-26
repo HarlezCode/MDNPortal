@@ -218,7 +218,13 @@ function compareDates(d1 : string, d2 : string){
     return date1 > date2;
 }
 
+/*
+    Validates add new device requests
+    :param data: request entry
+    :returns: custom response object
+*/
 async function validateAddRequest(data : ResType){
+    
     let res = await fetch("http://localhost:5000/api/mi/fetchdevice/?sn=" + data["serial"], {
         headers: {
             "Key": localStorage.getItem("Token") ?? ""
@@ -245,6 +251,7 @@ async function validateAddRequest(data : ResType){
             }
         }
     }
+    // converts time to the right format & check if the time of entry is newer than time of request creation
     let reqDateString = (data["date"].split("/").reverse().join("-")) + "T" + data["time"];
     console.log(reqDateString);
     if (compareDates(reqDateString, latestdate)){
@@ -291,6 +298,7 @@ export async function processRequests(data : ResType[], force : boolean = false)
         })
     }
 
+    // api call
     let val : {[index : string] : any} = {};
     await fetch("http://localhost:5000/api/processrequests/", {
         method: "POST",
@@ -312,6 +320,7 @@ export async function processRequests(data : ResType[], force : boolean = false)
         val["error"] = "Server not responding.";
     });
 
+    // error handling
     if (erroredData.length > 0 && val['res'] != "error"){
         alert("Adding devices with these serial numbers are not valid, turn on force if you want to mark as complete");
         val["res"] = "error";
@@ -322,10 +331,13 @@ export async function processRequests(data : ResType[], force : boolean = false)
     }
     return val;
 }
-
-
-
+/*
+    Fetch requests from server with pending as default
+    :params: all the query params
+    :returns: list of table entries
+*/
 export async function fetchFromServerRaw({rtype='',sn='',stat='Pending',uid='', date='',dtype='', ctype='',from='',mac='',app='',wc='' ,tm='',processed=''}) : Promise<ResType[]>{
+    // dummy way of adding query params can change to use object arg to create urlparams object
     let queryParams = "?";
     queryParams += "requestType="+ rtype+"&";
     queryParams += "serial=" + sn + "&";
@@ -362,7 +374,11 @@ export async function fetchFromServerRaw({rtype='',sn='',stat='Pending',uid='', 
     return res as ResType[];
 }
 
-
+/*
+    fetch from server using the filters
+    :param e: form event
+    :returns: list of table entries
+*/
 export async function fetchFromServer(e : FormEvent<HTMLFormElement>){
     let queryParams = "?";
     queryParams += "requestType=" + e.currentTarget.requestfilter.value + "&";
@@ -398,6 +414,13 @@ export async function fetchFromServer(e : FormEvent<HTMLFormElement>){
     return res as ResType[];
 }
 
+/*
+    bulk labels setting for mi tools
+    :param server: server string
+    :param uuids: list of uuids
+    :param labels: key-value pair of label id : label name
+    :returns: custom response object
+*/
 export async function setBulkLabels(server : string, uuids : string[], labels : {[index : string] : string}){
     const res : {[ind : string] : any} = await fetch("http://localhost:5000/api/mi/addlabels/",{
         method: "POST",
