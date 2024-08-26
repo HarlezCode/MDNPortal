@@ -112,7 +112,7 @@ def addAllLabels(labels, uuid, server, logger):
         t.join()
 
     '''
-    # non-async implementation
+    # non-async implementation, able to halt if error occurs
     for i in labels:
         r = requests.get(server + "api/v2/devices", auth=(user, password),params={"adminDeviceSpaceId" : spaceID, "fields": "common.uuid" ,"query" : 'common.uuid="' + uuid + '"'}).json()["results"]
         if len(r) == 0:
@@ -906,9 +906,9 @@ async def removeLabelMi():
 '''
 Adds label to device
 '''
-@app.route('/api/mi/addlabel/', methods=["GET"], endpoint='addLabelMi')
+@app.route('/api/mi/addlabels/', methods=["POST"], endpoint='addLabelsMi')
 @defaultErrorHandler
-async def addLabelMi():
+async def addLabelsMi():
     settings = apiSettings()
     Responses = responses()
     # valid = await validateKey(request.headers["Key"])
@@ -916,36 +916,46 @@ async def addLabelMi():
     #     return Responses.keyError
     # user = request.headers["From"]
     # app.logger.info("Attempting to add label by " + user + " : " + request.args.to_dict()["labelname"] + " on " + request.args.to_dict()["uuid"])
-    args = request.args.to_dict()
-    uuid = args["uuid"]
-    labelid = args["labelid"]
-    labelname = args["labelname"]
-    server = args["server"]
+    data = request.json
+    uuids = data["uuids"]
+    labels = data["labels"]
+    server = data["server"]
+    print(server)
+
     if not validateServer(server):
         return Responses.customError("Invalid server.")
     env = loadEnv()
     spaceID = env["adminDeviceSpaceId"]
-    user = env["apiUsername"]
+    username = env["apiUsername"]
     password = env["apiPassword"]
-    labelid = int(labelid) # throws error if id is not int
-    r = requests.get(server + "api/v2/labels/" + str(labelid), auth=(user, password), params={"adminDeviceSpaceId": spaceID}).json()["results"]
-    if r["name"] != labelname:
-        # app.logger.warning("Error (Label id does not match label name!) attempting to remove label by " + user + " : " + labelname + " on " + uuid)
-        return Responses.customError("Label id does not match label name!")
 
-    r = requests.get(server + "api/v2/devices", auth=(user, password),params={"adminDeviceSpaceId" : spaceID, "fields": "common.uuid" ,"query" : 'common.uuid="' + uuid + '"'}).json()["results"]
-    if len(r) == 0:
-        # app.logger.warning("Error (The uuid is not in the records) attempting to remove label by " + user + " : " + labelname + " on " + uuid)
-        return Responses.customError("The uuid is not in the records.")
+    invalidUuids = []
+    invalidlabels = []
 
-    # appying label here
-    r = requests.put(server+"api/v2/devices/labels/" + labelname + "/add", auth=(user, password), params={"adminDeviceSpaceId" : spaceID}, json={"deviceUuids" : [uuid]}, headers={"Content-Type" : "application/json"}).json()
-    if not r["successful"]:
-        # app.logger.warning("Error (Error in adding this label on this uuid.) attempting to remove label by " + user + " : " + labelname + " on " + uuid)
-        return Responses.customError("Error in adding this label on this uuid.", [labelname, uuid])
+    for i in uuids:
+        if len(i) == 0:
+            continue
+        r = requests.get(server + "api/v2/devices", auth=(username, password),
+                         params={"adminDeviceSpaceId": spaceID, "fields": "common.uuid",
+                                 "query": 'common.uuid="' + i + '"'}).json()
+        print(i)
+        r= r["results"]
+        if len(r) == 0:
+            invalidUuids.append(i)
+            continue
 
+        fin = addAllLabels(labels, i, server, app.logger)
+        if len(fin) != len(labels):
+            invalidlabels = fin
+    invalidlabels = [str(x) for x in invalidlabels]
+    if len(invalidlabels) > 0 and len(invalidUuids) == 0:
+        return Responses.customError("Some labels were invalid, only these were applied.", invalidlabels)
+    elif len(invalidUuids) > 0 and len(invalidlabels) == 0:
+        return Responses.customError("Some uuids were invalid, these were invalid.", invalidUuids)
+    elif len(invalidUuids) > 0 and len(invalidlabels) > 0:
+        return Responses.customError("Some labels and uuids were invalid. The applied labels and invalid uuids are shown.", invalidUuids + invalidlabels)
     # app.logger.info("Successfully added label by " + user + " : " + labelname + " on " + uuid)
-    return Responses.ok(r)
+    return Responses.ok()
 
 @app.route('/api/mi/setcustomattr/', methods=['POST'], endpoint='setCustomAttr')
 @defaultErrorHandler

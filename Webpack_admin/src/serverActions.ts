@@ -1,11 +1,30 @@
+/*
+    Actions that require api calls
+*/
+
 import { FormEvent } from "react";
 
 type ResType = {[key : string] : string};
+
+
+/*
+    Authenticates the user through username and password
+    :param username: username
+    :param password: password
+    :returns: jwt token 
+*/
 export async function authAction(username : string, password : string) : Promise<string>{
     return new Promise( (res) => {
-        res(username+password)});
+        res(username+password)}); // needs to be replaced by an api call to the server to get jwt session token
 }
 
+/*
+    Set custom attributes on a list of uuids given a server
+    :param uuid:  a list of uuids
+    :param attr: object with key value pairing of attr id and value
+    :param server: server string
+    :returns: custom response object
+*/
 export async function setCustomAttributes(uuids : string[], attr : {[i : string] : string}, server : string){
     const res = await fetch("http://localhost:5000/api/mi/setcustomattr/", {
         method: "POST",
@@ -27,11 +46,14 @@ export async function setCustomAttributes(uuids : string[], attr : {[i : string]
         }
     );
     
-    
     return res;
 }
 
-
+/*
+    Add new webclips to the server
+    :param e: form event
+    :returns: boolean value whether successful or not
+*/
 export async function addWebclips(e : FormEvent<HTMLFormElement>){
     let dtype = (e.currentTarget.CORP.checked ? "CORP" : "") +  "," + (e.currentTarget.OUD.checked ? "OUD," : "") + (e.currentTarget.COPE.checked ? "COPE" : "")
     if (dtype.charAt(0) == ","){
@@ -91,7 +113,15 @@ export async function addWebclips(e : FormEvent<HTMLFormElement>){
     return true;
 }
 
+/*
+    Updates the webclip on the postgresql database, have three modes,
+    delete - delete the webclip
+    active - switch from inactive to active
+    inactive - switch from active to inactive
+    :param item: webclip table entry
+    :returns: custom response object
 
+*/
 export async function updateWebclip(item : ResType, update : string){
     let mode : string = "";
     if (update == "delete"){
@@ -127,7 +157,11 @@ export async function updateWebclip(item : ResType, update : string){
 
     return res;
 }
-
+/*
+    Rejects the request
+    :param data: request table entry
+    :returns: custom response object
+*/
 export async function rejectRequest(data : ResType[]){
     const res = await fetch("http://localhost:5000/api/rejectrequest/", {
         method: "POST",
@@ -146,7 +180,11 @@ export async function rejectRequest(data : ResType[]){
     }
     return res;
 }
-
+/*
+    Fetch webclips based on activity
+    :param active: string either "active" or "inactive"
+    :returns: a list of webclips entries
+*/
 export async function fetchWebclips(active : string){
     const res = await fetch("http://localhost:5000/api/fetchwebclips/" + "?active="+active, {
         method: "GET",
@@ -157,17 +195,22 @@ export async function fetchWebclips(active : string){
         return res.json()
     }).catch((error : any)=>{console.log(error); return new Promise(res=>res([]))});
     
+    // might need error checking here so if !res then return an error msg
     if (!res){
         return [];
     }
     return res;
 }
+/*
+    Logouts the user
+*/
 export async function logout() : Promise<boolean>{
     localStorage.removeItem("Token");
-    return new Promise( (res) => {
+    return new Promise( (res) => { // need to remove jwt here
         res(true)});
 }
-// returns true if d1 later than d2
+
+// returns true if date1 later than date2
 function compareDates(d1 : string, d2 : string){
     const date1 = new Date(d1);
     const date2 = new Date(d2);
@@ -353,4 +396,35 @@ export async function fetchFromServer(e : FormEvent<HTMLFormElement>){
         return [] as ResType[];
     }
     return res as ResType[];
+}
+
+export async function setBulkLabels(server : string, uuids : string[], labels : {[index : string] : string}){
+    const res : {[ind : string] : any} = await fetch("http://localhost:5000/api/mi/addlabels/",{
+        method: "POST",
+        headers: {
+            "Key": localStorage.getItem("Token") ?? "", // temp val
+            "From": localStorage.getItem("Token") + "_User", // temp val
+            'Accept' : 'application/json', 
+            'Content-Type' : 'application/json'
+        },
+        body : JSON.stringify(
+            {
+                "server" : server,
+                "uuids" : uuids,
+                "labels" : labels
+            }
+        )
+    }
+    ).then(
+        (res) =>res.json()
+    ).catch(() =>{
+        return new Promise<{[ind : string] : string | string[]}>((res)=>res(
+            {
+                "res" : "error",
+                "error" : "Server not responding!",
+                "data" : []
+            }  
+        ))}
+    )
+    return res;
 }
