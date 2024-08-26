@@ -24,6 +24,7 @@ CORS(app)
 
 # error wrapper for default errors
 def defaultErrorHandler(f):
+    # update this if you want to change default error handling behaviour
     async def wrapper(*args, **kwargs):
         try:
             val = await f(*args, **kwargs)
@@ -42,6 +43,7 @@ async def rejectrequest():
     user = request.headers["From"]
     if not valid:
         return Responses.keyError
+
     app.logger.info("Attempting to reject requests by " + user + " : " + str(data))
     cursor, conn = createCursor()
     cursor.execute(
@@ -98,7 +100,8 @@ def addAllLabels(labels, uuid, server, logger):
     password = env["apiPassword"]
     if not validateServer(server):
         return []
-    # async implementation
+
+    # async implementation of adding all labels
     q = queue.Queue()
     threads = []
     for i in labels:
@@ -124,7 +127,6 @@ def addAllLabels(labels, uuid, server, logger):
     '''
 
     finished = [(list(labels.keys())[i], labels[list(labels.keys())[i]]) for i in range(len(threads)) if q.get()]
-    print(finished)
 
     return finished
 
@@ -559,6 +561,8 @@ async def getrequests():
         (WEBCLIP LIKE %(webclip)s OR %(webclip)s = '%%') AND
         (TIMECREATED LIKE %(time)s OR %(time)s = '%%') AND
         (PROCESSED LIKE %(processed)s OR %(processed)s = '%%')''', data)
+
+    # Fetching from DB
     fetch = cursor.fetchone()
     fetched = []
     while fetch:
@@ -571,10 +575,11 @@ async def getrequests():
         items.append(dict())
         for index, key in enumerate(params):
             items[-1][key] = i[index]
-        # if you added/removed another column in the db, you have to change the index here
-        items[-1]["id"] = i[len(i)-3]
-        items[-1]["processed"] = i[-2]
-        items[-1]["server"] = i[-1]
+
+        # mapping db entries to actual items
+        items[-1]["id"] = i[13]
+        items[-1]["processed"] = i[14]
+        items[-1]["server"] = i[15]
 
     return Responses.ok(items)
 
@@ -598,15 +603,18 @@ async def updateWebclip():
     SELECT * FROM webclips
     WHERE id=%(id)s
     ''', {"id": key})
+
     fetched = cursor.fetchone()
     if fetched == None:
         app.logger.warning("Error (Webclip does not exist on DB) when updating webclips by" + user + " : " + str(data['data']))
         return Responses.customError("Entry id does not exist on database!")
+
     item = webclipToDict(fetched)
     for i in item.keys():
         if data["data"][i] != item[i]:
             app.logger.warning("Error (item mismatch with entry on DB) when updating webclips by" + user + " : " + str(data['data']))
             return Responses.customError("Item mismatch with entry in database!")
+
     with updateMutex:
         if data["to"] == "active":
             cursor.execute('''
@@ -987,7 +995,6 @@ def teardown_conn(exception):
     if conn is not None:
         conn.close()
 
+
 if __name__ == "__main__":
     app.run(port=5000, threaded=True)
-
-

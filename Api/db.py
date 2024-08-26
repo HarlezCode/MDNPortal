@@ -34,7 +34,6 @@ def initializeDB():
     cursor = conn.cursor()
     cursor.execute("DROP TABLE IF EXISTS entries")
     cursor.execute("DROP TABLE IF EXISTS webclips")
-    cursor.execute("DROP TABLE IF EXISTS clusterid")
     cursor.execute('''
 CREATE TABLE entries(
     RTYPE VARCHAR(255),
