@@ -2,7 +2,9 @@ import React from 'react'
 import {useEffect, useState, useRef} from 'react';
 import { fetchWebClips, fetchApps } from './serverActions';
 import "./components.css"
-
+/*
+Different components, notably, it is where you fetch apps and webclips with the selectors
+*/
 export function DefaultWrapper({children} : any){
     return(<div className="wrapper">
             {children}

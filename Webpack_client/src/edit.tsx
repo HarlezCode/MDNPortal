@@ -6,6 +6,11 @@ import {AppSelector, DefaultTitle, DefaultWrapper, WebClipSelector } from "./com
 import Adding from "./Adding";
 import { resetLocalStorage } from "./clientActions";
 
+/*
+This is the edit table to add/delete device entries
+*/
+
+
 export default function Edit(){
     // data states
     const [tableData, setData] = useState({"Headers" : [] as string[]} as {[index : string]: string[]});

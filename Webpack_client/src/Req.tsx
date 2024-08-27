@@ -3,6 +3,15 @@ import { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Wrapper } from "./components";
 import "./components.css"
+
+/*
+This page is for selecting the type of request
+
+
+*/
+
+
+
 const requestTypes : string[] = [
     "Add 4G VPN Profile",
     "Add new device record",

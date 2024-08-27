@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { DefaultTitle } from "./components";
 import "./components.css"
 
+/*
+This is the preview component, also it is where you call api to send the requests to server
+*/
 
 async function submitFunc(data : {[index : string]: string[]}, close : () => void, nav : (addr : string) => void){
     //for adding removing vpn, need to check if vpn exists or not and warn the user correspondingly.

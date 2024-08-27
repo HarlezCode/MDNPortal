@@ -2,7 +2,11 @@ import React from 'react'
 import {useState, FormEvent, useRef} from 'react'
 import './components.css'
 import { checkDeviceType, getDeviceInfo, getDeviceLabels } from './serverActions';
-/* Possible improvements
+/* 
+This is the page for after clicking the import button
+
+
+Possible improvements
 - Enforce a limit to the number of possible requests at a time 
 since if the number of devices added is > n, it may overload the server.
 This can be achieved by simply splitting up the fetch requests into batches of fixed size q.

@@ -2,6 +2,10 @@ import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { DefaultWrapper } from "./components";
 
+/*
+This is the response page after submitting a request
+
+*/
 export default function Responses(){
     const [searchParams] = useSearchParams();
     const nav = useNavigate();

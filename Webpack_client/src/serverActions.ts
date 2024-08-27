@@ -1,3 +1,13 @@
+/*
+Server actions, if you see custom response object it is referring to an object in this format,
+{
+ 'res' : '' (can be 'ok' || 'error')
+ 'data' : [] (list of data but sometimes can be object)
+ 'error' : '' (error message)
+}
+*/
+
+
 // please change this if the mapping of labels are updated
 const labeltodtype : {[index : string] : string[]} = { 
     "CORP" : [
@@ -42,6 +52,11 @@ export async function authAction(username : string, password : string) : Promise
         res(username+password)});
 }
 
+/*
+Gets information about a device
+:param sn: serial number - string
+:returns: Custom response object with data set to item entry
+*/
 export async function getDeviceInfo(sn : string){
     let res = await fetch("http://localhost:5000/api/mi/fetchdevice/?sn=" +sn, {
         headers: {
@@ -71,7 +86,12 @@ export async function getDeviceInfo(sn : string){
     }
     return {"data" : res["data"], "error" : ""}
 }
-
+/*
+self explanatory
+:param uuid: uuid of device, since there may be different uuids for the same device
+:param server: server string
+:returns: custom response object
+*/
 export async function getDeviceLabels(uuid : string, server : string){
     const res = await fetch("http://localhost:5000/api/mi/getdevicelabels/?uuid=" +uuid + "&server="+server, {
         headers: {
@@ -95,7 +115,11 @@ export async function getDeviceLabels(uuid : string, server : string){
     }
 }
 
-
+/*
+Checks the device type based on its labels
+:param labels: list of labels for a given uuid
+:returns: a type - string (CORP|OUD|COPE)
+*/
 
 export function checkDeviceType(labels : string[]){
 
@@ -125,9 +149,12 @@ export function checkDeviceType(labels : string[]){
     }
     return atype;
 } 
-
-
-
+/*
+Fetches webclips for a device
+:param metadata: Object with the metadata or other words the data fetched from mi api
+:param data: the actual table entry 
+:returns: custom response object
+*/
 export async function fetchWebClips(metadata : {[index : string] : string}, data : string[]){
     const fetchParams = {
         "model" : metadata["common.model"] ?? "",
@@ -156,7 +183,12 @@ export async function fetchWebClips(metadata : {[index : string] : string}, data
 
     return {"data" : prefixedData, "res" : webres["res"], "error" : webres["error"]} ?? {"data" : [], "error": ""};
 }
-
+/*
+Fetches apps for a device based on uuid
+:param uuid: uuid...
+:param server: the actual table entry 
+:returns: custom response object
+*/
 export async function fetchApps(uuid : string, server : string){
     const res = await fetch("http://localhost:5000/api/mi/fetchapps/?uuid="+ uuid + "&server=" + server).then(
         (res : Response) =>{
