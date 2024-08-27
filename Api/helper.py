@@ -69,14 +69,17 @@ def checkQueryParams(data):
     return True
 
 async def validateKey(key):
+    # Switch to decode JWT and verifying exp date, can get rid of async
     if "Admin" not in key:
         return False
     return True
 async def validateClientKey(key):
+    # same as above but this is for client side key
     if "Admin" not in key:
         return False
     return True
 def loadEnv():
+    # loading environment variables
     env = dict()
     with open(".env", "r") as file:
         lines = file.readlines()
@@ -87,8 +90,8 @@ def loadEnv():
         file.close()
     return env
 def createCursor():
+    # creates the database cursor/connection and puts it into flask globals
     env = loadEnv()
-
     g.conn = psycopg2.connect(
         database="request", user=env["dbUser"], password=env["dbPassword"], host="127.0.0.1", port="5432"
     )
@@ -96,6 +99,7 @@ def createCursor():
     g.cursor = g.conn.cursor()
     return (g.cursor, g.conn)
 def webclipToDict(fetched):
+    # decodes webclip entry from db into a dictionary
     item = dict()
     item['model'] = fetched[0]
     item['dtype'] = fetched[1]
@@ -107,6 +111,8 @@ def webclipToDict(fetched):
     item['active'] = fetched[7]
     return item
 def combinations(ls):
+    # Returns a list of combinations of input
+    # the input is a 2d array, eg. [[1,2],[2,3]]
     ans = []
     if len(ls) == 1:
         for i in ls[0]:
@@ -125,6 +131,7 @@ def combinations(ls):
             ans.append([i] + v)
     return ans
 
+# class encapsulating api settings
 class apiSettings:
     def __init__(self):
         self.domain = 'https://emmdev2.ha.org.hk/' # your main/newest server eg. put mdm-1 here
@@ -435,6 +442,8 @@ class apiSettings:
             b[i[0]] = i[1]
 
         return [a,b]
+
+# Class containing default response behavior and response object
 class responses:
     def __init__(self):
         self.defaultError = jsonify({

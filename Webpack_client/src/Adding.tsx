@@ -119,8 +119,10 @@ async function nmfetch(reqtype : string, count : number[],entry : string, errors
     newMetaData[entry] = res["data"][0];
     
     if (reqtype == "Add Webclip"){
+        // webclips are detected with wcp_ prefix
         newData[entry].push("wcp_Webclip"); // default value 
     } else if (reqtype == "App Update"){
+        // apps are detected with app_ prefix
         newData[entry].push("app_App"); // default value
     } else if (reqtype == "Change of Device Type"){
         newData[entry].push(changeType);

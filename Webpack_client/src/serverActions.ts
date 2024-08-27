@@ -149,7 +149,12 @@ export async function fetchWebClips(metadata : {[index : string] : string}, data
             res({"data" : [] as string[], "res" : "error", "error" : "Server not responding."})});
     }); 
 
-    return {"data" : webres["data"], "res" : webres["res"], "error" : webres["error"]} ?? {"data" : [], "error": ""};
+    const prefixedData : string[] = [];
+    webres["data"].forEach((val : string)=>{
+        prefixedData.push("wcp_" + val);
+    })
+
+    return {"data" : prefixedData, "res" : webres["res"], "error" : webres["error"]} ?? {"data" : [], "error": ""};
 }
 
 export async function fetchApps(uuid : string, server : string){

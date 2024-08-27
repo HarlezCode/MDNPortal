@@ -1,3 +1,10 @@
+'''
+Mdm backend server
+if you see 'comment for now',
+it means that I do not have the resources to test the api calls and logic so there may be bugs.
+'''
+
+
 from flask import Flask, jsonify, request, g
 from flask_cors import CORS
 from helper import *
@@ -6,12 +13,16 @@ from datetime import date, datetime
 import threading
 import requests
 import queue
-
+'''
+control objects
+there might be better and more efficient ways to achieving both concurrency and data integrity than using critical sections, 
+if you want to optimize you may need to reduce length of the critical section 
+'''
 processMutex = threading.Lock()
 updateMutex = threading.Lock()
 updateReqMutex = threading.Lock()
 app = Flask("Admin Api")
-# logging
+# logging settings
 app.logger.setLevel(logging.INFO)
 logHandle = logging.FileHandler('server'+'.log')
 formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-8s From [%(threadName)s] [%(thread)d]: %(message)s',
@@ -22,7 +33,7 @@ app.logger.addHandler(logHandle)
 # enable cross origin resource sharing
 CORS(app)
 
-# error wrapper for default errors
+# error wrapper for default errors, note: this is only for async routes
 def defaultErrorHandler(f):
     # update this if you want to change default error handling behaviour
     async def wrapper(*args, **kwargs):
@@ -102,6 +113,7 @@ def addAllLabels(labels, uuid, server, logger):
         return []
 
     # async implementation of adding all labels
+    # used a queue to sync all results in the end
     q = queue.Queue()
     threads = []
     for i in labels:
@@ -113,6 +125,7 @@ def addAllLabels(labels, uuid, server, logger):
 
     '''
     # non-async implementation, able to halt if error occurs
+    # really depends if you need the efficiency of threading
     for i in labels:
         r = requests.get(server + "api/v2/devices", auth=(user, password),params={"adminDeviceSpaceId" : spaceID, "fields": "common.uuid" ,"query" : 'common.uuid="' + uuid + '"'}).json()["results"]
         if len(r) == 0:
@@ -128,6 +141,7 @@ def addAllLabels(labels, uuid, server, logger):
 
     finished = [(list(labels.keys())[i], labels[list(labels.keys())[i]]) for i in range(len(threads)) if q.get()]
 
+    # return all finished results
     return finished
 
 
@@ -148,6 +162,7 @@ def removeLabelTarget(server, user, password, spaceID, uuid, label, labelid, log
         queue.put(False)
     queue.put(True)
 def removeAllLabels(labels, uuid, server, logger):
+    # same logic as above
     env = loadEnv()
     spaceID = env["adminDeviceSpaceId"]
     user = env["apiUsername"]
@@ -202,7 +217,8 @@ async def processrequests():
     cursor, conn = createCursor()
     if len(data) == 0:
         return Responses.customError("Empty Data")
-    # ensure atomic property
+    # ensure atomic operation
+    # there may be better ways of doing this than using a mutex
     with processMutex:
         pending = []
         repeatedCounts = []
@@ -231,7 +247,6 @@ async def processrequests():
                         return Responses.customError("Error: Entry mismatch with database records!", [i])
                 if not validateServer(i['server']):
                     return Responses.customError("Error: invalid server. ", [i])
-
                 if not i["requestType"] == "Add new device record":
                     if len(i["uuid"]) < 5:
                         return Responses.customError("Error: invalid uuid.", [i])
@@ -343,6 +358,7 @@ async def processrequests():
             elif i["requestType"] == "Change of Device Type":
                 app.logger.info("Attempting to change device type of " + uuid)
                 ''' Comment for now
+                # remove all type labels
                 fin = removeAllLabels(settings.typechangeremove[i['server']],uuid, i['server'],app.logger)
                 if len(fin) < len(settings.typechangeremove[i['server']]):
                     errs.append("Only finished removing these labels for " + uuid + " : "+ str(fin))
@@ -686,10 +702,12 @@ async def addWebclips():
         if r["results"]["name"] != labellist[v]:
             return Responses.customError("Label name does not match id provided.", [i])
 
-    # slap into db
+
     app.logger.info("Attempting to add webclips by " + user + " : " + str(data))
 
 
+    # make different combinatios of webclips
+    # this part can be improved by mapping one webclip to different configurations,
     entries = combinations([models, dtypes,platform,oses,webclip])
     cursor, conn = createCursor()
     for i in entries:
@@ -731,7 +749,7 @@ async def getWebclips():
     while fetched:
         item = webclipToDict(fetched)
         if (item["model"].lower() in data["model"].lower()):
-            listofitems.append("wcp_"+item["webclip"])
+            listofitems.append(item["webclip"])
         fetched = cursor.fetchone()
 
     return Responses.ok(listofitems)
