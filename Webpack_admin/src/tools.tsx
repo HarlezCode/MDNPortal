@@ -2,7 +2,9 @@ import React, { useState, useRef } from "react";
 import { Navbar, Toaster } from "./components";
 import "./components.css"
 import { setBulkLabels, setCustomAttributes } from "./serverActions";
-
+/*
+Tools page
+*/
 export default function Tools(){
     const [mode, setMode] = useState('none');
     const [attributes, setAttributes] = useState([['','']] as string[][]);

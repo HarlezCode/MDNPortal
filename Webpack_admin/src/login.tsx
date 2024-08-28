@@ -2,6 +2,11 @@ import React from 'react';
 import { useNavigate } from "react-router-dom";
 import {authAction} from "./serverActions"
 
+/*
+Login page
+*/
+
+
 export default function Login(){
 
     const navigate = useNavigate();

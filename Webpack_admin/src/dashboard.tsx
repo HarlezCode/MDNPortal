@@ -6,6 +6,11 @@ import { exportExcel, exportCsvNewDevice } from './clientActions';
 import Loading from './loading';
 import './components.css';
 
+/*
+The main page where you see all pending requests
+*/
+
+
 type ResType = {[key : string] : string};
 
 function ScrollableTD({children} : {children : any}){

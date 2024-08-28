@@ -2,7 +2,9 @@ import React from 'react';
 import { FormEvent, useState } from "react";
 import { addWebclips } from "./serverActions";
 import Loading from "./loading";
-
+/*
+The component for adding webclips
+*/
 export default function AddWebclips({close, setRefresh} : {close : (val : boolean)=>void, setRefresh : (val : boolean)=>void}){
     const [loading, setLoading] = useState(false);
     return(

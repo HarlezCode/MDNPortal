@@ -6,6 +6,11 @@ import Loading from "./loading";
 import AddWebclips from "./addWebclips";
 type ResType = {[key : string] : string};
 
+/*
+Webclips page
+*/
+
+
 function ScrollableTD({children} : {children : any}){
     return (<td className='scrolltd'>{children}</td>)
 }

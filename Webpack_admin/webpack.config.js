@@ -33,9 +33,9 @@ module.exports={
     module:{
         rules: [
             {
-                test: /\.(ts|tsx)$/,    //kind of file extension this rule should look for and apply in test
-                exclude: /node_modules/, //folder to be excluded
-                use:  'babel-loader' //loader which we are going to use
+                test: /\.(ts|tsx)$/, 
+                exclude: /node_modules/, 
+                use:  'babel-loader' 
             },
             {
                 test: /\.css$/,

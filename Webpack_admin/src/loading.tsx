@@ -1,7 +1,9 @@
 import React from 'react';
 import { useEffect, useState } from "react"
 import './components.css'
-
+/*
+A simple load animation
+*/
 export default function Loading(){
     const [counter, increment] = useState(0);
     const [refr, setRef] = useState(true);

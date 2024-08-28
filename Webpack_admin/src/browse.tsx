@@ -4,7 +4,9 @@ import { FormEvent, useState, useRef } from 'react';
 import { Navbar, Toaster } from './components';
 import { exportExcel } from './clientActions';
 type ResType = {[key :string] : string};
-
+/*
+Browse page, where you see all database entries
+*/
 function ScrollableTD({children} : {children : any}){
     return (<td className='scrolltd'>{children}</td>)
 }

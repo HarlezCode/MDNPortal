@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { logout } from "./serverActions";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {Toast} from 'bootstrap';
-
+/*
+Common components
+*/
 export function Confirmation({children, text} : {children : any, text : string}){
     const [isConfirm, setConfirm] = useState(false);
     const [isGuard, setGuard] = useState(true);
