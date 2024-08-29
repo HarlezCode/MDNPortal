@@ -26,14 +26,46 @@ apiPassword=something
 2. Run `npm run build`  
 3. Uncomment Styling for `main.css` in `public/index.html`  
 
-
-
+## Libraries used
+*Python*
+psycopg2
+flask CORS
+flask[async] (flask dependencies: Werkzeug, asgiref)
+requests 
+*Javascript*
+bootstrap (approved)
+exceljs (approved)
+react (approved)
+react-dom (approved)
+react-router-dom (approved)
+@babel/core (approved)
+@babel/plugin-transform-runtime (approved)
+@babel/preset-env (approved)
+@babel/preset-react (approved)
+@babel/runtime (approved)
+@types/bootstrap (approved)
+@types/react (approved)
+@types/react-dom (approved)
+babel-loader (approved)
+typescript (approved)
+webpack (approved)
+*Dev Tools*
+css-loader (no need to include after build)
+mini-css-extract-plugin (no need to include after build)
+webpack-cli (no need to include after build)
+webpack-dev-server (no need to include after build)
+*Not approved yet*
+@babel/preset-typescript
+style-loader
 ## Todo
 - mailing system details (need for an interface?)
 - retire device api
-- Look for last location (mac checking)  *Might abandon
 - Authentication
-- update msg
-- mi tools (low priority)
+- update msg api testing
 - mailing api
-- process requests by applying labels
+- process requests, most requests are not tested, eg. add 4g vpn profile
+- MI tools
+- second api username and password for two servers, for this add 2 more kv pairs to .env file
+- More complex server logging
+- Batch request sending from the client request portal
+- Thread limiting on the server api
