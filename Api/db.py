@@ -26,7 +26,6 @@ def initializeDB():
             if len(kv) == 2:
                 env[kv[0]] = kv[1].strip()
         file.close()
-    return
     conn = psycopg2.connect(
         database="request", user=env["dbUser"], password=env["dbPassword"], host="127.0.0.1", port="5432"
     )
