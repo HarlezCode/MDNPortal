@@ -27,36 +27,39 @@ apiPassword=something
 3. Uncomment Styling for `main.css` in `public/index.html`  
 
 ## Libraries used
-*Python*
-psycopg2
-flask CORS
-flask[async] (flask dependencies: Werkzeug, asgiref)
-requests 
-*Javascript*
-bootstrap (approved)
-exceljs (approved)
-react (approved)
-react-dom (approved)
-react-router-dom (approved)
-@babel/core (approved)
-@babel/plugin-transform-runtime (approved)
-@babel/preset-env (approved)
-@babel/preset-react (approved)
-@babel/runtime (approved)
-@types/bootstrap (approved)
-@types/react (approved)
-@types/react-dom (approved)
-babel-loader (approved)
-typescript (approved)
-webpack (approved)
-*Dev Tools*
-css-loader (no need to include after build)
-mini-css-extract-plugin (no need to include after build)
-webpack-cli (no need to include after build)
-webpack-dev-server (no need to include after build)
-*Not approved yet*
-@babel/preset-typescript
-style-loader
+**Python**  
+psycopg2  
+flask CORS  
+flask[async] (flask dependencies: Werkzeug, asgiref)  
+requests   
+
+**Javascript**  
+bootstrap (approved)  
+exceljs (approved)  
+react (approved)  
+react-dom (approved)  
+react-router-dom (approved)  
+@babel/core (approved)  
+@babel/plugin-transform-runtime (approved)  
+@babel/preset-env (approved)  
+@babel/preset-react (approved)  
+@babel/runtime (approved)  
+@types/bootstrap (approved)  
+@types/react (approved)  
+@types/react-dom (approved)  
+babel-loader (approved)  
+typescript (approved)  
+webpack (approved)  
+@babel/preset-typescript (not approved yet)  
+style-loader (not approved yet)  
+*Dev Tools*  
+css-loader (no need to include after build)  
+mini-css-extract-plugin (no need to include after build)  
+webpack-cli (no need to include after build)  
+webpack-dev-server (no need to include after build)  
+
+
+
 ## Todo
 - mailing system details (need for an interface?)
 - retire device api
